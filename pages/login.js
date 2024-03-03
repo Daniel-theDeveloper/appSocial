@@ -1,7 +1,25 @@
-import React from 'react';
-import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, Alert } from 'react-native';
 
-export default function login() {
+import appFirebase from '../utils/database';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+const auth = getAuth(appFirebase);
+
+export default function login(props) {
+
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+
+    const login = async() => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            props.navigation.navigate('Home');
+        } catch (error) {
+            console.log(error);
+            Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos")
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.subContainer}>
@@ -12,13 +30,13 @@ export default function login() {
                     <Text style={styles.subtitle}> Regístrese para disfurtar la mejor red social  </Text>
 
                     <View style={styles.textContainer}>
-                        <TextInput placeholder='Usuario' style={styles.input} />
+                        <TextInput placeholder='Usuario' style={styles.input} onChangeText={(text) => setEmail(text)} />
                     </View>
                     <View style={styles.textContainer}>
-                        <TextInput placeholder='Contraseña' style={styles.input} />
+                        <TextInput placeholder='Contraseña' style={styles.input} onChangeText={(text) => setPassword(text)} secureTextEntry={true} />
                     </View>
 
-                    <TouchableOpacity style={styles.loginButtom}>
+                    <TouchableOpacity style={styles.loginButtom} onPress={login}>
                         <Text style={styles.loginTextButtom}>Ingresar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity>
@@ -63,7 +81,7 @@ const styles = StyleSheet.create({
     },
 
     loginContainer: {
-        padding: 10,
+        padding: 25,
         width: '100%'
     },
     title: {
@@ -114,7 +132,6 @@ const styles = StyleSheet.create({
     },
     loginTextButtom2: {
         marginTop: 20,
-        marginBottom: 20,
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',

@@ -24,7 +24,14 @@ export default function App() {
           headerStyle: { backgroundColor: '#141442' }
         }}
         />
-        <Stack.Screen name="Home" component={home} />
+        <Stack.Screen name="Home" component={home}
+        options={{
+          title: 'App-social',
+          headerTintColor: 'white',
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#141442' }
+        }}
+        />
       </Stack.Navigator>
     );
   }

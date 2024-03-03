@@ -1,5 +1,9 @@
 import { initializeApp } from "firebase/app";
 
+//Usuario de pruebas:
+//danielalfaro@social.com
+//123456
+
 const firebaseConfig = {
   apiKey: "AIzaSyCxfqwV3jf-JC_8DeDOQdUGm2H2uuMG0Tg",
   authDomain: "social-database-1ca38.firebaseapp.com",
