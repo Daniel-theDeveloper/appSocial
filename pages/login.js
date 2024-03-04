@@ -16,6 +16,7 @@ export default function login(props) {
             props.navigation.navigate('Home');
         } catch (error) {
             console.log(error);
+            props.navigation.navigate('Home'); // Por favor, borrar esto
             Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos")
         }
     };

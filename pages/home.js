@@ -1,70 +1,43 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native'
+import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Homepage, Trending, Create, Notifications, Chats } from '../pages/screens';
 
-import { Homepage, Trending, Create, Notifications, Chats } from './screens';
-
-const Tap = createBottomTabNavigator();
+import MyTabs from "../routes/routes"
 
 export default function home() {
-
-    // const tabs = [
-    //     {
-    //         id: 1,
-    //         title: 'Pagina principal',
-    //         screen: 'homepage',
-    //         icon: 'home',
-    //         Component: Homepage
-    //     },
-    //     {
-    //         id: 2,
-    //         title: 'Buscar',
-    //         screen: 'trending',
-    //         icon: 'heart',
-    //         Component: Trending
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Crear post',
-    //         screen: 'createPost',
-    //         icon: 'plus',
-    //         Component: Create
-    //     },
-    //     {
-    //         id: 4,
-    //         title: 'Notificaciones',
-    //         screen: 'notifications',
-    //         icon: 'bell',
-    //         Component: Notifications
-    //     },
-    //     {
-    //         id: 5,
-    //         title: 'Chats',
-    //         screen: 'chats',
-    //         icon: 'message-text',
-    //         Component: Chats
-    //     }
-    // ]
+    const Tab = createBottomTabNavigator();
+    const tabs = MyTabs;
 
     return (
         <View>
-            {/* <Tap.Navigator initialRouteName={'homepage'}
-                screenOptions={{
-                    headerShown: false
-                }}
+            {/* <Tab.Navigator
+            initialRouteName='Principal'
+            screenOptions={{headerShown: false}}
             >
-                {
-                    tabs.map(x =>
-                        <Tap.Screen
-                            key={x.id}
-                            name={x.screen}
-                            component={x.Component}
-                        >
-                        </Tap.Screen>
-                    )
-                }
-            </Tap.Navigator> */}
+                <Tab.Screen
+                    name='Homepage'
+                    component={Homepage}
+                    options={{
+                        title: "Principal",
+                    }}
+                />
+                <Tab.Screen
+                    name='Trending'
+                    component={Trending}
+                    options={{
+                        title: "Buscar",
+                    }}
+                />
+                <Tab.Screen
+                    name='Create'
+                    component={Create}
+                    options={{
+                        title: "Crear",
+                    }}
+                />
+            </Tab.Navigator> */}
         </View>
     );
 }
