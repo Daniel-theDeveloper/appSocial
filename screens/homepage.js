@@ -3,7 +3,12 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
-export default function homepage() {
+export default function homepage(props) {
+
+    const goDetails = async() => {
+        props.navigation.navigate('Details')
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -11,11 +16,11 @@ export default function homepage() {
                     <MaterialCommunityIcons style={styles.menuButton} name='menu' />
                 </TouchableOpacity>
                 <Text style={styles.title}>Pagina principal</Text>
-                <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
             </View>
             
             <View style={styles.perfil_header}>
-                <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
                 <View style={styles.perfil_usernames_container}>
                     <Text style={styles.username}>USUARIO</Text>
                     <Text style={styles.date}>10 de marzo</Text>
@@ -23,8 +28,11 @@ export default function homepage() {
             </View>
 
             <View style={styles.publication_container}>
-                <Text style={styles.publication_text}>Publicacion de prueba donde el usuario expresa su pensamiento sobre las cosas que ocurren en la vida misma, tambien llamadas como experiencias</Text>
-                <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
+                <TouchableOpacity onPress={goDetails}>
+                    <Text style={styles.publication_text}>Publicacion de prueba donde el usuario expresa su pensamiento sobre las cosas que ocurren en la vida misma, tambien llamadas como experiencias</Text>
+                    <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
+                </TouchableOpacity>
+                
                 <View style={styles.interact_container}>
                     <View style={styles.interact_block}>
                         <MaterialCommunityIcons style={styles.interact_icon} name='star' />

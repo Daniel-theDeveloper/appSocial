@@ -1,8 +1,9 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import login from '../pages/login';
-import { Homepage, Trending, Create, Notifications, Chats } from '../pages/screens';
+import login from '../screens/login';
+import details from '../screens/details';
+import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
@@ -15,6 +16,7 @@ export default function MyRoutes() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={login} />
                 <Stack.Screen name="Home" component={HomeTaps} />
+                <Stack.Screen name="Details" component={details} />
             </Stack.Navigator>
         );
     }
