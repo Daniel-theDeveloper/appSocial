@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
@@ -10,47 +10,49 @@ export default function homepage(props) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity>
-                    <MaterialCommunityIcons style={styles.menuButton} name='menu' />
-                </TouchableOpacity>
-                <Text style={styles.title}>Pagina principal</Text>
-                <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
-            </View>
-            
-            <View style={styles.perfil_header}>
-                <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
-                <View style={styles.perfil_usernames_container}>
-                    <Text style={styles.username}>USUARIO</Text>
-                    <Text style={styles.date}>10 de marzo</Text>
+        <ScrollView>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity>
+                        <MaterialCommunityIcons style={styles.menuButton} name='menu' />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Pagina principal</Text>
+                    <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
                 </View>
-            </View>
-
-            <View style={styles.publication_container}>
-                <TouchableOpacity onPress={goDetails}>
-                    <Text style={styles.publication_text}>Publicacion de prueba donde el usuario expresa su pensamiento sobre las cosas que ocurren en la vida misma, tambien llamadas como experiencias</Text>
-                    <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
-                </TouchableOpacity>
                 
-                <View style={styles.interact_container}>
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='star' />
-                        <Text style={styles.interact_label}>200</Text>
+                <View style={styles.perfil_header}>
+                    <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                    <View style={styles.perfil_usernames_container}>
+                        <Text style={styles.username}>USUARIO</Text>
+                        <Text style={styles.date}>10 de marzo</Text>
                     </View>
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='message' />
-                        <Text style={styles.interact_label}>12</Text>
+                </View>
+
+                <View style={styles.publication_container}>
+                    <TouchableOpacity onPress={goDetails}>
+                        <Text style={styles.publication_text}>Publicacion de prueba donde el usuario expresa su pensamiento sobre las cosas que ocurren en la vida misma, tambien llamadas como experiencias</Text>
+                        <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
+                    </TouchableOpacity>
+                    
+                    <View style={styles.interact_container}>
+                        <View style={styles.interact_block}>
+                            <MaterialCommunityIcons style={styles.interact_icon} name='star' />
+                            <Text style={styles.interact_label}>200</Text>
+                        </View>
+                        <View style={styles.interact_block}>
+                            <MaterialCommunityIcons style={styles.interact_icon} name='message' />
+                            <Text style={styles.interact_label}>12</Text>
+                        </View>
+                        <View style={styles.interact_block}>
+                            <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
+                            <Text style={styles.interact_label}>64</Text>
+                        </View>
+                        <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
+                        <MaterialCommunityIcons style={styles.interact_icon} name='book' />
                     </View>
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
-                        <Text style={styles.interact_label}>64</Text>
-                    </View>
-                    <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
-                    <MaterialCommunityIcons style={styles.interact_icon} name='book' />
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
