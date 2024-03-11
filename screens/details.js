@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 export function isFollow() {
     const isUserFollow = false;
@@ -23,6 +23,7 @@ export function isFollow() {
 }
 
 export default function details() {
+
     const FollowBlock = isFollow
 
     return (
@@ -35,26 +36,26 @@ export default function details() {
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>USUARIO publicó</Text>
-                                <Text style={styles.date}>10 de marzo</Text>
+                                <Text style={styles.username}>user publicó</Text>
+                                <Text style={styles.date}>12 de marzo</Text>
                             </View>
                         </View>
                         <FollowBlock />
                     </View>
 
                     {/* Cuerpo de la publicacion */}
-                    <Text style={styles.publication_text}>Publicacion de prueba donde el usuario expresa su pensamiento sobre las cosas que ocurren en la vida misma, tambien llamadas como experiencias</Text>
+                    <Text style={styles.publication_text}>tesy</Text>
                     <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
 
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>12</Text>
+                            <Text style={styles.statistics_num}>999</Text>
                             <Text style={styles.statistics_label}>Comentarios</Text>
                         </View>
                         <Text style={styles.statistics_separator}>|</Text>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>200</Text>
+                            <Text style={styles.statistics_num}>999</Text>
                             <Text style={styles.statistics_label}>Likes</Text>
                         </View>
                     </View>
