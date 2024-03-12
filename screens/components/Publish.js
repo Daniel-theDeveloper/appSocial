@@ -31,7 +31,7 @@ export default function Publication({
     return (
         <View>
             <View style={styles.perfil_header}>
-                <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
                 <View style={styles.perfil_usernames_container}>
                     <Text style={styles.username}>{name}</Text>
                     <Text style={styles.date}>{convertDate(date.seconds)}</Text>
@@ -42,7 +42,7 @@ export default function Publication({
                 <TouchableOpacity onPress={goDetails}>
                 {/* <TouchableOpacity> */}
                     <Text style={styles.publication_text}>{body}</Text>
-                    <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
+                    <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
                 </TouchableOpacity>
 
                 <View style={styles.interact_container}>

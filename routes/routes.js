@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import login from '../screens/login';
 import details from '../screens/details';
 import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
+import new_publication from '../screens/sub-screens/new_publication'
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
@@ -17,6 +18,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="Login" component={login} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="Details" component={details} />
+                <Stack.Screen name="NewPublication" component={new_publication} />
             </Stack.Navigator>
         );
     }
