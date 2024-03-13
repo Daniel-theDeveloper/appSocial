@@ -1,9 +1,20 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { database } from '../../utils/database';
+import { collection, addDoc } from 'firebase/firestore';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
 export default function new_publication(props) {
+    const [newPublication, setNewPublication] = React.useState({
+        body: '',
+        comments: 0,
+        comments_container: [],
+        date: new Date(),
+        likes: 0,
+        shares: 0,
+        user: 'DanielDeveloper'
+    })
 
     const showAlert = () =>
         Alert.alert(
@@ -25,6 +36,11 @@ export default function new_publication(props) {
         props.navigation.goBack()
     }
 
+    const sharePublish = async () => {
+        await addDoc(collection(database, 'publications'), newPublication);
+        goBackAgain();
+    }
+
 
     return (
         <View style={styles.container}>
@@ -36,7 +52,13 @@ export default function new_publication(props) {
                     <Text style={styles.title}>Nueva publicacion</Text>
                 </View>
                 <View style={styles.new_publication}>
-                    <TextInput placeholder='Escribe lo que piensas' style={styles.input} autoFocus={true} multiline={true} maxLength={500} />
+                    <TextInput
+                        placeholder='Escribe lo que piensas'
+                        onChangeText={(text) => setNewPublication({ ...newPublication, body: text })}
+                        style={styles.input}
+                        autoFocus={true}
+                        multiline={true}
+                        maxLength={500} />
                 </View>
                 <Text style={styles.text_image}>Ninguna imagen seleccionada</Text>
                 <View style={styles.publish_footer}>
@@ -47,9 +69,11 @@ export default function new_publication(props) {
                         </View>
                     </View>
 
-                    <View style={styles.publish_button}>
-                        <Text style={styles.publish_label}>Publicar</Text>
-                    </View>
+                    <TouchableOpacity onPress={sharePublish}>
+                        <View style={styles.publish_button}>
+                            <Text style={styles.publish_label}>Publicar</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>

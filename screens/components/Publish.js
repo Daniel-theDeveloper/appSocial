@@ -40,9 +40,8 @@ export default function Publication({
 
             <View style={styles.publication_container}>
                 <TouchableOpacity onPress={goDetails}>
-                {/* <TouchableOpacity> */}
                     <Text style={styles.publication_text}>{body}</Text>
-                    <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
+                    {/* <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} /> */}
                 </TouchableOpacity>
 
                 <View style={styles.interact_container}>

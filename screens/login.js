@@ -30,10 +30,10 @@ export default function login(props) {
                     <Text style={styles.subtitle}> Regístrese para disfurtar la mejor red social  </Text>
 
                     <View style={styles.textContainer}>
-                        <TextInput placeholder='Usuario' style={styles.input} onChangeText={(text) => setEmail(text)} />
+                        <TextInput placeholder='Usuario' style={styles.input} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} />
                     </View>
                     <View style={styles.textContainer}>
-                        <TextInput placeholder='Contraseña' style={styles.input} onChangeText={(text) => setPassword(text)} secureTextEntry={true} />
+                        <TextInput placeholder='Contraseña' style={styles.input} onChangeText={(text) => setPassword(text)} secureTextEntry={true} autoCorrect={false} />
                     </View>
 
                     <TouchableOpacity style={styles.loginButtom} onPress={login}>
