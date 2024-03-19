@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as RN from 'react-native'
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { database } from '../utils/database';
 import { QuerySnapshot, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
@@ -7,7 +6,7 @@ import { QuerySnapshot, collection, onSnapshot, orderBy, query } from 'firebase/
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
-export default function homepage(props) {
+export default function Homepage(props) {
     const goDetails = async() => {
         props.navigation.navigate('Details')
     }
@@ -72,11 +71,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexGrow: 1,
-        backgroundColor: "#E3E3E3"
+        backgroundColor: "#210016"
     },
     header: {
         flexDirection: "column",
-        backgroundColor: "white",
+        backgroundColor: "#550038",
         paddingTop: 32,
         paddingLeft: 20,
         paddingRight: 20,
@@ -89,17 +88,18 @@ const styles = StyleSheet.create({
         marginVertical: 8
     },
     menuButton: {
-        fontSize: 40
+        fontSize: 40,
+        color: "white"
     },
     menuButton2: {
         fontSize: 30,
-        color: "white",
+        color: "#550038",
     },
     new_publication: {
         padding: 10,
+        borderColor: "#ff0070",
         borderWidth: 2,
         borderRadius: 10,
-        outlineColor: "#523009",
         outlineStyle: "solid",
         outlineWidth: 4,
     },
@@ -108,16 +108,18 @@ const styles = StyleSheet.create({
     },
     new_publication_label: {
         fontSize: 17,
-        padding: 2
+        padding: 2,
+        color: "white"
     },
     new_publication_button: {
-        backgroundColor: "black",
+        backgroundColor: "#ff0070",
         padding: 11,
         borderRadius: 15
     },
     title: {
         fontSize: 20,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        color: "white"
     },
     avatar: {
         height: 50,

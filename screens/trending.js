@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function trending() {
+export default function Trending() {
     return (
         <View style={styles.container}>
             <Text> trending </Text>

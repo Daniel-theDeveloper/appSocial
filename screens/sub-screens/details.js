@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { convertDate } from '../../utils/convertDate';
+import { publicationArray } from '../components/Publish';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -22,8 +24,7 @@ export function isFollow() {
     return isThisUsserFollow()
 }
 
-export default function details() {
-
+export default function Details() {
     const FollowBlock = isFollow
 
     return (
@@ -34,28 +35,28 @@ export default function details() {
                     {/* Encabezado de la publicacion */}
                     <View style={styles.perfil_header}>
                         <View style={styles.perfil_user}>
-                            <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                            <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>user publicó</Text>
-                                <Text style={styles.date}>12 de marzo</Text>
+                                <Text style={styles.username}>{publicationArray.name} publicó</Text>
+                                <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
                         <FollowBlock />
                     </View>
 
                     {/* Cuerpo de la publicacion */}
-                    <Text style={styles.publication_text}>tesy</Text>
-                    <Image style={styles.publication_image} source={require('../assets/publicationTest.png')} />
+                    <Text style={styles.publication_text}>{publicationArray.body}</Text>
+                    <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
 
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>999</Text>
+                            <Text style={styles.statistics_num}>{publicationArray.comments}</Text>
                             <Text style={styles.statistics_label}>Comentarios</Text>
                         </View>
                         <Text style={styles.statistics_separator}>|</Text>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>999</Text>
+                            <Text style={styles.statistics_num}>{publicationArray.likes}</Text>
                             <Text style={styles.statistics_label}>Likes</Text>
                         </View>
                     </View>
@@ -76,7 +77,7 @@ export default function details() {
                     <View style={styles.comment_view}>
 
                         <View style={styles.comment_left}>
-                            <Image style={styles.comment_avatar} source={require('../assets/avatar-default.png')} />
+                            <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
                         </View>
 
                         <View style={styles.comment_right}>
@@ -93,18 +94,18 @@ export default function details() {
 
                             <View style={styles.comment_footer}>
                                 <View style={styles.comment_likes_block}>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='thumb-up' />
+                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
                                     <Text style={styles.comment_counter}>25</Text>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='thumb-down' />
+                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
                                 </View>
                                 <View style={styles.comment_responces_block}>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='message-processing' />
+                                    <MaterialCommunityIcons style={styles.comment_buttons} name='message-processing' />
                                     <Text style={styles.comment_counter}>1</Text>
                                 </View>
                             </View>
                             <View style={styles.comment_show_responces}>
                                 <MaterialCommunityIcons style={styles.interact_icon} name='chevron-down' />
-                                <Text>Cargar comentarios</Text>
+                                <Text style={styles.load_comments_label}>Cargar comentarios</Text>
                             </View>
                         </View>
                     </View>
@@ -112,7 +113,7 @@ export default function details() {
                     <View style={styles.comment_responces}>
 
                         <View style={styles.comment_responces_left}>
-                            <Image style={styles.comment_avatar} source={require('../assets/avatar-default.png')} />
+                            <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
                         </View>
 
                         <View style={styles.comment_responces_right}>
@@ -129,9 +130,9 @@ export default function details() {
 
                             <View style={styles.comment_footer}>
                                 <View style={styles.comment_likes_block}>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='thumb-up' />
+                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
                                     <Text style={styles.comment_counter}>4</Text>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='thumb-down' />
+                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
                                 </View>
                             </View>
                         </View>
@@ -146,12 +147,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexGrow: 1,
-        backgroundColor: "#E3E3E3",
+        backgroundColor: "#210016",
         paddingVertical: 40,
         paddingHorizontal: 12
     },
     publication: {
-        backgroundColor: "white",
+        backgroundColor: "#550038",
         padding: 18,
         borderRadius: 20
     },
@@ -174,25 +175,31 @@ const styles = StyleSheet.create({
     },
     username: {
         fontSize: 18,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        color: "#4CC9F0"
     },
     date: {
-        fontSize: 14
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#235d6f"
     },
     follow_button: {
         padding: 10,
         borderWidth: 2,
         borderRadius: 10,
-        outlineColor: "#523009",
+        borderColor: "#4CC9F0",
         outlineStyle: "solid",
         outlineWidth: 4,
     },
     follow_label: {
-        fontSize: 16
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#4CC9F0"
     },
     publication_text: {
         fontSize: 18,
-        marginBottom: 15
+        marginBottom: 15,
+        color: "white"
     },
     publication_image: {
         height: 400,
@@ -208,11 +215,13 @@ const styles = StyleSheet.create({
     },
     statistics_num: {
         fontSize: 16,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        color: "#ed007e"
     },
     statistics_label: {
         fontSize: 16,
-        marginLeft: 5
+        marginLeft: 5,
+        color: "#ed007e"
     },
     statistics_separator: {
         fontSize: 18,
@@ -226,18 +235,19 @@ const styles = StyleSheet.create({
     },
     interact_icon: {
         fontSize: 26,
-        color: "#3c434f"
+        color: "#a6006a"
     },
     comment_principal_title: {
         fontSize: 20,
         fontWeight: "bold",
-        marginVertical: 20
+        marginVertical: 20,
+        color: "#ed007e"
     },
     comment_container: {
-        backgroundColor: "white",
+        backgroundColor: "#550038",
         padding: 15,
         flexDirection: "column",
-        borderRadius: 20
+        borderRadius: 20,
     },
     comment_avatar: {
         height: 42,
@@ -258,45 +268,51 @@ const styles = StyleSheet.create({
     },
     comment_username: {
         fontWeight: "bold",
-        fontSize: 17
+        fontSize: 17,
+        color: "#4CC9F0"
     },
     comment_separator: {
         fontWeight: "bold",
         marginHorizontal: 5,
-        fontSize: 17
+        fontSize: 17,
+        color: "#4CC9F0"
     },
     comment_date: {
-        fontSize: 17
+        fontSize: 17,
+        color: "#4CC9F0"
     },
     comment: {
         fontSize: 15,
-        marginVertical: 8
+        marginVertical: 8,
+        color: 'white'
     },
     comment_footer: {
         flexDirection: "row",
         marginVertical: 5,
     },
     comment_buttons: {
-        fontSize: 15,
-        color: "#3c434f"
+        fontSize: 20,
+        color: "#a6006a"
     },
     comment_counter: {
         fontSize: 15,
         fontWeight: "bold",
-        marginHorizontal: 8
+        marginHorizontal: 8,
+        color: "#e8007c"
     },
     comment_likes_block: {
         flexDirection: "row"
     },
     comment_responces: {
-        flexDirection: "row"
+        flexDirection: "row",
     },
     comment_responces_block: {
         flexDirection: "row",
-        marginLeft: 30
+        marginLeft: 30,
     },
     comment_show_responces: {
-        flexDirection: "row"
+        flexDirection: "row",
+        marginVertical: 10
     },
     comment_responces_left: {
         width: "25%",
@@ -304,5 +320,10 @@ const styles = StyleSheet.create({
     },
     comment_responces_right: {
         width: "75%"
+    },
+    load_comments_label: {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#e8007c"
     }
 })
