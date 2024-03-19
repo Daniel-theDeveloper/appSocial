@@ -38,7 +38,7 @@ export default function Homepage(props) {
     }, [])
 
     return (
-        <ScrollView showsVerticalScrollIndicator={true}>
+        <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
                 <View style={styles.header}>
                     <View style={styles.header_row}>
@@ -68,6 +68,9 @@ export default function Homepage(props) {
 }
 
 const styles = StyleSheet.create({
+    father: {
+        backgroundColor: "#210016"
+    },
     container: {
         flex: 1,
         flexGrow: 1,

@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import { publicationArray } from '../components/Publish';
+import { isWasLiked } from '../../utils/interations';
+import { globalUsername } from '../../utils/localstorage';
+
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { database } from '../../utils/database';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -26,9 +31,30 @@ export function isFollow() {
 
 export default function Details() {
     const FollowBlock = isFollow
+    const allLikes = publicationArray.likes.length
+
+    const [isLike, setIsLike] = useState((isWasLiked(publicationArray.likes)));
+    const [isShared, setIsShared] = useState((false));
+    const [isSaved, setIsSaved] = useState((false));
+
+    const setLike = async () => {
+        if (isLike) {
+            // Show a list like person
+        } else {
+            try {
+                const docRef = doc(database, 'publications', publicationArray.id);
+                await updateDoc(docRef, {
+                    likes: arrayUnion(globalUsername)
+                });
+                setIsLike(true);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    }
 
     return (
-        <ScrollView showsVerticalScrollIndicator={true}>
+        <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
                 <View style={styles.publication}>
 
@@ -46,7 +72,7 @@ export default function Details() {
 
                     {/* Cuerpo de la publicacion */}
                     <Text style={styles.publication_text}>{publicationArray.body}</Text>
-                    <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
+                    {/* <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} /> */}
 
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
@@ -56,16 +82,38 @@ export default function Details() {
                         </View>
                         <Text style={styles.statistics_separator}>|</Text>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>{publicationArray.likes}</Text>
+                            <Text style={styles.statistics_num}>{allLikes}</Text>
                             <Text style={styles.statistics_label}>Likes</Text>
                         </View>
                     </View>
                     {/* Zona de interaccion */}
                     <View style={styles.interact_container}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='star' />
-                        <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
+                        <TouchableOpacity onPress={setLike}>
+                            {isLike ?
+                                <MaterialCommunityIcons style={styles.interacted_icon_like} name='star' />
+                                :
+                                <MaterialCommunityIcons style={styles.interact_icon} name='star-outline' />
+                            }
+                        </TouchableOpacity>
+
+                        <TouchableOpacity>
+                            {isShared ?
+                                <MaterialCommunityIcons style={styles.interacted_icon_shared} name='repeat-variant' />
+                                :
+                                <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
+                            }
+                        </TouchableOpacity>
+
+                        <TouchableOpacity>
+                            {isSaved ?
+                                <MaterialCommunityIcons style={styles.interacted_icon_shared} name='book' />
+                                :
+                                <MaterialCommunityIcons style={styles.interact_icon} name='book-outline' />
+                            }
+                        </TouchableOpacity>
+
+
                         <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
-                        <MaterialCommunityIcons style={styles.interact_icon} name='book' />
                         <MaterialCommunityIcons style={styles.interact_icon} name='chevron-down' />
                     </View>
                 </View>
@@ -144,6 +192,9 @@ export default function Details() {
 }
 
 const styles = StyleSheet.create({
+    father: {
+        backgroundColor: "#210016"
+    },
     container: {
         flex: 1,
         flexGrow: 1,
@@ -226,7 +277,8 @@ const styles = StyleSheet.create({
     statistics_separator: {
         fontSize: 18,
         fontWeight: "bold",
-        marginHorizontal: 15
+        marginHorizontal: 15,
+        color: "#ed007e"
     },
     interact_container: {
         flexDirection: "row",
@@ -236,6 +288,18 @@ const styles = StyleSheet.create({
     interact_icon: {
         fontSize: 26,
         color: "#a6006a"
+    },
+    interacted_icon_like: {
+        fontSize: 26,
+        color: "#ffe400"
+    },
+    interacted_icon_shared: {
+        fontSize: 26,
+        color: "#afff53"
+    },
+    interact_icon_saved: {
+        fontSize: 26,
+        color: "#ff6c00"
     },
     comment_principal_title: {
         fontSize: 20,

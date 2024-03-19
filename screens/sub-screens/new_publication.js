@@ -12,7 +12,7 @@ export default function New_publication(props) {
         comments: 0,
         comments_container: [],
         date: new Date(),
-        likes: 0,
+        likes: [],
         shares: 0,
         user: globalUsername
     })

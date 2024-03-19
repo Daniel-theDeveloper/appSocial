@@ -1,15 +1,19 @@
-import * as react from 'react';
-import * as RN from 'react-native';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { globalUsername } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
+import { isWasLiked } from '../../utils/interations';
+
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { database } from '../../utils/database';
 
 export let publicationArray = {
     id: "",
     body: "",
     comments: 0,
     date: "",
-    likes: 0,
+    likes: [],
     shares: 0,
     name: "",
 }
@@ -24,7 +28,13 @@ export default function Publication({
     shares,
     name,
 }) {
-    const goDetails = async () => {
+    const allLikes = likes.length
+    const [isLike, setIsLike] = useState((isWasLiked(likes)));
+    const [isComment, setIsComment] = useState((false));
+    const [isShared, setIsShared] = useState((false));
+    const [isSaved, setIsSaved] = useState((false));
+
+    function goDetails() {
         publicationArray = {
             id: id,
             body: body,
@@ -35,6 +45,46 @@ export default function Publication({
             name: name,
         }
         props.navigation.navigate('Details')
+    }
+
+    const setLike = async () => {
+        if (isLike) {
+            // Show a list like person
+        } else {
+            try {
+                const docRef = doc(database, 'publications', id);
+                await updateDoc(docRef, {
+                    likes: arrayUnion(globalUsername)
+                });
+                setIsLike(true);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    }
+
+    const setCommment = async () => {
+        if (isComment) {
+            setIsComment(false)
+        } else {
+            setIsComment(true)
+        }
+    }
+
+    const setShared = async () => {
+        if (isShared) {
+            setIsShared(false)
+        } else {
+            setIsShared(true)
+        }
+    }
+
+    const setSaved = async () => {
+        if (isSaved) {
+            setIsSaved(false)
+        } else {
+            setIsSaved(true)
+        }
     }
 
     return (
@@ -56,36 +106,58 @@ export default function Publication({
                 <View style={styles.interact_container}>
 
                     {/* Area de likes */}
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='star-outline' />
-                        <Text style={styles.interact_label}>{likes}</Text>
-                    </View>
-                    {/* <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interacted_like_icon} name='star' />
-                        <Text style={styles.interacted_like_label}>{likes}</Text>
-                    </View> */}
+                    <TouchableOpacity onPress={setLike}>
+                        {isLike ?
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interacted_like_icon} name='star' />
+                                <Text style={styles.interacted_like_label}>{allLikes}</Text>
+                            </View>
+                            :
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interact_icon} name='star-outline' />
+                                <Text style={styles.interact_label}>{allLikes}</Text>
+                            </View>
+                        }
+                    </TouchableOpacity>
 
                     {/* Area de comentarios */}
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='message-outline' />
-                        <Text style={styles.interact_label}>{comments}</Text>
-                    </View>
-                    {/* <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interacted_comment_icon} name='message' />
-                        <Text style={styles.interacted_comment_label}>{comments}</Text>
-                    </View> */}
+                    <TouchableOpacity onPress={setCommment}>
+                        {isComment ?
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interacted_comment_icon} name='message' />
+                                <Text style={styles.interacted_comment_label}>{comments}</Text>
+                            </View>
+                            :
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interact_icon} name='message-outline' />
+                                <Text style={styles.interact_label}>{comments}</Text>
+                            </View>
+                        }
+                    </TouchableOpacity>
 
                     {/* Area de compartir */}
-                    <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
-                        <Text style={styles.interact_label}>{shares}</Text>
-                    </View>
-                    {/* <View style={styles.interact_block}>
-                        <MaterialCommunityIcons style={styles.interacted_shared_icon} name='repeat-variant' />
-                        <Text style={styles.interacted_shared_label}>{shares}</Text>
-                    </View> */}
+                    <TouchableOpacity onPress={setShared}>
+                        {isShared ?
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interacted_shared_icon} name='repeat-variant' />
+                                <Text style={styles.interacted_shared_label}>{shares}</Text>
+                            </View>
+                            :
+                            <View style={styles.interact_block}>
+                                <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
+                                <Text style={styles.interact_label}>{shares}</Text>
+                            </View>
+                        }
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={setSaved}>
+                        {isSaved ?
+                            <MaterialCommunityIcons style={styles.interacted_saved_icon} name='book' />
+                            :
+                            <MaterialCommunityIcons style={styles.interact_icon} name='book-outline' />
+                        }
+                    </TouchableOpacity>
                     <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
-                    <MaterialCommunityIcons style={styles.interact_icon} name='book-outline' />
                 </View>
             </View>
         </View>
@@ -182,5 +254,9 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         fontWeight: "bold",
         color: "#afff53"
-    }
+    },
+    interacted_saved_icon: {
+        fontSize: 23,
+        color: "#ff6c00"
+    },
 })
