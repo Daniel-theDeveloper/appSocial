@@ -73,8 +73,7 @@ export default function Login(props) {
         <View style={styles.container}>
             <StatusBar
                 animated={true}
-                showHideTransition={'fade'}
-                hidden={true}
+                backgroundColor={'#220014'}
                 barStyle={"light-content"}
             />
             <View style={styles.subContainer}>

@@ -6,10 +6,16 @@ import Details from '../screens/sub-screens/details';
 import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
 import New_publication from '../screens/sub-screens/new_publication'
 
-import Fontisto from 'react-native-vector-icons/Fontisto'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const tab1Name = "Principal"
+const tab2Name = "Buscar"
+const tab3Name = "Crear"
+const tab4Name = "Notificaciones"
+const tab5Name = "Chats"
 
 export default function MyRoutes() {
     function MyRoutes() {
@@ -29,67 +35,51 @@ export default function MyRoutes() {
 export function HomeTaps() {
     return (
         <Tab.Navigator
-            initialRouteName='Principal'
-            screenOptions={{
+            initialRouteName={tab1Name}
+            // screenOptions={{
+            //     tabBarShowLabel: false,
+            //     headerShown: false,
+            //     tabBarActiveBackgroundColor: "#220014",
+            //     tabBarInactiveBackgroundColor: "#220014",
+            //     tabBarActiveTintColor: '#ff0070',
+            //     tabBarInactiveTintColor: '#660031',
+            // }}
+            screenOptions={({route}) => ({
+                tabBarIcon: ({focused, color, size}) => {
+                    let iconName;
+                    let rn = route.name
+
+                    if (rn === tab1Name) {
+                        iconName = focused ? 'home' : 'home-outline'
+                    } else if (rn === tab2Name) {
+                        iconName = focused ? 'search-sharp' : 'search-outline'
+                    } else if (rn === tab3Name) {
+                        iconName = focused ? 'add-circle-sharp' : 'add-circle-outline'
+                    } else if (rn === tab4Name) {
+                        iconName = focused ? 'notifications' : 'notifications-outline'
+                    } else if (rn === tab5Name) {
+                        iconName = focused ? 'chatbox' : 'chatbox-outline'
+                    }
+
+                    return <Ionicons name={iconName} size={size} color={color} />
+                },
                 tabBarShowLabel: false,
                 headerShown: false,
                 tabBarActiveBackgroundColor: "#220014",
                 tabBarInactiveBackgroundColor: "#220014",
+                tabBarStyle: {
+                    borderBlockColor: "#220014",
+                    borderWidth: 2
+                },
                 tabBarActiveTintColor: '#ff0070',
                 tabBarInactiveTintColor: '#660031',
-            }}
+            })}
         >
-            <Tab.Screen
-                name='homepage'
-                component={Homepage}
-                options={{
-                    title: "Principal",
-                    tapBarIcon: ({ color, size }) => (
-                        <Fontisto name="home" size={size} color={color} />
-                    )
-                }}
-            />
-            <Tab.Screen
-                name='trending'
-                component={Trending}
-                options={{
-                    title: "Buscar",
-                    tapBarIcon: ({ color, size }) => (
-                        <Fontisto name="home" size={size} color={color} />
-                    )
-                }}
-            />
-            <Tab.Screen
-                name='create'
-                component={Create}
-                options={{
-                    title: "Crear",
-                    tapBarIcon: ({ color, size }) => (
-                        <Fontisto name="home" size={size} color={color} />
-                    )
-                }}
-            />
-            <Tab.Screen
-                name='notifications'
-                component={Notifications}
-                options={{
-                    title: "Notificaciones",
-                    tabBarBadge: 1,
-                    tapBarIcon: ({ color, size }) => (
-                        <Fontisto name="home" size={size} color={color} />
-                    )
-                }}
-            />
-            <Tab.Screen
-                name='chats'
-                component={Chats}
-                options={{
-                    title: "Mensajes",
-                    tapBarIcon: ({ color, size }) => (
-                        <Fontisto name="home" size={size} color={color} />
-                    )
-                }}
-            />
+            <Tab.Screen name={tab1Name} component={Homepage} />
+            <Tab.Screen name={tab2Name} component={Trending} />
+            <Tab.Screen name={tab3Name} component={Create} />
+            <Tab.Screen name={tab4Name} component={Notifications} />
+            <Tab.Screen name={tab5Name} component={Chats} />
         </Tab.Navigator>
     )
 }
