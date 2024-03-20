@@ -12,15 +12,20 @@ export async function setUsername(username) {
 }
 
 export async function getUsername() {
-    const nameCrude = await AsyncStorage.getItem('username');
-    const nameString = nameCrude.split('"');
-    const username = nameString[1];
-
-    if (username !== null) {
-        globalUsername = username
-        return username;
-    } else {
-        return undefined;
+    try {
+        const nameCrude = await AsyncStorage.getItem('username');
+    
+        if (nameCrude !== null) {
+            const nameString = nameCrude.split('"');
+            const username = nameString[1];
+            globalUsername = username
+            return username;
+        } else {
+            return undefined;
+        }
+    } catch (error) {
+        console.error(error)
+        return undefined
     }
 }
 

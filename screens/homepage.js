@@ -1,21 +1,22 @@
 import * as React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { database } from '../utils/database';
-import { QuerySnapshot, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
 export default function Homepage(props) {
-    const goDetails = async() => {
+    const goDetails = async () => {
         props.navigation.navigate('Details')
     }
 
-    const goNewPublish = async() => {
+    const goNewPublish = async () => {
         props.navigation.navigate('NewPublication')
     }
 
     const [publications, setPublications] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         const collectionRef = collection(database, 'publications');
@@ -61,7 +62,11 @@ export default function Homepage(props) {
                     </View>
                 </View>
 
-                {publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)}
+                {loading ?
+                    <Text>Cargando</Text>
+                    :
+                    publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)
+                }
             </View>
         </ScrollView>
     );
