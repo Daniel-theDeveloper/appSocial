@@ -29,12 +29,14 @@ export default function Homepage(props) {
                     body: doc.data().body,
                     name: doc.data().user,
                     comments: doc.data().comments,
+                    comments_container: doc.data().comments_container,
                     date: doc.data().date,
                     likes: doc.data().likes,
                     shares: doc.data().shares
                 }))
             )
         })
+        setLoading(false);
         return unsuscribe;
     }, [])
 
@@ -63,7 +65,44 @@ export default function Homepage(props) {
                 </View>
 
                 {loading ?
-                    <Text>Cargando</Text>
+                    <View style={loadingStyle.container}>
+                        <View style={loadingStyle.perfil_header}>
+                            <View style={loadingStyle.avatar}></View>
+                            <View style={loadingStyle.perfil_usernames_container}>
+                                <View style={loadingStyle.username}></View>
+                                <View style={loadingStyle.date}></View>
+                            </View>
+                        </View>
+
+                        <View style={loadingStyle.publication_container}></View>
+                        <View style={loadingStyle.perfil_header}>
+                            <View style={loadingStyle.avatar}></View>
+                            <View style={loadingStyle.perfil_usernames_container}>
+                                <View style={loadingStyle.username}></View>
+                                <View style={loadingStyle.date}></View>
+                            </View>
+                        </View>
+
+                        <View style={loadingStyle.publication_container}></View>
+                        <View style={loadingStyle.perfil_header}>
+                            <View style={loadingStyle.avatar}></View>
+                            <View style={loadingStyle.perfil_usernames_container}>
+                                <View style={loadingStyle.username}></View>
+                                <View style={loadingStyle.date}></View>
+                            </View>
+                        </View>
+
+                        <View style={loadingStyle.publication_container}></View>
+                        <View style={loadingStyle.perfil_header}>
+                            <View style={loadingStyle.avatar}></View>
+                            <View style={loadingStyle.perfil_usernames_container}>
+                                <View style={loadingStyle.username}></View>
+                                <View style={loadingStyle.date}></View>
+                            </View>
+                        </View>
+
+                        <View style={loadingStyle.publication_container}></View>
+                    </View>
                     :
                     publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)
                 }
@@ -134,4 +173,44 @@ const styles = StyleSheet.create({
         width: 50,
         borderRadius: 100
     }
+})
+
+const loadingStyle = StyleSheet.create({
+    container: {
+        margin: 15
+    },
+    avatar: {
+        height: 50,
+        width: 50,
+        borderRadius: 100,
+        backgroundColor: "#48002a"
+    },
+    perfil_header: {
+        flexDirection: "row",
+        marginBottom: 10
+    },
+    perfil_usernames_container: {
+        flexDirection: "column",
+        marginLeft: 10
+    },
+    username: {
+        height: 18,
+        width: 150,
+        backgroundColor: "#48002a",
+        marginBottom: 10,
+        borderRadius: 5
+    },
+    date: {
+        height: 18,
+        width: 150,
+        borderRadius: 5,
+        backgroundColor: "#48002a"
+    },
+    publication_container: {
+        padding: 10,
+        height: 120,
+        backgroundColor: "#48002a",
+        borderRadius: 15,
+        marginBottom: 20
+    },
 })

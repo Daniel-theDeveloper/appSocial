@@ -1,9 +1,9 @@
 import { globalUsername } from './localstorage';
 
-export function isWasLiked(likes) {
+export function isWasInteracted(array) {
     let key = false
 
-    likes.find(function(res) {
+    array.find(function(res) {
         if (res == globalUsername) {
             key = true
         }

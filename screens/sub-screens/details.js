@@ -1,41 +1,74 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { publicationArray } from '../components/Publish';
-import { isWasLiked } from '../../utils/interations';
+import { isWasInteracted } from '../../utils/interations';
 import { globalUsername } from '../../utils/localstorage';
+import { publicationId } from '../components/Publish';
+import Comment from '../components/Comment';
+// import { compareDesc } from "date-fns";
 
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
 import { database } from '../../utils/database';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-export function isFollow() {
-    const isUserFollow = false;
+export default function Details(props) {
+    const [publicationArray, setPublicationArray] = useState({
+        id: "",
+        body: "",
+        name: "",
+        comments: "",
+        comments_container: [],
+        date: "",
+        likes: [],
+        shares: 0
+    });
+    const [loadingButton, setLoadingButton] = useState((false));
 
-    function isThisUsserFollow() {
-        if (isUserFollow) {
-            return (
-                <Text>Siguiendo</Text>
-            );
-        } else {
-            return (
-                <View style={styles.follow_button}>
-                    <Text style={styles.follow_label}>Seguir</Text>
-                </View>
-            );
-        }
-    }
-    return isThisUsserFollow()
-}
+    const [allLikes, setAllLikes] = useState(0)
+    const [allComments, setAllComments] = useState(0);
 
-export default function Details() {
-    const FollowBlock = isFollow
-    const allLikes = publicationArray.likes.length
-
-    const [isLike, setIsLike] = useState((isWasLiked(publicationArray.likes)));
+    const [isLike, setIsLike] = useState((false));
     const [isShared, setIsShared] = useState((false));
     const [isSaved, setIsSaved] = useState((false));
+
+    const [myComment, setMyCommnent] = useState("");
+
+    // const orderComments = publicationArray.comments_container.sort(function(a, b) {
+    //     return compareDesc(a.date, b.date);
+    // })
+
+    useEffect(() => {
+        let data = []
+        let getData = []
+        const collectionRef = collection(database, 'publications');
+        const q = query(collectionRef);
+
+        const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            QuerySnapshot.docs.map(doc => {
+                data.push({ id: doc.id, data: doc.data() });
+            })
+            data.find(function (res) {
+                if (res.id === publicationId.id) {
+                    getData = {
+                        id: res.id,
+                        body: res.data['body'],
+                        name: res.data['user'],
+                        comments: res.data['comments'],
+                        comments_container: res.data['comments_container'],
+                        date: res.data['date'],
+                        likes: res.data['likes'],
+                        shares: res.data['shares']
+                    }
+                }
+            })
+            setAllLikes(getData.likes.length)
+            setAllComments(getData.comments_container.length)
+            setIsLike(isWasInteracted(getData.likes));
+            setPublicationArray(getData)
+        })
+        return unsuscribe;
+    }, [])
 
     const setLike = async () => {
         if (isLike) {
@@ -48,8 +81,45 @@ export default function Details() {
                 });
                 setIsLike(true);
             } catch (error) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
                 console.error(error);
             }
+        }
+    }
+
+    const setShared = async () => {
+        if (isShared) {
+            setIsShared(false)
+        } else {
+            setIsShared(true)
+        }
+    }
+
+    const sendMyComment = async () => {
+        if (myComment !== "") {
+            setLoadingButton(true);
+            const commentArray = {
+                comment_answers: [],
+                date: new Date(),
+                dislikes: [],
+                likes: [],
+                message: myComment,
+                user: globalUsername
+            }
+            try {
+                const docRef = doc(database, 'publications', publicationArray.id);
+                await updateDoc(docRef, {
+                    comments_container: arrayUnion(commentArray)
+                });
+                setMyCommnent("");
+                setLoadingButton(false);
+            } catch (error) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                console.error(error);
+                setLoadingButton(false);
+            }
+        } else {
+            console.log("Escribe algo")
         }
     }
 
@@ -67,7 +137,9 @@ export default function Details() {
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
-                        <FollowBlock />
+                        <View style={styles.follow_button}>
+                            <Text style={styles.follow_label}>Seguir</Text>
+                        </View>
                     </View>
 
                     {/* Cuerpo de la publicacion */}
@@ -77,7 +149,7 @@ export default function Details() {
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>{publicationArray.comments}</Text>
+                            <Text style={styles.statistics_num}>{allComments}</Text>
                             <Text style={styles.statistics_label}>Comentarios</Text>
                         </View>
                         <Text style={styles.statistics_separator}>|</Text>
@@ -96,7 +168,7 @@ export default function Details() {
                             }
                         </TouchableOpacity>
 
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={setShared}>
                             {isShared ?
                                 <MaterialCommunityIcons style={styles.interacted_icon_shared} name='repeat-variant' />
                                 :
@@ -120,72 +192,37 @@ export default function Details() {
 
                 {/* Zona de comentarios */}
                 <Text style={styles.comment_principal_title}>Comentarios</Text>
-                <View style={styles.comment_container}>
-                    {/* Comentario principal */}
-                    <View style={styles.comment_view}>
 
-                        <View style={styles.comment_left}>
-                            <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
-                        </View>
-
-                        <View style={styles.comment_right}>
-
-                            <View style={styles.comment_header}>
-                                <Text style={styles.comment_username}>USUARIO</Text>
-                                <Text style={styles.comment_separator}>-</Text>
-                                <Text style={styles.comment_date}>12 de marzo</Text>
-                            </View>
-
-                            <View>
-                                <Text style={styles.comment}>Comentario de prueba donde se comenta lo desarrollado en la publicacion</Text>
-                            </View>
-
-                            <View style={styles.comment_footer}>
-                                <View style={styles.comment_likes_block}>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
-                                    <Text style={styles.comment_counter}>25</Text>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
-                                </View>
-                                <View style={styles.comment_responces_block}>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='message-processing' />
-                                    <Text style={styles.comment_counter}>1</Text>
-                                </View>
-                            </View>
-                            <View style={styles.comment_show_responces}>
-                                <MaterialCommunityIcons style={styles.interact_icon} name='chevron-down' />
-                                <Text style={styles.load_comments_label}>Cargar comentarios</Text>
-                            </View>
+                <View style={styles.new_comment_container}>
+                    <View style={styles.new_comment_header}>
+                        <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
+                        <View style={styles.new_comment_input_block}>
+                            <TextInput
+                                style={styles.new_comment_input}
+                                placeholder='Escribe un comentario'
+                                placeholderTextColor="#ed007e"
+                                multiline={true}
+                                onChangeText={(text) => setMyCommnent(text)}
+                                maxLength={500} />
                         </View>
                     </View>
-                    {/* Area de respuestas */}
-                    <View style={styles.comment_responces}>
 
-                        <View style={styles.comment_responces_left}>
-                            <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
+                    {loadingButton ?
+                        <View style={styles.loading_comment_button}>
+                            <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
+                            <Text style={styles.loading_comment_label}>Publicando</Text>
                         </View>
-
-                        <View style={styles.comment_responces_right}>
-
-                            <View style={styles.comment_header}>
-                                <Text style={styles.comment_username}>USUARIO</Text>
-                                <Text style={styles.comment_separator}>-</Text>
-                                <Text style={styles.comment_date}>12 de marzo</Text>
+                        :
+                        <TouchableOpacity onPress={sendMyComment}>
+                            <View style={styles.new_comment_button}>
+                                <Text style={styles.new_comment_label}>Publicar</Text>
                             </View>
-
-                            <View>
-                                <Text style={styles.comment}>Comentario de prueba donde se responde lo desarrollado en la publicacion</Text>
-                            </View>
-
-                            <View style={styles.comment_footer}>
-                                <View style={styles.comment_likes_block}>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
-                                    <Text style={styles.comment_counter}>4</Text>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
-                                </View>
-                            </View>
-                        </View>
-                    </View>
+                        </TouchableOpacity>
+                    }
                 </View>
+
+                {publicationArray.comments_container.map((comment, key) => (<Comment key={key} props={props} {...comment} />))}
+                {/* {orderComments.map((comment, key) => (<Comment key={key} props={props} {...comment} />))} */}
             </View>
         </ScrollView>
     )
@@ -307,87 +344,60 @@ const styles = StyleSheet.create({
         marginVertical: 20,
         color: "#ed007e"
     },
-    comment_container: {
+    new_comment_container: {
         backgroundColor: "#550038",
         padding: 15,
-        flexDirection: "column",
         borderRadius: 20,
+        marginBottom: 15
+    },
+    new_comment_header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10
+    },
+    new_comment_input_block: {
+        backgroundColor: "#220014",
+        minHeight: 50,
+        maxHeight: 300,
+        width: "85%",
+        borderRadius: 10,
+        padding: 5
+    },
+    new_comment_input: {
+        fontSize: 16,
+        color: "white"
+    },
+    new_comment_button: {
+        padding: 10,
+        borderRadius: 10,
+        backgroundColor: "#2f8dff"
+    },
+    new_comment_label: {
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "white"
+    },
+    loading_comment_button: {
+        flexDirection: "row",
+        justifyContent: "center",
+        padding: 10,
+        borderRadius: 10,
+        backgroundColor: "#16457e"
+    },
+    loading_comment_label: {
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "white"
+    },
+    loadingSpinner: {
+        marginRight: 10
     },
     comment_avatar: {
         height: 42,
         width: 42,
         borderRadius: 100
     },
-    comment_view: {
-        flexDirection: "row"
-    },
-    comment_left: {
-        width: "15%"
-    },
-    comment_right: {
-        width: "85%"
-    },
-    comment_header: {
-        flexDirection: "row"
-    },
-    comment_username: {
-        fontWeight: "bold",
-        fontSize: 17,
-        color: "#4CC9F0"
-    },
-    comment_separator: {
-        fontWeight: "bold",
-        marginHorizontal: 5,
-        fontSize: 17,
-        color: "#4CC9F0"
-    },
-    comment_date: {
-        fontSize: 17,
-        color: "#4CC9F0"
-    },
-    comment: {
-        fontSize: 15,
-        marginVertical: 8,
-        color: 'white'
-    },
-    comment_footer: {
-        flexDirection: "row",
-        marginVertical: 5,
-    },
-    comment_buttons: {
-        fontSize: 20,
-        color: "#a6006a"
-    },
-    comment_counter: {
-        fontSize: 15,
-        fontWeight: "bold",
-        marginHorizontal: 8,
-        color: "#e8007c"
-    },
-    comment_likes_block: {
-        flexDirection: "row"
-    },
-    comment_responces: {
-        flexDirection: "row",
-    },
-    comment_responces_block: {
-        flexDirection: "row",
-        marginLeft: 30,
-    },
-    comment_show_responces: {
-        flexDirection: "row",
-        marginVertical: 10
-    },
-    comment_responces_left: {
-        width: "25%",
-        padding: 20
-    },
-    comment_responces_right: {
-        width: "75%"
-    },
-    load_comments_label: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#e8007c"
-    }
 })

@@ -4,7 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from '../screens/login';
 import Details from '../screens/sub-screens/details';
 import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
-import New_publication from '../screens/sub-screens/new_publication'
+import New_publication from '../screens/sub-screens/new_publication';
+import ReplyScreen from '../screens/sub-screens/replyScreen';
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
@@ -24,6 +25,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="Details" component={Details} />
+                <Stack.Screen name="ReplyScreen" component={ReplyScreen} />
                 <Stack.Screen name="NewPublication" component={New_publication} />
             </Stack.Navigator>
         );

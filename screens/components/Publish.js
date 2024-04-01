@@ -3,46 +3,35 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { globalUsername } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasLiked } from '../../utils/interations';
+import { isWasInteracted } from '../../utils/interations';
 
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { database } from '../../utils/database';
 
-export let publicationArray = {
-    id: "",
-    body: "",
-    comments: 0,
-    date: "",
-    likes: [],
-    shares: 0,
-    name: "",
+export let publicationId = {
+    id: ""
 }
 
 export default function Publication({
     props,
     id,
     body,
-    comments,
+    comments_container,
     date,
     likes,
     shares,
     name,
 }) {
     const allLikes = likes.length
-    const [isLike, setIsLike] = useState((isWasLiked(likes)));
+    const allComments = comments_container.length
+    const [isLike, setIsLike] = useState((isWasInteracted(likes)));
     const [isComment, setIsComment] = useState((false));
     const [isShared, setIsShared] = useState((false));
     const [isSaved, setIsSaved] = useState((false));
 
     function goDetails() {
-        publicationArray = {
-            id: id,
-            body: body,
-            comments: comments,
-            date: date,
-            likes: likes,
-            shares: shares,
-            name: name,
+        publicationId = {
+            id: id
         }
         props.navigation.navigate('Details')
     }
@@ -58,6 +47,7 @@ export default function Publication({
                 });
                 setIsLike(true);
             } catch (error) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
                 console.error(error);
             }
         }
@@ -125,12 +115,12 @@ export default function Publication({
                         {isComment ?
                             <View style={styles.interact_block}>
                                 <MaterialCommunityIcons style={styles.interacted_comment_icon} name='message' />
-                                <Text style={styles.interacted_comment_label}>{comments}</Text>
+                                <Text style={styles.interacted_comment_label}>{allComments}</Text>
                             </View>
                             :
                             <View style={styles.interact_block}>
                                 <MaterialCommunityIcons style={styles.interact_icon} name='message-outline' />
-                                <Text style={styles.interact_label}>{comments}</Text>
+                                <Text style={styles.interact_label}>{allComments}</Text>
                             </View>
                         }
                     </TouchableOpacity>

@@ -9,7 +9,6 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 export default function New_publication(props) {
     const [newPublication, setNewPublication] = React.useState({
         body: '',
-        comments: 0,
         comments_container: [],
         date: new Date(),
         likes: [],
