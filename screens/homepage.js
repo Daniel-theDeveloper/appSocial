@@ -27,6 +27,7 @@ export default function Homepage(props) {
                 QuerySnapshot.docs.map(doc => ({
                     id: doc.id,
                     body: doc.data().body,
+                    urlImage: doc.data().urlImage,
                     name: doc.data().user,
                     comments: doc.data().comments,
                     comments_container: doc.data().comments_container,
@@ -104,7 +105,9 @@ export default function Homepage(props) {
                         <View style={loadingStyle.publication_container}></View>
                     </View>
                     :
-                    publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)
+                    <View style={loadingStyle.publications_colections}>
+                        {publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)}
+                    </View>
                 }
             </View>
         </ScrollView>
@@ -151,7 +154,7 @@ const styles = StyleSheet.create({
         outlineWidth: 4,
     },
     new_publication_zone: {
-        width: "84%"
+        width: "82%"
     },
     new_publication_label: {
         fontSize: 17,
@@ -213,4 +216,7 @@ const loadingStyle = StyleSheet.create({
         borderRadius: 15,
         marginBottom: 20
     },
+    publications_colections: {
+        marginHorizontal: 15
+    }
 })

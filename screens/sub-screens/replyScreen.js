@@ -6,6 +6,7 @@ import { comment_Array } from '../components/Comment';
 import { replyComment_Array } from '../components/Comment_answer';
 import { globalUsername } from '../../utils/localstorage';
 import { publicationId } from '../components/Publish';
+import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
@@ -18,7 +19,7 @@ export default function ReplyScreen(props) {
         if (myComment !== "") {
             setLoadingButton(true);
             let commentAnswerArray = []
-            if (comment_Array.isPrincipalComment) {
+            if (globals.isPrincipalComment) {
                 commentAnswerArray = {
                     body: myComment,
                     date: new Date(),
@@ -68,7 +69,7 @@ export default function ReplyScreen(props) {
     return (
         <View style={styles.container}>
 
-            {comment_Array.isPrincipalComment ?
+            {globals.isPrincipalComment ?
                 <View style={styles.comment_publication}>
                     {/* header */}
                     <View style={styles.perfil_header}>

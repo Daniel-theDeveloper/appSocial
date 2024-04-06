@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { globalUsername } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted } from '../../utils/interations';
+import { isWasInteracted, isWasCommented } from '../../utils/interations';
 
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 export let publicationId = {
     id: ""
 }
+export let publication_selected = []
 
 export default function Publication({
     props,
     id,
     body,
+    urlImage,
     comments_container,
     date,
     likes,
@@ -24,10 +27,24 @@ export default function Publication({
 }) {
     const allLikes = likes.length
     const allComments = comments_container.length
-    const [isLike, setIsLike] = useState((isWasInteracted(likes)));
-    const [isComment, setIsComment] = useState((false));
-    const [isShared, setIsShared] = useState((false));
-    const [isSaved, setIsSaved] = useState((false));
+    const [isLike, setIsLike] = useState(isWasInteracted(likes));
+    const [isComment, setIsComment] = useState(isWasCommented(comments_container));
+    const [isShared, setIsShared] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [imageURL, setImageURL] = useState(null);
+
+    useEffect(() => {
+        const fetchImage = async () => {
+            if (urlImage != null) {
+                const storage = getStorage();
+                const imageRef = ref(storage, urlImage);
+                const url = await getDownloadURL(imageRef);
+    
+                setImageURL(url);
+            }
+        }
+        fetchImage();
+    }, [])
 
     function goDetails() {
         publicationId = {
@@ -53,11 +70,21 @@ export default function Publication({
         }
     }
 
-    const setCommment = async () => {
+    function setCommment() {
         if (isComment) {
-            setIsComment(false)
+            goDetails();
         } else {
-            setIsComment(true)
+            publication_selected = {
+                body: body,
+                comments_container: comments_container,
+                date: date,
+                likes: likes.length,
+                user: name
+            }
+            publicationId = {
+                id: id
+            }
+            props.navigation.navigate('FastComment');
         }
     }
 
@@ -81,16 +108,27 @@ export default function Publication({
         <View style={styles.container}>
             <View style={styles.perfil_header}>
                 <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                <View style={styles.perfil_usernames_container}>
-                    <Text style={styles.username}>{name}</Text>
-                    <Text style={styles.date}>{convertDate(date.seconds)}</Text>
-                </View>
+                {name === globalUsername ?
+                    <View style={styles.perfil_usernames_container}>
+                        <Text style={styles.myUsername}>{name}</Text>
+                        <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
+                    </View>
+                    :
+                    <View style={styles.perfil_usernames_container}>
+                        <Text style={styles.username}>{name}</Text>
+                        <Text style={styles.date}>{convertDate(date.seconds)}</Text>
+                    </View>
+                }
             </View>
 
             <View style={styles.publication_container}>
                 <TouchableOpacity onPress={goDetails}>
                     <Text style={styles.publication_text}>{body}</Text>
-                    {/* <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} /> */}
+                    {urlImage != null ?
+                        <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                        :
+                        <View></View>
+                    }
                 </TouchableOpacity>
 
                 <View style={styles.interact_container}>
@@ -156,7 +194,7 @@ export default function Publication({
 
 const styles = StyleSheet.create({
     container: {
-        margin: 15
+        marginVertical: 15
     },
     avatar: {
         height: 50,
@@ -176,10 +214,20 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#4CC9F0"
     },
+    myUsername: {
+        fontWeight: "bold",
+        fontSize: 18,
+        color: "#abf752"
+    },
     date: {
         fontSize: 14,
         fontWeight: "bold",
         color: "#235d6f"
+    },
+    myDate: {
+        fontSize: 14,
+        fontWeight: "bold",
+        color: "#7e8d3d"
     },
     publication_container: {
         padding: 10,
@@ -192,9 +240,10 @@ const styles = StyleSheet.create({
         color: "white"
     },
     publication_image: {
-        height: 400,
+        height: 200,
         width: "100%",
-        marginBottom: 15
+        marginBottom: 15,
+        borderRadius: 15
     },
     interact_container: {
         flexDirection: "row",

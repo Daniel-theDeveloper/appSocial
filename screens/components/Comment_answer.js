@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { comment_Array } from './Comment';
 import { publicationId } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 import { globalUsername } from '../../utils/localstorage';
+import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
@@ -30,7 +30,7 @@ export default function Comment_answer({
     const likesTotal = likesCount - dislikesCount;
 
     function replyComment() {
-        comment_Array.isPrincipalComment = false
+        globals.isPrincipalComment = false;
         replyComment_Array = {
             comment_answers: comment_answers,
             date: date,

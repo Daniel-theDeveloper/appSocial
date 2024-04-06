@@ -8,6 +8,7 @@ import Comment from '../components/Comment';
 // import { compareDesc } from "date-fns";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -17,6 +18,7 @@ export default function Details(props) {
         id: "",
         body: "",
         name: "",
+        urlImage: null,
         comments: "",
         comments_container: [],
         date: "",
@@ -31,6 +33,7 @@ export default function Details(props) {
     const [isLike, setIsLike] = useState((false));
     const [isShared, setIsShared] = useState((false));
     const [isSaved, setIsSaved] = useState((false));
+    const [imageURL, setImageURL] = useState(null);
 
     const [myComment, setMyCommnent] = useState("");
 
@@ -44,6 +47,14 @@ export default function Details(props) {
         const collectionRef = collection(database, 'publications');
         const q = query(collectionRef);
 
+        const fetchImage = async (urlImage) => {
+            const storage = getStorage();
+            const imageRef = ref(storage, urlImage);
+            const url = await getDownloadURL(imageRef);
+
+            setImageURL(url);
+        }
+
         const unsuscribe = onSnapshot(q, QuerySnapshot => {
             QuerySnapshot.docs.map(doc => {
                 data.push({ id: doc.id, data: doc.data() });
@@ -54,6 +65,7 @@ export default function Details(props) {
                         id: res.id,
                         body: res.data['body'],
                         name: res.data['user'],
+                        urlImage: res.data['urlImage'],
                         comments: res.data['comments'],
                         comments_container: res.data['comments_container'],
                         date: res.data['date'],
@@ -62,6 +74,11 @@ export default function Details(props) {
                     }
                 }
             })
+
+            if (getData.urlImage != null) {
+                fetchImage(getData.urlImage);
+            }
+
             setAllLikes(getData.likes.length)
             setAllComments(getData.comments_container.length)
             setIsLike(isWasInteracted(getData.likes));
@@ -123,6 +140,16 @@ export default function Details(props) {
         }
     }
 
+    const saveThisPublish = async () => {
+        if (isSaved) {
+            // Delete this publish
+            setIsSaved(false);
+        } else {
+            // Save this publish
+            setIsSaved(true);
+        }
+    }
+
     return (
         <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
@@ -144,6 +171,11 @@ export default function Details(props) {
 
                     {/* Cuerpo de la publicacion */}
                     <Text style={styles.publication_text}>{publicationArray.body}</Text>
+                    {imageURL != null ?
+                        <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                        :
+                        <View></View>
+                    }
                     {/* <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} /> */}
 
                     {/* Zona de estadisticas */}
@@ -176,7 +208,7 @@ export default function Details(props) {
                             }
                         </TouchableOpacity>
 
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={saveThisPublish}>
                             {isSaved ?
                                 <MaterialCommunityIcons style={styles.interacted_icon_shared} name='book' />
                                 :
@@ -290,9 +322,11 @@ const styles = StyleSheet.create({
         color: "white"
     },
     publication_image: {
-        height: 400,
+        minHeight: 200,
+        maxHeight: 400,
         width: "100%",
-        marginBottom: 15
+        marginBottom: 15,
+        borderRadius: 15
     },
     statistics: {
         flexDirection: "row",

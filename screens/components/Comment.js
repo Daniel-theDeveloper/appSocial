@@ -9,6 +9,7 @@ import { isWasInteracted } from '../../utils/interations';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
+import { globals } from '../../utils/globalVars';
 
 export var comment_Array = []
 
@@ -37,9 +38,9 @@ export default function Comment({
             likes: likes,
             dislikes: dislikes,
             message: message,
-            user: user,
-            isPrincipalComment: true
+            user: user
         }
+        globals.isPrincipalComment = true;
         props.navigation.navigate('ReplyScreen')
     }
 
