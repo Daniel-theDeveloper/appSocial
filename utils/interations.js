@@ -23,7 +23,6 @@ export function isWasCommented(comments_array) {
 
         return key;
     } else {
-        console.log("VACIA D:")
         return false
     }
     

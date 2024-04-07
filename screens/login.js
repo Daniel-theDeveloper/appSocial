@@ -17,7 +17,7 @@ export default function Login(props) {
     let canEdit = true;
 
     // Metodo para obtener el username del usuario
-    const searchUsername = async (email) => {
+    const getDataUser = async (email) => {
         let userData = [];
         try {
             const QuerySnapshot = await getDocs(collection(database, "users"));
@@ -39,9 +39,10 @@ export default function Login(props) {
         setloginButtomVisible(false);
         canEdit = false;
         userData = [];
+        const myEmail = email.toLowerCase()
         try {
-            await signInWithEmailAndPassword(auth, email, password).then(async () => {
-                const username = await searchUsername(email);
+            await signInWithEmailAndPassword(auth, myEmail, password).then(async () => {
+                const username = await getDataUser(myEmail);
 
                 //Bloque provicional, la idea es autologuearse si ya inicio sesion
                 const old_username = await getUsername();

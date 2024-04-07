@@ -5,7 +5,7 @@ import { globalUsername } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted, isWasCommented } from '../../utils/interations';
 
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { doc, getDocs, updateDoc, arrayUnion, collection } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
@@ -24,6 +24,7 @@ export default function Publication({
     likes,
     shares,
     name,
+    test
 }) {
     const allLikes = likes.length
     const allComments = comments_container.length
@@ -33,18 +34,53 @@ export default function Publication({
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
 
+    const [userData, setUserData] = useState([]);
+    const [avatarURL, setAvatarURL] = useState(null);
+    const [nickname, setNickname] = useState(globalUsername);
+
     useEffect(() => {
-        const fetchImage = async () => {
-            if (urlImage != null) {
-                const storage = getStorage();
-                const imageRef = ref(storage, urlImage);
-                const url = await getDownloadURL(imageRef);
-    
-                setImageURL(url);
-            }
-        }
+        console.log(test);
+        loadUserData();
         fetchImage();
     }, [])
+
+    const fetchImage = async () => {
+        if (urlImage != null) {
+            const storage = getStorage();
+            const imageRef = ref(storage, urlImage);
+            const getUrl = await getDownloadURL(imageRef);
+
+            setImageURL(getUrl);
+        }
+    }
+
+    const fetchImageAvatar = async (url) => {
+        if (url != null) {
+            const storage = getStorage();
+            const imageRef = ref(storage, url);
+            const getUrl = await getDownloadURL(imageRef);
+            
+            setAvatarURL(getUrl);
+        }
+    }
+
+    const loadUserData = async () => {
+        let userData = [];
+        try {
+            const QuerySnapshot = await getDocs(collection(database, "users"));
+            QuerySnapshot.forEach((doc) => {
+                userData.push(doc.data());
+            });
+            userData.find(function (res) {
+                if (res.username === name) {
+                    fetchImageAvatar(res.avatar);
+                    setNickname(res.name);
+                }
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     function goDetails() {
         publicationId = {
@@ -107,10 +143,14 @@ export default function Publication({
     return (
         <View style={styles.container}>
             <View style={styles.perfil_header}>
-                <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                {avatarURL != null ?
+                    <Image style={styles.avatar} source={{ uri: avatarURL }} />
+                    :
+                    <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                }
                 {name === globalUsername ?
                     <View style={styles.perfil_usernames_container}>
-                        <Text style={styles.myUsername}>{name}</Text>
+                        <Text style={styles.myUsername}>{nickname}</Text>
                         <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
                     </View>
                     :

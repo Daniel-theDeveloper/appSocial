@@ -30,10 +30,11 @@ export default function Details(props) {
     const [allLikes, setAllLikes] = useState(0)
     const [allComments, setAllComments] = useState(0);
 
-    const [isLike, setIsLike] = useState((false));
-    const [isShared, setIsShared] = useState((false));
-    const [isSaved, setIsSaved] = useState((false));
+    const [isLike, setIsLike] = useState(false);
+    const [isShared, setIsShared] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
+    const [avatarURL, setAvatarURL] = useState(null);
 
     const [myComment, setMyCommnent] = useState("");
 

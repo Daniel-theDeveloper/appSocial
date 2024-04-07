@@ -7,18 +7,14 @@ import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
 export default function Homepage(props) {
-    const goDetails = async () => {
-        props.navigation.navigate('Details')
-    }
-
-    const goNewPublish = async () => {
-        props.navigation.navigate('NewPublication')
-    }
-
     const [publications, setPublications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        loadAllPublish();
+    }, [])
+
+    function loadAllPublish() {
         const collectionRef = collection(database, 'publications');
         const q = query(collectionRef, orderBy('date', 'desc'));
 
@@ -39,7 +35,38 @@ export default function Homepage(props) {
         })
         setLoading(false);
         return unsuscribe;
-    }, [])
+    }
+
+    // function test() {
+    //     return 12;
+    // }
+
+    function loadAllUsers() {
+        const collectionRef = collection(database, 'publications');
+        const q = query(collectionRef, orderBy('date', 'desc'));
+
+        const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            setPublications(
+                QuerySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    body: doc.data().body,
+                    urlImage: doc.data().urlImage,
+                    name: doc.data().user,
+                    comments: doc.data().comments,
+                    comments_container: doc.data().comments_container,
+                    date: doc.data().date,
+                    likes: doc.data().likes,
+                    shares: doc.data().shares
+                }))
+            )
+        })
+        setLoading(false);
+        return unsuscribe;
+    }
+
+    const goNewPublish = async () => {
+        props.navigation.navigate('NewPublication')
+    }
 
     return (
         <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
