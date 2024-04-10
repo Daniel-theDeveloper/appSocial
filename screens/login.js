@@ -4,7 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import appFirebase, { database } from '../utils/database';
 
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { setUsername, getUsername, erase_all } from '../utils/localstorage';
+import { setUsername, getUsername, erase_all, setIdUser } from '../utils/localstorage';
 
 const auth = getAuth(appFirebase);
 
@@ -24,49 +24,72 @@ export default function Login(props) {
             QuerySnapshot.forEach((doc) => {
                 userData.push(doc.data());
             });
-            const username = userData.find(function (res) {
+            const data = userData.find(function (res) {
                 if (res.email === email) {
                     return res
                 }
             });
-            return username.username
+            return data.username
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const getIDUser = async (email) => {
+        let userData = [];
+        try {
+            const QuerySnapshot = await getDocs(collection(database, "users"));
+            QuerySnapshot.forEach((doc) => {
+                userData.push({id: doc.id, email: doc.data().email});
+            });
+            const data = userData.find(function (res) {
+                if (res.email === email) {
+                    return res
+                }
+            });
+            return data.id
         } catch (error) {
             console.error(error);
         }
     }
 
     const login = async () => {
-        setloginButtomVisible(false);
-        canEdit = false;
-        userData = [];
-        const myEmail = email.toLowerCase()
-        try {
-            await signInWithEmailAndPassword(auth, myEmail, password).then(async () => {
-                const username = await getDataUser(myEmail);
-
-                //Bloque provicional, la idea es autologuearse si ya inicio sesion
-                const old_username = await getUsername();
-                if (old_username != undefined) {
-                    await erase_all();
+        if (email.length != 0 || password.length != 0) {
+            setloginButtomVisible(false);
+            canEdit = false;
+            userData = [];
+            const myEmail = email.toLowerCase()
+            try {
+                await signInWithEmailAndPassword(auth, myEmail, password).then(async () => {
+                    const username = await getDataUser(myEmail);
+                    const id = await getIDUser(myEmail);
+    
+                    //Bloque provicional, la idea es autologuearse si ya inicio sesion
+                    const old_username = await getUsername();
+                    if (old_username != undefined) {
+                        await erase_all();
+                    }
+    
+                    // Guardando datos del logueo.
+                    await setUsername(username);
+                    setIdUser(id);
+                    canEdit = true
+                    setloginButtomVisible(true)
+                    props.navigation.navigate('Home');
+                });
+    
+            } catch (error) {
+                console.log(error.message);
+                if (error.message == "Firebase: Error (auth/invalid-email)." || error.message == "auth/invalid-login-credentials") {
+                    Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
+                } else {
+                    Alert.alert("Error interno del servidor");
                 }
-
-                // Guardando datos del logueo.
-                await setUsername(username);
                 canEdit = true
                 setloginButtomVisible(true)
-                props.navigation.navigate('Home');
-            });
-
-        } catch (error) {
-            console.log(error.message);
-            if (error.message == "Firebase: Error (auth/invalid-email).") {
-                Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
-            } else {
-                Alert.alert("Error interno del servidor");
             }
-            canEdit = true
-            setloginButtomVisible(true)
-
+        } else {
+            Alert.alert("Campos vacios","Por favor, llene todos los campos");
         }
     };
 

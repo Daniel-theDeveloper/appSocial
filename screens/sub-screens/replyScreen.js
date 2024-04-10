@@ -5,7 +5,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { comment_Array } from '../components/Comment';
 import { replyComment_Array } from '../components/Comment_answer';
 import { globalUsername } from '../../utils/localstorage';
-import { publicationId } from '../components/Publish';
+import { publicationData } from '../components/Publish';
 import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -38,7 +38,7 @@ export default function ReplyScreen(props) {
                 }
             }
             try {
-                const docRef = doc(database, "publications", publicationId.id)
+                const docRef = doc(database, "publications", publicationData.id)
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {

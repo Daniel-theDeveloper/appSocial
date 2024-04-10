@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export var globalUsername = ""
+export var myIdUser = ""
 
 export async function setUsername(username) {
     try {
@@ -27,6 +28,10 @@ export async function getUsername() {
         console.error(error)
         return undefined
     }
+}
+
+export function setIdUser(id) {
+    myIdUser = id;
 }
 
 export async function erase_all() {

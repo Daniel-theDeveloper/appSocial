@@ -9,7 +9,10 @@ import { doc, getDocs, updateDoc, arrayUnion, collection } from 'firebase/firest
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
-export let publicationId = {
+export let publicationData = {
+    id: ""
+}
+export var userId = {
     id: ""
 }
 export let publication_selected = []
@@ -23,8 +26,7 @@ export default function Publication({
     date,
     likes,
     shares,
-    name,
-    test
+    name
 }) {
     const allLikes = likes.length
     const allComments = comments_container.length
@@ -34,12 +36,10 @@ export default function Publication({
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
 
-    const [userData, setUserData] = useState([]);
     const [avatarURL, setAvatarURL] = useState(null);
-    const [nickname, setNickname] = useState(globalUsername);
+    const [nickname, setNickname] = useState(null);
 
     useEffect(() => {
-        console.log(test);
         loadUserData();
         fetchImage();
     }, [])
@@ -83,10 +83,16 @@ export default function Publication({
     }
 
     function goDetails() {
-        publicationId = {
-            id: id
+        publicationData = {
+            id: id,
+            avatar: avatarURL
         }
         props.navigation.navigate('Details')
+    }
+
+    function goPerfil() {
+        userId.id = name
+        props.navigation.navigate('Perfil');
     }
 
     const setLike = async () => {
@@ -117,7 +123,7 @@ export default function Publication({
                 likes: likes.length,
                 user: name
             }
-            publicationId = {
+            publicationData = {
                 id: id
             }
             props.navigation.navigate('FastComment');
@@ -142,24 +148,26 @@ export default function Publication({
 
     return (
         <View style={styles.container}>
-            <View style={styles.perfil_header}>
-                {avatarURL != null ?
-                    <Image style={styles.avatar} source={{ uri: avatarURL }} />
-                    :
-                    <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                }
-                {name === globalUsername ?
-                    <View style={styles.perfil_usernames_container}>
-                        <Text style={styles.myUsername}>{nickname}</Text>
-                        <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
-                    </View>
-                    :
-                    <View style={styles.perfil_usernames_container}>
-                        <Text style={styles.username}>{name}</Text>
-                        <Text style={styles.date}>{convertDate(date.seconds)}</Text>
-                    </View>
-                }
-            </View>
+            <TouchableOpacity onPress={goPerfil}>
+                <View style={styles.perfil_header}>
+                    {avatarURL != null ?
+                        <Image style={styles.avatar} source={{ uri: avatarURL }} />
+                        :
+                        <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                    }
+                    {name === globalUsername ?
+                        <View style={styles.perfil_usernames_container}>
+                            <Text style={styles.myUsername}>{nickname}</Text>
+                            <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
+                        </View>
+                        :
+                        <View style={styles.perfil_usernames_container}>
+                            <Text style={styles.username}>{name}</Text>
+                            <Text style={styles.date}>{convertDate(date.seconds)}</Text>
+                        </View>
+                    }
+                </View>
+            </TouchableOpacity>
 
             <View style={styles.publication_container}>
                 <TouchableOpacity onPress={goDetails}>

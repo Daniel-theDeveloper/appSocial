@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityInd
 import { convertDate } from '../../utils/convertDate';
 import { publication_selected } from '../components/Publish';
 import { globalUsername } from '../../utils/localstorage';
-import { publicationId } from '../components/Publish';
+import { publicationData } from '../components/Publish';
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
 import { database } from '../../utils/database';
@@ -24,7 +24,7 @@ export default function FastComment(props) {
                 user: globalUsername
             }
             try {
-                const docRef = doc(database, 'publications', publicationId.id);
+                const docRef = doc(database, 'publications', publicationData.id);
                 await updateDoc(docRef, {
                     comments_container: arrayUnion(commentArray)
                 });

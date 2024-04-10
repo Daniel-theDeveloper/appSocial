@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { publicationId } from '../components/Publish';
+import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 import { globalUsername } from '../../utils/localstorage';
 import { globals } from '../../utils/globalVars';
 
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 export var replyComment_Array = []
@@ -24,10 +25,16 @@ export default function Comment_answer({
 }) {
     const [isLike, setIsLike] = useState((isWasInteracted(likes)));
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
+    const [avatarURL, setAvatarURL] = useState(null);
+    const [nickname, setNickname] = useState(null);
 
     const likesCount = likes.length
     const dislikesCount = dislikes.length
     const likesTotal = likesCount - dislikesCount;
+
+    useEffect(() => {
+        loadUserData();
+    }, [])
 
     function replyComment() {
         globals.isPrincipalComment = false;
@@ -42,12 +49,40 @@ export default function Comment_answer({
         props.navigation.navigate('ReplyScreen')
     }
 
+    const fetchImageAvatar = async (url) => {
+        if (url != null) {
+            const storage = getStorage();
+            const imageRef = ref(storage, url);
+            const getUrl = await getDownloadURL(imageRef);
+            
+            setAvatarURL(getUrl);
+        }
+    }
+
+    const loadUserData = async () => {
+        let userData = [];
+        try {
+            const QuerySnapshot = await getDocs(collection(database, "users"));
+            QuerySnapshot.forEach((doc) => {
+                userData.push(doc.data());
+            });
+            userData.find(function (res) {
+                if (res.username === user) {
+                    fetchImageAvatar(res.avatar);
+                    setNickname(res.name);
+                }
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const setLikeComment = async () => {
         if (isDislike != true) {
             if (isLike != true) {
                 setIsLike(true);
                 try {
-                    const docRef = doc(database, "publications", publicationId.id)
+                    const docRef = doc(database, "publications", publicationData.id)
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
@@ -81,7 +116,7 @@ export default function Comment_answer({
             setIsDislike(false)
             setIsLike(true);
             try {
-                const docRef = doc(database, "publications", publicationId.id)
+                const docRef = doc(database, "publications", publicationData.id)
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -124,7 +159,7 @@ export default function Comment_answer({
             if (isDislike != true) {
                 setIsDislike(true)
                 try {
-                    const docRef = doc(database, "publications", publicationId.id)
+                    const docRef = doc(database, "publications", publicationData.id)
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
@@ -158,7 +193,7 @@ export default function Comment_answer({
             setIsLike(false)
             setIsDislike(true)
             try {
-                const docRef = doc(database, "publications", publicationId.id)
+                const docRef = doc(database, "publications", publicationData.id)
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -199,16 +234,16 @@ export default function Comment_answer({
     return (
         <View style={styles.comment_responces}>
             <View style={styles.comment_responces_left}>
-                <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
+                <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
             </View>
 
             <View style={styles.comment_responces_right}>
 
                 <View style={styles.comment_header}>
                     {user == globalUsername ?
-                        <Text style={styles.comment_myUsername}>{user}</Text>
+                        <Text style={styles.comment_myUsername}>{nickname}</Text>
                         :
-                        <Text style={styles.comment_username}>{user}</Text>
+                        <Text style={styles.comment_username}>{nickname}</Text>
                     }
                     <Text style={styles.comment_separator}>-</Text>
                     <Text style={styles.comment_date}>{convertDate(date)}</Text>

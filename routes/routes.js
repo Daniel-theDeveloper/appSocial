@@ -7,6 +7,7 @@ import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
 import FastComment from '../screens/sub-screens/fast_comment'
 import New_publication from '../screens/sub-screens/new_publication';
 import ReplyScreen from '../screens/sub-screens/replyScreen';
+import Perfil from '../screens/perfil';
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
@@ -27,6 +28,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="FastComment" component={FastComment} />
                 <Stack.Screen name="Details" component={Details} />
+                <Stack.Screen name="Perfil" component={Perfil} />
                 <Stack.Screen name="ReplyScreen" component={ReplyScreen} />
                 <Stack.Screen name="NewPublication" component={New_publication} />
             </Stack.Navigator>

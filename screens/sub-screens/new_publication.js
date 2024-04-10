@@ -101,7 +101,6 @@ export default function New_publication(props) {
         try {
             if (userImage != null) {
                 const url = globalUsername+"/publicationImages/"+userImageName+"."+userImageType;
-                console.log(url);
 
                 const response = await fetch(userImage);
                 const blob = await response.blob();
@@ -111,7 +110,6 @@ export default function New_publication(props) {
                 const snapshot = await uploadBytes(storageRef, blob);
 
                 newPublication.urlImage = snapshot.ref.fullPath;
-                console.log(newPublication.urlImage);
             }
             if (newPublication.body != '') {
                 await addDoc(collection(database, 'publications'), newPublication);

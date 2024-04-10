@@ -5,6 +5,7 @@ import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import { myIdUser } from '../utils/localstorage';
 
 export default function Homepage(props) {
     const [publications, setPublications] = React.useState([]);

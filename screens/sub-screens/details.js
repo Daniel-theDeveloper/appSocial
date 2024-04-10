@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput,
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted } from '../../utils/interations';
 import { globalUsername } from '../../utils/localstorage';
-import { publicationId } from '../components/Publish';
+import { publicationData } from '../components/Publish';
 import Comment from '../components/Comment';
 // import { compareDesc } from "date-fns";
 
@@ -61,7 +61,7 @@ export default function Details(props) {
                 data.push({ id: doc.id, data: doc.data() });
             })
             data.find(function (res) {
-                if (res.id === publicationId.id) {
+                if (res.id === publicationData.id) {
                     getData = {
                         id: res.id,
                         body: res.data['body'],
@@ -78,6 +78,10 @@ export default function Details(props) {
 
             if (getData.urlImage != null) {
                 fetchImage(getData.urlImage);
+            }
+
+            if (publicationData.avatar != null) {
+                setAvatarURL(publicationData.avatar);
             }
 
             setAllLikes(getData.likes.length)
@@ -155,11 +159,10 @@ export default function Details(props) {
         <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
                 <View style={styles.publication}>
-
                     {/* Encabezado de la publicacion */}
                     <View style={styles.perfil_header}>
                         <View style={styles.perfil_user}>
-                            <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                            <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
                                 <Text style={styles.username}>{publicationArray.name} publicó</Text>
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
@@ -228,7 +231,7 @@ export default function Details(props) {
 
                 <View style={styles.new_comment_container}>
                     <View style={styles.new_comment_header}>
-                        <Image style={styles.comment_avatar} source={require('../../assets/avatar-default.png')} />
+                        <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.new_comment_input_block}>
                             <TextInput
                                 style={styles.new_comment_input}
