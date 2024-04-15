@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
-import appFirebase, { database } from '../utils/database';
+import { database, auth } from '../utils/database';
 
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { setUsername, getUsername, erase_all, setIdUser } from '../utils/localstorage';
-
-const auth = getAuth(appFirebase);
 
 export default function Login(props) {
     const [loginButtomVisible, setloginButtomVisible] = useState((true));
@@ -51,6 +49,10 @@ export default function Login(props) {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    function goSing_up () {
+        props.navigation.navigate('Sign_up_part1');
     }
 
     const login = async () => {
@@ -125,8 +127,9 @@ export default function Login(props) {
                         </View>
                     }
 
-                    <TouchableOpacity>
-                        <Text style={styles.loginTextButtom2}>¿No tienes una cuenta? Registrese ahora</Text>
+                    <TouchableOpacity onPress={goSing_up} style={styles.sign_up}>
+                        <Text style={styles.loginTextButtom2}>¿No tienes una cuenta?</Text>
+                        <Text style={styles.loginTextButtom3}>Registrese ahora</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -229,9 +232,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16
     },
+    sign_up: {
+        flexDirection: 'row',
+        justifyContent: 'center'
+    },
     loginTextButtom2: {
         marginTop: 20,
         color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    loginTextButtom3: {
+        marginTop: 20,
+        marginLeft: 5,
+        color: '#4895ef',
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',

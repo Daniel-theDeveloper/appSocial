@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
 
 //Usuario de pruebas:
 //danielalfaro@social.com
@@ -18,4 +19,7 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 
 export default appFirebase;
+
 export const database = getFirestore();
+
+export const auth = getAuth(appFirebase);

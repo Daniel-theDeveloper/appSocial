@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from '../screens/login';
 import Details from '../screens/sub-screens/details';
 import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
+import { Sign_up_part1, Sign_up_part2, Sign_up_part3, WelcomeScreen } from '../screens/signScreens';
 import FastComment from '../screens/sub-screens/fast_comment'
 import New_publication from '../screens/sub-screens/new_publication';
 import ReplyScreen from '../screens/sub-screens/replyScreen';
@@ -25,6 +26,10 @@ export default function MyRoutes() {
         return (
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={Login} />
+                <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+                <Stack.Screen name="Sign_up_part1" component={Sign_up_part1} />
+                <Stack.Screen name="Sign_up_part2" component={Sign_up_part2} />
+                <Stack.Screen name="Sign_up_part3" component={Sign_up_part3} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="FastComment" component={FastComment} />
                 <Stack.Screen name="Details" component={Details} />
