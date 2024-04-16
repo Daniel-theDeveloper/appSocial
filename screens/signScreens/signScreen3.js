@@ -63,7 +63,7 @@ export default function SignScreen3(props) {
     }
 
     function goBackAgain() {
-        props.navigation.goBack()
+        props.navigation.navigate('WelcomeScreen');
     }
 
     function getFormatImage(imageType) {
@@ -79,25 +79,12 @@ export default function SignScreen3(props) {
         params.banner = bannerURL;
         params.details = description;
 
-        SignUp().then((res) => {
-            if (res) {
-                props.navigation.navigate('WelcomeScreen');
-            } else {
-                setLoading(false);
-                Alert.alert("Error en el servidor", "Ha ocurrido  un error, vuelvelo a intentar mas tarde");
-                props.navigation.navigate('Login');
-            }
-        })
+
     }
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={goBackAgain}>
-                    <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
-                </TouchableOpacity>
-                <Text style={styles.title}>Ultimos detalles de la cuenta</Text>
-            </View>
+            <Text style={styles.title}>Su cuenta se ha creado, solo unos ultimos detalles</Text>
 
             <View style={styles.subContainer}>
                 {bannerURL != null ?
@@ -139,14 +126,18 @@ export default function SignScreen3(props) {
                         <Text style={styles.statistics_label}>{description.length} / 100</Text>
                     </View>
 
+                    <TouchableOpacity style={styles.signButton} onPress={goBackAgain}>
+                        <Text style={styles.signTextButton}>Saltar este paso</Text>
+                    </TouchableOpacity>
+
                     {loading ?
                         <View style={styles.signLoadingButton}>
                             <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
-                            <Text style={styles.signTextButton}>Creando la cuenta</Text>
+                            <Text style={styles.signTextButton}>Cargando</Text>
                         </View>
                         :
                         <TouchableOpacity style={styles.signButton} onPress={trySingUp}>
-                            <Text style={styles.signTextButton}>Crear la cuenta</Text>
+                            <Text style={styles.signTextButton}>Continuar</Text>
                         </TouchableOpacity>
                     }
                 </View>
@@ -165,17 +156,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20
-    },
     back_button: {
         fontSize: 60,
         color: "white"
     },
     title: {
         fontSize: 25,
+        marginBottom: 20,
         fontWeight: 'bold',
         color: 'white',
         textAlign: 'center'
@@ -221,20 +208,18 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     namesContainer: {
-        flexDirection: 'row',
         marginTop: 30,
-        marginLeft: 20,
-        alignItems: "center"
+        marginLeft: 20
     },
     namesNickname: {
         color: "white",
-        fontSize: 35,
+        fontSize: 30,
         fontWeight: 'bold',
         marginLeft: 10
     },
     namesUsername: {
         color: "#b2b2b2",
-        fontSize: 25,
+        fontSize: 20,
         fontWeight: 'bold',
         marginLeft: 10
     },

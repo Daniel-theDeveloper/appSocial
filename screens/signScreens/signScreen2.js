@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { params } from '../../utils/signUp';
+import SignUp, { params } from '../../utils/signUp';
 
 export default function Sign_up_part2(props) {
     const [name, setName] = useState("");
@@ -40,9 +40,16 @@ export default function Sign_up_part2(props) {
                     params.nickname = username;
                     params.password = password;
 
-                    props.navigation.navigate('Sign_up_part3');
-
-                    setLoading(false);
+                    SignUp().then((res) => {
+                        if (res) {
+                            setLoading(false);
+                            props.navigation.navigate('Sign_up_part3');
+                        } else {
+                            setLoading(false);
+                            Alert.alert("Error en el servidor", "Ha ocurrido  un error, vuelvelo a intentar mas tarde");
+                            props.navigation.navigate('Login');
+                        }
+                    })
                 } else {
                     setLoading(false);
                     console.log("No coinciden")
@@ -93,13 +100,13 @@ export default function Sign_up_part2(props) {
                 </View>
                 {password.length >= 6 ?
                     <View style={styles.password_message_block}>
-                        <MaterialCommunityIcons style={styles.password_message_good} name='shield-check' />
-                        <Text style={styles.password_message_good}>La contraseña debe tener minimo 6 caracteres</Text>
+                        <MaterialCommunityIcons style={styles.password_icon_good} name='shield-check' />
+                        <Text style={styles.password_message_good}>La contraseña tiene 6 caracteres</Text>
                     </View>
                     :
                     <View style={styles.password_message_block}>
-                        <MaterialCommunityIcons style={styles.password_message_bad} name='shield-alert-outline' />
-                        <Text style={styles.password_message_bad}>La contraseña debe tener minimo 6 caracteres</Text>
+                        <MaterialCommunityIcons style={styles.password_icon_bad} name='shield-alert-outline' />
+                        <Text style={styles.password_message_bad}>La contraseña debe tener 6 caracteres</Text>
                     </View>
 
                 }
@@ -119,6 +126,8 @@ export default function Sign_up_part2(props) {
                     }
                 </View>
 
+                <Text style={styles.conditions}>Al crear la cuenta nueva, aceptas los terminos y condiciones de Social App, ademas de las normas de comunidad de esta red social.</Text>
+
                 {loading ?
                     <View style={styles.signLoadingButton}>
                         <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
@@ -126,7 +135,7 @@ export default function Sign_up_part2(props) {
                     </View>
                     :
                     <TouchableOpacity style={styles.signButton} onPress={trySingUp}>
-                        <Text style={styles.signTextButton}>Siguiente</Text>
+                        <Text style={styles.signTextButton}>Crear la cuenta</Text>
                     </TouchableOpacity>
                 }
             </View>
@@ -204,7 +213,7 @@ const styles = StyleSheet.create({
         color: "#4895EF",
     },
     signButton: {
-        marginTop: 35,
+        marginVertical: 15,
         backgroundColor: '#4895EF',
         borderRadius: 30,
         width: 100,
@@ -218,10 +227,10 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     signLoadingButton: {
+        marginVertical: 15,
         flexDirection: 'row',
         justifyContent: 'center',
         alignContent: 'center',
-        marginTop: 35,
         backgroundColor: '#20456e',
         borderRadius: 30,
         width: 100,
@@ -248,9 +257,28 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold'
     },
+    password_icon_good: {
+        color: "#abf752",
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginHorizontal: 7
+    },
     password_message_bad: {
         color: "#ff0078",
         fontSize: 16,
         fontWeight: 'bold'
+    },
+    password_icon_bad: {
+        color: "#ff0078",
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginHorizontal: 7
+    },
+    conditions: {
+        marginTop: 20,
+        color: 'white',
+        fontSize: 17,
+        fontWeight: 'bold',
+        textAlign: 'center'
     }
 })

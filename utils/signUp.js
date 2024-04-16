@@ -10,7 +10,7 @@ export var params = {
     banner: null,
     bannerName: null,
     bannerExt: null,
-    details: "",
+    details: "Soy nuevo en esta maravillosa red social",
     email: "",
     username: "",
     nickname: "",

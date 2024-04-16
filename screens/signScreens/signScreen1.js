@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { getAuth, fetchSignInMethodsForEmail } from 'firebase/auth';
@@ -9,9 +9,9 @@ import { params } from '../../utils/signUp';
 const auth = getAuth(appFirebase);
 
 export default function Sign_up_part1(props) {
-    const [email, setEmail] = useState();
-    const [country, setCountry] = useState();
-    const [city, setCity] = useState();
+    const [email, setEmail] = useState("");
+    const [country, setCountry] = useState("");
+    const [city, setCity] = useState("");
 
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -21,28 +21,32 @@ export default function Sign_up_part1(props) {
     }
 
     const trySingUp = async () => {
-        try {
-            setError(false);
-            setLoading(true);
-            if (email.length != 0 && country.length != 0) {
-                const isEmailExits = await fetchSignInMethodsForEmail(auth, email)
-                if (isEmailExits.length == 0) {
-                    // Save data
-                    params.email = email,
-                    params.country = country
-                    params.city = city
-                    setLoading(false);
-                    props.navigation.navigate('Sign_up_part2');
+        if (email.length > 0 && country.length > 0) {
+            try {
+                setError(false);
+                setLoading(true);
+                if (email.length != 0 && country.length != 0) {
+                    const isEmailExits = await fetchSignInMethodsForEmail(auth, email)
+                    if (isEmailExits.length == 0) {
+                        // Save data
+                        params.email = email,
+                        params.country = country
+                        params.city = city
+                        setLoading(false);
+                        props.navigation.navigate('Sign_up_part2');
+                    } else {
+                        setLoading(false);
+                        setError(true);
+                    }
                 } else {
                     setLoading(false);
-                    setError(true);
                 }
-            } else {
-                setLoading(false);
+            } catch (error) {
+                console.log(error)
+                setLoading(false)
             }
-        } catch (error) {
-            console.log(error)
-            setLoading(false)
+        } else {
+            Alert.alert("Campos incompletos", "Por favor, llene todos los campos");
         }
     }
 

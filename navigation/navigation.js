@@ -27,9 +27,9 @@ export default function MyRoutes() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+                <Stack.Screen name="Sign_up_part3" component={Sign_up_part3} />
                 <Stack.Screen name="Sign_up_part1" component={Sign_up_part1} />
                 <Stack.Screen name="Sign_up_part2" component={Sign_up_part2} />
-                <Stack.Screen name="Sign_up_part3" component={Sign_up_part3} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="FastComment" component={FastComment} />
                 <Stack.Screen name="Details" component={Details} />
