@@ -82,11 +82,7 @@ export default function Login(props) {
     
             } catch (error) {
                 console.log(error.message);
-                if (error.message == "Firebase: Error (auth/invalid-email)." || error.message == "auth/invalid-login-credentials") {
-                    Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
-                } else {
-                    Alert.alert("Error interno del servidor");
-                }
+                Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
                 canEdit = true
                 setloginButtomVisible(true)
             }

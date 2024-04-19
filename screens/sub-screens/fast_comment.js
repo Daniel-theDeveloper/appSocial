@@ -9,8 +9,10 @@ import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'fireb
 import { database } from '../../utils/database';
 
 export default function FastComment(props) {
+    const [avatarURL] = useState(publication_selected.avatar);
+
     const [myComment, setMyComment] = useState("");
-    const [loadingButton, setLoadingButton] = useState((false));
+    const [loadingButton, setLoadingButton] = useState(false);
 
     const sendMyComment = async () => {
         if (myComment !== "") {
@@ -45,7 +47,7 @@ export default function FastComment(props) {
             <View style={styles.comment_publication}>
                 {/* header */}
                 <View style={styles.perfil_header}>
-                    <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                    <Image style={styles.avatar} source={ avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                     <View style={styles.perfil_usernames_container}>
                         <Text style={styles.username}>{publication_selected.user} comentó</Text>
                         <Text style={styles.date}>{convertDate(publication_selected.date)}</Text>

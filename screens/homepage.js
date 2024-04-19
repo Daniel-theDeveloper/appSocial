@@ -2,9 +2,11 @@ import * as React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { userId } from './components/Publish';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import { globalUsername } from '../utils/localstorage';
 
 export default function Homepage(props) {
     const [publications, setPublications] = React.useState([]);
@@ -36,36 +38,14 @@ export default function Homepage(props) {
         setLoading(false);
         return unsuscribe;
     }
-
-    // function test() {
-    //     return 12;
-    // }
-
-    function loadAllUsers() {
-        const collectionRef = collection(database, 'publications');
-        const q = query(collectionRef, orderBy('date', 'desc'));
-
-        const unsuscribe = onSnapshot(q, QuerySnapshot => {
-            setPublications(
-                QuerySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    body: doc.data().body,
-                    urlImage: doc.data().urlImage,
-                    name: doc.data().user,
-                    comments: doc.data().comments,
-                    comments_container: doc.data().comments_container,
-                    date: doc.data().date,
-                    likes: doc.data().likes,
-                    shares: doc.data().shares
-                }))
-            )
-        })
-        setLoading(false);
-        return unsuscribe;
+    
+    function goNewPublish() {
+        props.navigation.navigate('NewPublication')
     }
 
-    const goNewPublish = async () => {
-        props.navigation.navigate('NewPublication')
+    function goMyPerfil() {
+        userId.id = globalUsername;
+        props.navigation.navigate('Perfil')
     }
 
     return (
@@ -77,7 +57,9 @@ export default function Homepage(props) {
                             <MaterialCommunityIcons style={styles.menuButton} name='menu' />
                         </TouchableOpacity>
                         <Text style={styles.title}>Pagina principal</Text>
-                        <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                        <TouchableOpacity onPress={goMyPerfil}>
+                            <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.header_row}>

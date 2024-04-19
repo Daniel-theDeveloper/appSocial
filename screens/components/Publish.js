@@ -85,6 +85,7 @@ export default function Publication({
     function goDetails() {
         publicationData = {
             id: id,
+            nickname: nickname,
             avatar: avatarURL
         }
         props.navigation.navigate('Details')
@@ -114,14 +115,20 @@ export default function Publication({
 
     function setCommment() {
         if (isComment) {
+            publicationData = {
+                id: id,
+                nickname: nickname,
+                avatar: avatarURL
+            }
             goDetails();
         } else {
             publication_selected = {
                 body: body,
+                avatar: avatarURL,
                 comments_container: comments_container,
                 date: date,
                 likes: likes.length,
-                user: name
+                user: nickname
             }
             publicationData = {
                 id: id
@@ -157,12 +164,20 @@ export default function Publication({
                     }
                     {name === globalUsername ?
                         <View style={styles.perfil_usernames_container}>
-                            <Text style={styles.myUsername}>{nickname}</Text>
+                            <View style={styles.perfil_usernames_block}>
+                                <Text style={styles.myUsername}>{nickname}</Text>
+                                <Text style={styles.myUsername}>-</Text>
+                                <Text style={styles.myGlobalUsername}>@{name}</Text>
+                            </View>
                             <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
                         </View>
                         :
                         <View style={styles.perfil_usernames_container}>
-                            <Text style={styles.username}>{name}</Text>
+                            <View style={styles.perfil_usernames_block}>
+                                <Text style={styles.username}>{nickname}</Text>
+                                <Text style={styles.username}>-</Text>
+                                <Text style={styles.globalUsername}>@{name}</Text>
+                            </View>
                             <Text style={styles.date}>{convertDate(date.seconds)}</Text>
                         </View>
                     }
@@ -257,12 +272,25 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         marginLeft: 10
     },
+    perfil_usernames_block: {
+        flexDirection: "row",
+    },
     username: {
+        marginRight: 5,
         fontSize: 18,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
+    globalUsername: {
+        fontSize: 18,
+        color: "#ff0070"
+    },
+    myGlobalUsername: {
+        fontSize: 18,
+        color: "#7e8d3d"
+    },
     myUsername: {
+        marginRight: 5,
         fontWeight: "bold",
         fontSize: 18,
         color: "#abf752"

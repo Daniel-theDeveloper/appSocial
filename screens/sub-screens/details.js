@@ -18,6 +18,7 @@ export default function Details(props) {
         id: "",
         body: "",
         name: "",
+        nickname: publicationData.nickname,
         urlImage: null,
         comments: "",
         comments_container: [],
@@ -164,7 +165,7 @@ export default function Details(props) {
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>{publicationArray.name} publicó</Text>
+                                <Text style={styles.username}>{publicationArray.nickname} publicó</Text>
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>

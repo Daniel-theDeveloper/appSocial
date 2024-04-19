@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export var globalUsername = ""
-export var myIdUser = ""
+export var myIdUser = "";
+export var globalUsername = "";
+export var avatarURL = "";
 
 export async function setUsername(username) {
     try {

@@ -92,7 +92,7 @@ export default function New_publication(props) {
             ],
         );
 
-    const goBackAgain = async () => {
+    function goBackAgain() {
         props.navigation.goBack()
     }
 

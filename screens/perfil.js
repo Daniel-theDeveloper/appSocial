@@ -6,6 +6,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { convertDateLarge } from "../utils/convertDate";
 import { userId } from "./components/Publish";
 import { myIdUser } from "../utils/localstorage";
+import { userData } from "./sub-screens/configPerfil";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -32,6 +33,7 @@ export default function Perfil(props) {
     const [avatarURI, setAvatarURI] = useState(null);
     const [bannerURL, setBannerURL] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [myPerfil, setMyPerfil] = useState(false);
 
     const [followsCount, setFollowsCount] = useState(0);
     const [followingsCount, setFollowingsCount] = useState(0);
@@ -77,7 +79,9 @@ export default function Perfil(props) {
                             username: res.data['username'],
                             wasCreated: res.data['wasCreated'],
                             location: res.data['location'],
-                            banner: res.data['banner']
+                            banner: res.data['banner'],
+                            country: res.data['country'],
+                            city: res.data['city']
                         }
                     }
                 })
@@ -86,6 +90,9 @@ export default function Perfil(props) {
                 }
                 if (getData.banner != null) {
                     fetchImage(getData.banner, false);
+                }
+                if (getData.username === globalUsername) {
+                    setMyPerfil(true);
                 }
                 setFollowsCount(getData.followers.length)
                 setFollowingsCount(getData.following.length)
@@ -147,6 +154,19 @@ export default function Perfil(props) {
         }
     }
 
+    function goConfigMyPerfil() {
+        userData.id = userArray.id;
+        userData.avatar = avatarURI;
+        userData.banner = bannerURL;
+        userData.name = userArray.name;
+        userData.username = userArray.username;
+        userData.details = userArray.details;
+        userData.country = userArray.country;
+        userData.city = userArray.city;
+
+        props.navigation.navigate('ConfigPerfil');
+    }
+
     return (
         <ScrollView style={styles.container}>
             {bannerURL != null ?
@@ -158,18 +178,26 @@ export default function Perfil(props) {
 
             <View style={styles.info_container}>
                 <View style={styles.interaction_block}>
-                    {isFollowed ?
-                        <View style={styles.followed}>
-                            <MaterialCommunityIcons style={styles.followedIcon} name='account-multiple-check' />
-                            <Text style={styles.followedLabel}>Siguiendo</Text>
-                        </View>
-                        :
-                        <TouchableOpacity onPress={startFollow}>
+                    {myPerfil ?
+                        <TouchableOpacity onPress={goConfigMyPerfil}>
                             <View style={styles.followButton}>
-                                <MaterialCommunityIcons style={styles.followIcon} name='account-multiple-plus-outline' />
-                                <Text style={styles.followLabel}>Seguir</Text>
+                                <MaterialCommunityIcons style={styles.followIcon} name='pencil' />
+                                <Text style={styles.followLabel}>Configurar</Text>
                             </View>
                         </TouchableOpacity>
+                        :
+                        isFollowed ?
+                            <View style={styles.followed}>
+                                <MaterialCommunityIcons style={styles.followedIcon} name='account-multiple-check' />
+                                <Text style={styles.followedLabel}>Siguiendo</Text>
+                            </View>
+                            :
+                            <TouchableOpacity onPress={startFollow}>
+                                <View style={styles.followButton}>
+                                    <MaterialCommunityIcons style={styles.followIcon} name='account-multiple-plus-outline' />
+                                    <Text style={styles.followLabel}>Seguir</Text>
+                                </View>
+                            </TouchableOpacity>
                     }
                     <MaterialCommunityIcons style={styles.interaction_options} name='dots-horizontal' />
                 </View>
