@@ -4,7 +4,7 @@ import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { comment_Array } from '../components/Comment';
 import { replyComment_Array } from '../components/Comment_answer';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 import { globals } from '../../utils/globalVars';
 
@@ -25,7 +25,7 @@ export default function ReplyScreen(props) {
                     date: new Date(),
                     dislikes: [],
                     likes: [],
-                    user: globalUsername
+                    user: localUserLogin.username
                 }
             } else {
                 const myReplyComment = "@"+replyComment_Array.user+": "+myComment
@@ -34,7 +34,7 @@ export default function ReplyScreen(props) {
                     date: new Date(),
                     dislikes: [],
                     likes: [],
-                    user: globalUsername
+                    user: localUserLogin.username
                 }
             }
             try {
@@ -129,7 +129,7 @@ export default function ReplyScreen(props) {
             <View style={styles.comment_publication}>
                 <View style={styles.reply_row}>
                     <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                    <Text style={styles.username2}>{globalUsername}</Text>
+                    <Text style={styles.username2}>{localUserLogin.username}</Text>
                 </View>
 
                 <View style={styles.new_comment_input_block}>

@@ -6,7 +6,7 @@ import { userId } from './components/Publish';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { globalUsername } from '../utils/localstorage';
+import { localUserLogin } from '../utils/localstorage';
 
 export default function Homepage(props) {
     const [publications, setPublications] = React.useState([]);
@@ -44,7 +44,7 @@ export default function Homepage(props) {
     }
 
     function goMyPerfil() {
-        userId.id = globalUsername;
+        userId.id = localUserLogin.username;
         props.navigation.navigate('Perfil')
     }
 

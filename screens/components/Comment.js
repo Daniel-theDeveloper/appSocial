@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-na
 import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Comment_answer from './Comment_answer';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 
@@ -101,7 +101,7 @@ export default function Comment({
                         for (let i = 0; i < commentsSnapshot.length; i++) {
                             if (commentsSnapshot[i].message === message) {
                                 if (commentsSnapshot[i].likes) {
-                                    commentsSnapshot[i].likes.push(globalUsername);
+                                    commentsSnapshot[i].likes.push(localUserLogin.username);
                                     break;
                                 }
                             }
@@ -132,12 +132,12 @@ export default function Comment({
                         if (commentsSnapshot[i].message === message) {
                             if (commentsSnapshot[i].dislikes) {
                                 for (let y = 0; y < commentsSnapshot[i].dislikes.length; y++) {
-                                    if (commentsSnapshot[i].dislikes[y] === globalUsername) {
+                                    if (commentsSnapshot[i].dislikes[y] === localUserLogin.username) {
                                         commentsSnapshot[i].dislikes.splice(y, 1);
                                         break;
                                     }
                                 }
-                                commentsSnapshot[i].likes.push(globalUsername);
+                                commentsSnapshot[i].likes.push(localUserLogin.username);
                                 break;
                             }
                         }
@@ -172,7 +172,7 @@ export default function Comment({
                         for (let i = 0; i < commentsSnapshot.length; i++) {
                             if (commentsSnapshot[i].message === message) {
                                 if (commentsSnapshot[i].dislikes) {
-                                    commentsSnapshot[i].dislikes.push(globalUsername);
+                                    commentsSnapshot[i].dislikes.push(localUserLogin.username);
                                     break;
                                 }
                             }
@@ -203,12 +203,12 @@ export default function Comment({
                         if (commentsSnapshot[i].message === message) {
                             if (commentsSnapshot[i].likes) {
                                 for (let y = 0; y < commentsSnapshot[i].likes.length; y++) {
-                                    if (commentsSnapshot[i].likes[y] === globalUsername) {
+                                    if (commentsSnapshot[i].likes[y] === localUserLogin.username) {
                                         commentsSnapshot[i].likes.splice(y, 1);
                                         break;
                                     }
                                 }
-                                commentsSnapshot[i].dislikes.push(globalUsername);
+                                commentsSnapshot[i].dislikes.push(localUserLogin.username);
                                 break;
                             }
                         }
@@ -241,7 +241,7 @@ export default function Comment({
                 <View style={styles.comment_right}>
 
                     <View style={styles.comment_header}>
-                        {user == globalUsername ?
+                        {user == localUserLogin.username ?
                             <Text style={styles.comment_myUsername}>{nickname}</Text>
                             :
                             <Text style={styles.comment_username}>{nickname}</Text>

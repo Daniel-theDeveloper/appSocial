@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
 import { database } from '../../utils/database';
 import { collection, addDoc } from 'firebase/firestore';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { getStorage, ref, uploadBytes } from "firebase/storage"
 
 import * as ImagePicker from 'expo-image-picker';
@@ -17,7 +17,7 @@ export default function New_publication(props) {
         date: new Date(),
         likes: [],
         shares: 0,
-        user: globalUsername
+        user: localUserLogin.username
     })
     const [userImage, setUserImage] = useState(null);
     const [userImageName, setUserImageName] = useState("publish");
@@ -100,7 +100,7 @@ export default function New_publication(props) {
         setLoading_Button(true);
         try {
             if (userImage != null) {
-                const url = globalUsername+"/publicationImages/"+userImageName+"."+userImageType;
+                const url = localUserLogin.username+"/publicationImages/"+userImageName+"."+userImageType;
 
                 const response = await fetch(userImage);
                 const blob = await response.blob();

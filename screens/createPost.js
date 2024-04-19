@@ -5,7 +5,7 @@ import { database } from '../utils/database';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { globalUsername } from '../utils/localstorage';
+import { localUserLogin } from '../utils/localstorage';
 
 export default function CreatePost(props) {
     const [publications, setPublications] = useState([]);
@@ -21,7 +21,7 @@ export default function CreatePost(props) {
         setLoading(true);
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, where("user", "==", globalUsername), orderBy('date', orderStatus));
+            const q = query(collectionRef, where("user", "==", localUserLogin.username), orderBy('date', orderStatus));
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(

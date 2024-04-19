@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted } from '../../utils/interations';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 import Comment from '../components/Comment';
 // import { compareDesc } from "date-fns";
@@ -100,7 +100,7 @@ export default function Details(props) {
             try {
                 const docRef = doc(database, 'publications', publicationArray.id);
                 await updateDoc(docRef, {
-                    likes: arrayUnion(globalUsername)
+                    likes: arrayUnion(localUserLogin.username)
                 });
                 setIsLike(true);
             } catch (error) {
@@ -127,7 +127,7 @@ export default function Details(props) {
                 dislikes: [],
                 likes: [],
                 message: myComment,
-                user: globalUsername
+                user: localUserLogin.username
             }
             try {
                 const docRef = doc(database, 'publications', publicationArray.id);

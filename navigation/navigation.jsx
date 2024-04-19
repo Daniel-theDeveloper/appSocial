@@ -1,6 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import Loading from '../screens/loading';
 import Login from '../screens/login';
 import Details from '../screens/sub-screens/details';
 import { Homepage, Trending, Create, Notifications, Chats } from '../screens';
@@ -26,6 +27,7 @@ export default function MyRoutes() {
     function MyRoutes() {
         return (
             <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Loading" component={Loading} />
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
                 <Stack.Screen name="Sign_up_part3" component={Sign_up_part3} />

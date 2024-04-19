@@ -1,103 +1,48 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from 'react-native';
-import { collection, getDocs } from 'firebase/firestore';
-import { database, auth } from '../utils/database';
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { setUsername, getUsername, erase_all, setIdUser } from '../utils/localstorage';
+import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from 'react-native';
+import LoginProcess from '../utils/loginProcess';
 
 export default function Login(props) {
-    const [loginButtomVisible, setloginButtomVisible] = useState((true));
+    const [loginButtomVisible, setloginButtomVisible] = useState(true);
 
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     let canEdit = true;
 
-    // Metodo para obtener el username del usuario
-    const getDataUser = async (email) => {
-        let userData = [];
-        try {
-            const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push(doc.data());
-            });
-            const data = userData.find(function (res) {
-                if (res.email === email) {
-                    return res
-                }
-            });
-            return data.username
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    const getIDUser = async (email) => {
-        let userData = [];
-        try {
-            const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push({id: doc.id, email: doc.data().email});
-            });
-            const data = userData.find(function (res) {
-                if (res.email === email) {
-                    return res
-                }
-            });
-            return data.id
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    function goSing_up () {
+    function goSing_up() {
         props.navigation.navigate('Sign_up_part1');
     }
 
     const login = async () => {
-        if (email.length != 0 || password.length != 0) {
+        if (email.length != 0 && password.length != 0) {
             setloginButtomVisible(false);
             canEdit = false;
             userData = [];
-            const myEmail = email.toLowerCase()
-            try {
-                await signInWithEmailAndPassword(auth, myEmail, password).then(async () => {
-                    const username = await getDataUser(myEmail);
-                    const id = await getIDUser(myEmail);
-    
-                    //Bloque provicional, la idea es autologuearse si ya inicio sesion
-                    const old_username = await getUsername();
-                    if (old_username != undefined) {
-                        await erase_all();
-                    }
-    
-                    // Guardando datos del logueo.
-                    await setUsername(username);
-                    setIdUser(id);
-                    canEdit = true
-                    setloginButtomVisible(true)
-                    props.navigation.navigate('Home');
-                });
-    
-            } catch (error) {
-                console.log(error.message);
+
+            const myEmail = email.toLowerCase();
+            const resLogin = await LoginProcess(myEmail, password);
+
+            canEdit = true;
+            setloginButtomVisible(true);
+            console.log("Resultado del login: " + resLogin);
+
+            if (resLogin) {
+                props.navigation.navigate('Home');
+            } else {
+                console.log("Hay error :c");
                 Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
                 canEdit = true
                 setloginButtomVisible(true)
             }
         } else {
-            Alert.alert("Campos vacios","Por favor, llene todos los campos");
+            Alert.alert("Campos vacios", "Por favor, llene todos los campos");
         }
     };
 
     return (
         <View style={styles.container}>
-            <StatusBar
-                animated={true}
-                backgroundColor={'#220014'}
-                barStyle={"light-content"}
-            />
             <View style={styles.subContainer}>
                 <Image style={styles.backgroundLogin} source={require('../assets/loginBackground.png')} />
 

@@ -4,7 +4,7 @@ import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
@@ -93,7 +93,7 @@ export default function Comment_answer({
                                 for (let x = 0; x < commentsSnapshot[i].comment_answers.length; x++) {
                                     if (commentsSnapshot[i].comment_answers[x].body === body) {
                                         if (commentsSnapshot[i].comment_answers[x].likes) {
-                                            commentsSnapshot[i].comment_answers[x].likes.push(globalUsername);
+                                            commentsSnapshot[i].comment_answers[x].likes.push(localUserLogin.username);
                                             break;
                                         }
                                     }
@@ -127,12 +127,12 @@ export default function Comment_answer({
                             for (let x = 0; x < commentsSnapshot[i].comment_answers.length; x++) {
                                 if (commentsSnapshot[i].comment_answers[x].body === body) {
                                     for (let y = 0; y < commentsSnapshot[i].comment_answers[x].dislikes.length; y++) {
-                                        if (commentsSnapshot[i].comment_answers[x].dislikes[y] === globalUsername) {
+                                        if (commentsSnapshot[i].comment_answers[x].dislikes[y] === localUserLogin.username) {
                                             commentsSnapshot[i].comment_answers[x].dislikes.splice(y, 1);
                                             break;
                                         }
                                     }
-                                    commentsSnapshot[i].comment_answers[x].likes.push(globalUsername);
+                                    commentsSnapshot[i].comment_answers[x].likes.push(localUserLogin.username);
                                     break;
                                 }
                             }
@@ -170,7 +170,7 @@ export default function Comment_answer({
                                 for (let x = 0; x < commentsSnapshot[i].comment_answers.length; x++) {
                                     if (commentsSnapshot[i].comment_answers[x].body === body) {
                                         if (commentsSnapshot[i].comment_answers[x].dislikes) {
-                                            commentsSnapshot[i].comment_answers[x].dislikes.push(globalUsername);
+                                            commentsSnapshot[i].comment_answers[x].dislikes.push(localUserLogin.username);
                                             break;
                                         }
                                     }
@@ -204,12 +204,12 @@ export default function Comment_answer({
                             for (let x = 0; x < commentsSnapshot[i].comment_answers.length; x++) {
                                 if (commentsSnapshot[i].comment_answers[x].body === body) {
                                     for (let y = 0; y < commentsSnapshot[i].comment_answers[x].likes.length; y++) {
-                                        if (commentsSnapshot[i].comment_answers[x].likes[y] === globalUsername) {
+                                        if (commentsSnapshot[i].comment_answers[x].likes[y] === localUserLogin.username) {
                                             commentsSnapshot[i].comment_answers[x].likes.splice(y, 1);
                                             break;
                                         }
                                     }
-                                    commentsSnapshot[i].comment_answers[x].dislikes.push(globalUsername);
+                                    commentsSnapshot[i].comment_answers[x].dislikes.push(localUserLogin.username);
                                     break;
                                 }
                             }
@@ -240,7 +240,7 @@ export default function Comment_answer({
             <View style={styles.comment_responces_right}>
 
                 <View style={styles.comment_header}>
-                    {user == globalUsername ?
+                    {user == localUserLogin.username ?
                         <Text style={styles.comment_myUsername}>{nickname}</Text>
                         :
                         <Text style={styles.comment_username}>{nickname}</Text>

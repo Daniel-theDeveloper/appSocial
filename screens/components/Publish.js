@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted, isWasCommented } from '../../utils/interations';
 
@@ -88,7 +88,7 @@ export default function Publication({
             nickname: nickname,
             avatar: avatarURL
         }
-        props.navigation.navigate('Details')
+        props.navigation.navigate('Details');
     }
 
     function goPerfil() {
@@ -103,7 +103,7 @@ export default function Publication({
             try {
                 const docRef = doc(database, 'publications', id);
                 await updateDoc(docRef, {
-                    likes: arrayUnion(globalUsername)
+                    likes: arrayUnion(localUserLogin.username)
                 });
                 setIsLike(true);
             } catch (error) {
@@ -162,7 +162,7 @@ export default function Publication({
                         :
                         <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
                     }
-                    {name === globalUsername ?
+                    {name === localUserLogin.username ?
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
                                 <Text style={styles.myUsername}>{nickname}</Text>

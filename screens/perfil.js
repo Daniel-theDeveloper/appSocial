@@ -12,7 +12,7 @@ import { doc, updateDoc, arrayUnion, collection, onSnapshot, query, where, order
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../utils/database';
 import { isWasInteracted } from "../utils/interations";
-import { globalUsername } from "../utils/localstorage";
+import { localUserLogin } from "../utils/localstorage";
 
 export default function Perfil(props) {
     const [userArray, setUserArray] = useState({
@@ -91,7 +91,7 @@ export default function Perfil(props) {
                 if (getData.banner != null) {
                     fetchImage(getData.banner, false);
                 }
-                if (getData.username === globalUsername) {
+                if (getData.username === localUserLogin.username) {
                     setMyPerfil(true);
                 }
                 setFollowsCount(getData.followers.length)
@@ -142,7 +142,7 @@ export default function Perfil(props) {
             const docRefUser = doc(database, 'users', userArray.id);
             const docRefMyUser = doc(database, 'users', myIdUser);
             await updateDoc(docRefUser, {
-                followers: arrayUnion(globalUsername)
+                followers: arrayUnion(localUserLogin.username)
             });
             await updateDoc(docRefMyUser, {
                 following: arrayUnion(userArray.username)

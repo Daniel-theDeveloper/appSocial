@@ -1,10 +1,10 @@
-import { globalUsername } from './localstorage';
+import { localUserLogin } from './localstorage';
 
 export function isWasInteracted(array) {
     let key = false;
 
     array.find(function (res) {
-        if (res == globalUsername) {
+        if (res == localUserLogin.username) {
             key = true;
         }
     });
@@ -16,7 +16,7 @@ export function isWasCommented(comments_array) {
         let key = false;
 
         comments_array.find(function (res) {
-            if (res.user === globalUsername) {
+            if (res.user === localUserLogin.username) {
                 key = true;
             }
         });

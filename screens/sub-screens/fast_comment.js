@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import { publication_selected } from '../components/Publish';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
@@ -23,7 +23,7 @@ export default function FastComment(props) {
                 dislikes: [],
                 likes: [],
                 message: myComment,
-                user: globalUsername
+                user: localUserLogin.username
             }
             try {
                 const docRef = doc(database, 'publications', publicationData.id);
@@ -71,7 +71,7 @@ export default function FastComment(props) {
             <View style={styles.comment_publication}>
                 <View style={styles.reply_row}>
                     <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                    <Text style={styles.username2}>{globalUsername}</Text>
+                    <Text style={styles.username2}>{localUserLogin.username}</Text>
                 </View>
 
                 <View style={styles.new_comment_input_block}>

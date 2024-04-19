@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { globalUsername } from '../../utils/localstorage';
+import { localUserLogin } from '../../utils/localstorage';
 
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes } from "firebase/storage";
@@ -44,7 +44,7 @@ export default function ConfigPerfil(props) {
                 if (userData.avatar != avatarURI) {
                     if (avatarURI != null) {
                         let URLImage;
-                        const url = globalUsername+"/avatar.png";
+                        const url = localUserLogin.username+"/avatar.png";
         
                         const response = await fetch(avatarURI);
                         const blob = await response.blob();
@@ -62,7 +62,7 @@ export default function ConfigPerfil(props) {
                 if (userData.banner != bannerURL) {
                     if (bannerURL != null) {
                         let URLBanner;
-                        const url = globalUsername+"/banner.png";
+                        const url = localUserLogin.username+"/banner.png";
         
                         const response = await fetch(bannerURL);
                         const blob = await response.blob();
@@ -80,7 +80,7 @@ export default function ConfigPerfil(props) {
 
                 await updateDoc(docRef, {
                     country: country,
-                    city: city.length != 0 ? city : null,
+                    city: city != undefined ? city : null,
                     name: nickname,
                     details: description
                 });
