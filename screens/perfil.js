@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
+import Modal from 'react-native-modalbox';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
@@ -7,6 +8,7 @@ import { convertDateLarge } from "../utils/convertDate";
 import { userId } from "./components/Publish";
 import { myIdUser } from "../utils/localstorage";
 import { userData } from "./sub-screens/configPerfil";
+import UserList from "./components/userList";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -38,6 +40,9 @@ export default function Perfil(props) {
     const [followsCount, setFollowsCount] = useState(0);
     const [followingsCount, setFollowingsCount] = useState(0);
 
+    const [followersList, setFollowersList] = useState(false);
+    const [followingsList, setFollowingsList] = useState(false);
+
     useEffect(() => {
         getUserData();
         getPublishData();
@@ -52,6 +57,22 @@ export default function Perfil(props) {
             setAvatarURI(url);
         } else {
             setBannerURL(url);
+        }
+    }
+
+    function openFollowersList() {
+        if (followersList) {
+            setFollowersList(false);
+        } else {
+            setFollowersList(true);
+        }
+    }
+
+    function openFollowingList() {
+        if (followingsList) {
+            setFollowingsList(false);
+        } else {
+            setFollowingsList(true);
         }
     }
 
@@ -216,15 +237,19 @@ export default function Perfil(props) {
                 <Text style={styles.info_User}>{userArray.details}</Text>
 
                 <View style={styles.follows_block}>
-                    <View style={styles.follows_part}>
-                        <Text style={styles.follows_numbers}>{followsCount}</Text>
-                        <Text style={styles.follows_label}>Seguidores</Text>
-                    </View>
+                    <TouchableOpacity onPress={openFollowersList}>
+                        <View style={styles.follows_part}>
+                            <Text style={styles.follows_numbers}>{followsCount}</Text>
+                            <Text style={styles.follows_label}>Seguidores</Text>
+                        </View>
+                    </TouchableOpacity>
                     <View style={styles.follows_separator} />
-                    <View style={styles.follows_part}>
-                        <Text style={styles.follows_numbers}>{followingsCount}</Text>
-                        <Text style={styles.follows_label}>Siguiendo</Text>
-                    </View>
+                    <TouchableOpacity onPress={openFollowingList}>
+                        <View style={styles.follows_part}>
+                            <Text style={styles.follows_numbers}>{followingsCount}</Text>
+                            <Text style={styles.follows_label}>Siguiendo</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -255,6 +280,18 @@ export default function Perfil(props) {
                         {publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)}
                     </View>
             }
+
+            <Modal style={styles.modal} position={"bottom"} isOpen={followersList} onClosed={openFollowersList}>
+                <View style={styles.modalLine}></View>
+                <Text style={styles.modalTitle}>Seguidores</Text>
+                {userArray.followers.map((follower, key) => (<UserList key={key} props={props} idUser={follower} />))}
+            </Modal>
+            
+            <Modal style={styles.modal} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList}>
+                <View style={styles.modalLine}></View>
+                <Text style={styles.modalTitle}>Siguiendo</Text>
+                
+            </Modal>
         </ScrollView>
     )
 }
@@ -434,5 +471,24 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 200,
         backgroundColor: "#220014"
+    },
+    modal: {
+        alignItems: "center",
+        padding: 20,
+        borderTopRightRadius: 40,
+        borderTopLeftRadius: 40,
+        backgroundColor: "#550038"
+    },
+    modalLine: {
+        height: 3,
+        width: 150,
+        borderRadius: 5,
+        backgroundColor: "#e40068",
+    },
+    modalTitle: {
+        color: "#e40068",
+        fontSize: 18,
+        fontWeight: "bold",
+        marginVertical: 15
     }
 })
