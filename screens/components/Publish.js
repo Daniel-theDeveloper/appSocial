@@ -35,6 +35,7 @@ export default function Publication({
     const [isShared, setIsShared] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
+    const [followingList, setFollowingList] = useState([]);
 
     const [avatarURL, setAvatarURL] = useState(null);
     const [nickname, setNickname] = useState(null);
@@ -59,7 +60,7 @@ export default function Publication({
             const storage = getStorage();
             const imageRef = ref(storage, url);
             const getUrl = await getDownloadURL(imageRef);
-            
+
             setAvatarURL(getUrl);
         }
     }
@@ -75,6 +76,7 @@ export default function Publication({
                 if (res.username === name) {
                     fetchImageAvatar(res.avatar);
                     setNickname(res.name);
+                    setFollowingList(res.following);
                 }
             })
         } catch (error) {
@@ -86,7 +88,8 @@ export default function Publication({
         publicationData = {
             id: id,
             nickname: nickname,
-            avatar: avatarURL
+            avatar: avatarURL,
+            following: followingList
         }
         props.navigation.navigate('Details');
     }
@@ -114,27 +117,18 @@ export default function Publication({
     }
 
     function setCommment() {
-        if (isComment) {
-            publicationData = {
-                id: id,
-                nickname: nickname,
-                avatar: avatarURL
-            }
-            goDetails();
-        } else {
-            publication_selected = {
-                body: body,
-                avatar: avatarURL,
-                comments_container: comments_container,
-                date: date,
-                likes: likes.length,
-                user: nickname
-            }
-            publicationData = {
-                id: id
-            }
-            props.navigation.navigate('FastComment');
+        publication_selected = {
+            body: body,
+            avatar: avatarURL,
+            comments_container: comments_container,
+            date: date,
+            likes: likes.length,
+            user: nickname
         }
+        publicationData = {
+            id: id
+        }
+        props.navigation.navigate('FastComment');
     }
 
     const setShared = async () => {

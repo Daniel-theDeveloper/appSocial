@@ -12,7 +12,7 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 import { globals } from '../../utils/globalVars';
 
-export var comment_Array = []
+export let comment_Array = [];
 
 export default function Comment({
     comment_answers,
@@ -45,7 +45,8 @@ export default function Comment({
             likes: likes,
             dislikes: dislikes,
             message: message,
-            user: user
+            user: user,
+            userAvatar: avatarURL
         }
         globals.isPrincipalComment = true;
         props.navigation.navigate('ReplyScreen')

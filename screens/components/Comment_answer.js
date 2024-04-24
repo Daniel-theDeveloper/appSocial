@@ -39,12 +39,14 @@ export default function Comment_answer({
     function replyComment() {
         globals.isPrincipalComment = false;
         replyComment_Array = {
+            principalMessage: principalMessage,
             comment_answers: comment_answers,
             date: date,
             likes: likes,
             dislikes: dislikes,
             message: body,
             user: user,
+            userAvatar: avatarURL
         }
         props.navigation.navigate('ReplyScreen')
     }

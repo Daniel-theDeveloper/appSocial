@@ -1,20 +1,38 @@
-import * as React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import react, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { userId } from './components/Publish';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { localUserLogin } from '../utils/localstorage';
+import { localUserLogin, erase_all } from '../utils/localstorage';
 
 export default function Homepage(props) {
-    const [publications, setPublications] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
+    const [publications, setPublications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [myAvatar, setMyAvatar] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
+        setMyAvatar(localUserLogin.avatar);
         loadAllPublish();
-    }, [])
+    }, []);
+
+    const alertLogOut = () =>
+        Alert.alert(
+            'Salirse de la plaaforma',
+            '¿Desea cerrar su sesion?',
+            [
+                {
+                    text: 'No',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Si',
+                    onPress: () => log_out()
+                },
+            ],
+        );
 
     function loadAllPublish() {
         const collectionRef = collection(database, 'publications');
@@ -38,14 +56,19 @@ export default function Homepage(props) {
         setLoading(false);
         return unsuscribe;
     }
+
+    const log_out = async () => {
+        await erase_all();
+        props.navigation.navigate('Login');
+    }
     
     function goNewPublish() {
-        props.navigation.navigate('NewPublication')
+        props.navigation.navigate('NewPublication');
     }
 
     function goMyPerfil() {
         userId.id = localUserLogin.username;
-        props.navigation.navigate('Perfil')
+        props.navigation.navigate('Perfil');
     }
 
     return (
@@ -53,12 +76,12 @@ export default function Homepage(props) {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <View style={styles.header_row}>
-                        <TouchableOpacity>
-                            <MaterialCommunityIcons style={styles.menuButton} name='menu' />
+                        <TouchableOpacity onPress={alertLogOut}>
+                            <MaterialCommunityIcons style={styles.menuButton} name='logout' />
                         </TouchableOpacity>
                         <Text style={styles.title}>Pagina principal</Text>
                         <TouchableOpacity onPress={goMyPerfil}>
-                            <Image style={styles.avatar} source={require('../assets/avatar-default.png')} />
+                            <Image style={styles.avatar} source={myAvatar != null ? {uri: myAvatar} : require('../assets/avatar-default.png')} />
                         </TouchableOpacity>
                     </View>
 
@@ -183,6 +206,8 @@ const styles = StyleSheet.create({
     avatar: {
         height: 50,
         width: 50,
+        borderColor: "white",
+        borderWidth: 2.5,
         borderRadius: 100
     }
 })

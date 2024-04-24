@@ -54,6 +54,7 @@ export default function ConfigPerfil(props) {
                         const snapshot = await uploadBytes(storageRef, blob);
         
                         URLImage = snapshot.ref.fullPath;
+                        localUserLogin.avatar = avatarURI
                         await updateDoc(docRef, {
                             avatar: URLImage
                         });
@@ -84,6 +85,8 @@ export default function ConfigPerfil(props) {
                     name: nickname,
                     details: description
                 });
+
+                localUserLogin.nickname = nickname;
                 setLoading(false);
                 props.navigation.navigate('Perfil');
             } catch (error) {

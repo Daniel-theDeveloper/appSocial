@@ -15,10 +15,20 @@ export default function ReplyScreen(props) {
     const [myComment, setMyComment] = useState("");
     const [loadingButton, setLoadingButton] = useState((false));
 
+    const [imageURL] = useState(comment_Array.userAvatar);
+    const [replyImageURL] = useState(replyComment_Array.userAvatar);
+    const [myAvatarURL] = useState(localUserLogin.avatar);
+
+    function goBackAgain() {
+        props.navigation.goBack();
+    }
+
     const sendMyComment = async () => {
         if (myComment !== "") {
+            let commentAnswerArray = [];
+            let myReplyComment = "";
+
             setLoadingButton(true);
-            let commentAnswerArray = []
             if (globals.isPrincipalComment) {
                 commentAnswerArray = {
                     body: myComment,
@@ -28,7 +38,7 @@ export default function ReplyScreen(props) {
                     user: localUserLogin.username
                 }
             } else {
-                const myReplyComment = "@"+replyComment_Array.user+": "+myComment
+                myReplyComment = "@" + replyComment_Array.user + ": " + myComment
                 commentAnswerArray = {
                     body: myReplyComment,
                     date: new Date(),
@@ -38,17 +48,28 @@ export default function ReplyScreen(props) {
                 }
             }
             try {
-                const docRef = doc(database, "publications", publicationData.id)
+                const docRef = doc(database, "publications", publicationData.id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     let commentsSnapshot = docSnap.data().comments_container
-
-                    for (let i = 0; i < commentsSnapshot.length; i++) {
-                        if (commentsSnapshot[i].message === comment_Array.message) {
-                            if (commentsSnapshot[i].comment_answers) {
-                                commentsSnapshot[i].comment_answers.push(commentAnswerArray);
-                                break;
+                    
+                    if (globals.isPrincipalComment) {
+                        for (let i = 0; i < commentsSnapshot.length; i++) {
+                            if (commentsSnapshot[i].message === comment_Array.message) {
+                                if (commentsSnapshot[i].comment_answers) {
+                                    commentsSnapshot[i].comment_answers.push(commentAnswerArray);
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        for (let i = 0; i < commentsSnapshot.length; i++) {
+                            if (commentsSnapshot[i].message === replyComment_Array.principalMessage) {
+                                if (commentsSnapshot[i].comment_answers) {
+                                    commentsSnapshot[i].comment_answers.push(commentAnswerArray);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -68,14 +89,19 @@ export default function ReplyScreen(props) {
 
     return (
         <View style={styles.container}>
-
+            <TouchableOpacity onPress={goBackAgain}>
+                <View style={styles.back_block}>
+                    <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
+                    <Text style={styles.back_label}>Regresar</Text>
+                </View>
+            </TouchableOpacity>
             {globals.isPrincipalComment ?
                 <View style={styles.comment_publication}>
                     {/* header */}
                     <View style={styles.perfil_header}>
-                        <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                        <Image style={styles.avatar} source={imageURL != null ? { uri: imageURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
-                            <Text style={styles.username}>{comment_Array.user} comentó</Text>
+                            <Text style={styles.username}>@{comment_Array.user} comentó</Text>
                             <Text style={styles.date}>{convertDate(comment_Array.date)}</Text>
                         </View>
                     </View>
@@ -100,7 +126,7 @@ export default function ReplyScreen(props) {
                 <View style={styles.comment_publication}>
                     {/* header */}
                     <View style={styles.perfil_header}>
-                        <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
+                        <Image style={styles.avatar} source={replyImageURL != null ? { uri: replyImageURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
                             <Text style={styles.username}>{replyComment_Array.user} respondio</Text>
                             <Text style={styles.date}>{convertDate(replyComment_Array.date)}</Text>
@@ -128,8 +154,8 @@ export default function ReplyScreen(props) {
 
             <View style={styles.comment_publication}>
                 <View style={styles.reply_row}>
-                    <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                    <Text style={styles.username2}>{localUserLogin.username}</Text>
+                    <Image style={styles.avatar} source={myAvatarURL != null ? {uri: myAvatarURL} : require('../../assets/avatar-default.png')} />
+                    <Text style={styles.username2}>{localUserLogin.nickname}</Text>
                 </View>
 
                 <View style={styles.new_comment_input_block}>
@@ -169,8 +195,22 @@ const styles = StyleSheet.create({
         flex: 1,
         flexGrow: 1,
         backgroundColor: "#210016",
-        paddingVertical: 40,
+        paddingBottom: 40,
         paddingHorizontal: 12
+    },
+    back_block: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10
+    },
+    back_label: {
+        fontSize: 22,
+        fontWeight: "bold",
+        color: "#4CC9F0"
+    },
+    back_button: {
+        fontSize: 50,
+        color: "#4CC9F0"
     },
     comment_publication: {
         backgroundColor: "#550038",

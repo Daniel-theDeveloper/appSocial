@@ -13,7 +13,7 @@ import UserList from "./components/userList";
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../utils/database';
-import { isWasInteracted } from "../utils/interations";
+import { isWasFollow } from "../utils/interations";
 import { localUserLogin } from "../utils/localstorage";
 
 export default function Perfil(props) {
@@ -115,10 +115,10 @@ export default function Perfil(props) {
                 if (getData.username === localUserLogin.username) {
                     setMyPerfil(true);
                 }
-                setFollowsCount(getData.followers.length)
-                setFollowingsCount(getData.following.length)
-                setIsFollowed(isWasInteracted(getData.followers))
-                setIsFollowedYou(isWasInteracted(getData.following))
+                setFollowsCount(getData.followers.length);
+                setFollowingsCount(getData.following.length);
+                setIsFollowed(isWasFollow(getData.followers));
+                setIsFollowedYou(isWasFollow(getData.following));
                 setUserArray(getData);
             } catch (error) {
                 console.error(error);
@@ -163,10 +163,10 @@ export default function Perfil(props) {
             const docRefUser = doc(database, 'users', userArray.id);
             const docRefMyUser = doc(database, 'users', myIdUser);
             await updateDoc(docRefUser, {
-                followers: arrayUnion(localUserLogin.username)
+                followers: arrayUnion(localUserLogin.id)
             });
             await updateDoc(docRefMyUser, {
-                following: arrayUnion(userArray.username)
+                following: arrayUnion(userArray.id)
             });
             setIsFollowed(true);
         } catch (error) {
@@ -290,7 +290,7 @@ export default function Perfil(props) {
             <Modal style={styles.modal} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList}>
                 <View style={styles.modalLine}></View>
                 <Text style={styles.modalTitle}>Siguiendo</Text>
-                
+                {userArray.following.map((following, key) => (<UserList key={key} props={props} idUser={following} />))}
             </Modal>
         </ScrollView>
     )

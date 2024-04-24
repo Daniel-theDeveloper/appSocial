@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted } from '../../utils/interations';
+import { isWasInteracted, isWasFollow } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 import Comment from '../components/Comment';
@@ -18,7 +18,7 @@ export default function Details(props) {
         id: "",
         body: "",
         name: "",
-        nickname: publicationData.nickname,
+        nickname: "",
         urlImage: null,
         comments: "",
         comments_container: [],
@@ -36,6 +36,8 @@ export default function Details(props) {
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
     const [avatarURL, setAvatarURL] = useState(null);
+    const [myAvatar, setMyAvatar] = useState(null);
+    const [isFollowing, setIsFollowing] = useState(false);
 
     const [myComment, setMyCommnent] = useState("");
 
@@ -85,13 +87,20 @@ export default function Details(props) {
                 setAvatarURL(publicationData.avatar);
             }
 
+            setMyAvatar(localUserLogin.avatar);
+
             setAllLikes(getData.likes.length)
             setAllComments(getData.comments_container.length)
             setIsLike(isWasInteracted(getData.likes));
-            setPublicationArray(getData)
+            setPublicationArray(getData);
+            setIsFollowing(isWasFollow(publicationData.following));
         })
         return unsuscribe;
-    }, [])
+    }, []);
+
+    function goBackAgain() {
+        props.navigation.goBack()
+    }
 
     const setLike = async () => {
         if (isLike) {
@@ -156,22 +165,52 @@ export default function Details(props) {
         }
     }
 
+    // const startFollow = async () => {
+    //     try {
+    //         const docRefUser = doc(database, 'users', userArray.id);
+    //         const docRefMyUser = doc(database, 'users', myIdUser);
+    //         await updateDoc(docRefUser, {
+    //             followers: arrayUnion(localUserLogin.id)
+    //         });
+    //         await updateDoc(docRefMyUser, {
+    //             following: arrayUnion(publicationArray.id)
+    //         });
+    //         setIsFollowing(true);
+    //     } catch (error) {
+    //         Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+    //         console.error(error);
+    //     }
+    // }
+
     return (
         <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
+                <TouchableOpacity onPress={goBackAgain}>
+                    <View style={styles.back_block}>
+                        <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
+                        <Text style={styles.back_label}>Regresar</Text>
+                    </View>
+                </TouchableOpacity>
                 <View style={styles.publication}>
                     {/* Encabezado de la publicacion */}
                     <View style={styles.perfil_header}>
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>{publicationArray.nickname} publicó</Text>
+                                <Text style={styles.username}>{publicationData.nickname} publicó</Text>
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
-                        <View style={styles.follow_button}>
-                            <Text style={styles.follow_label}>Seguir</Text>
-                        </View>
+                        {isFollowing ?
+                            <View style={styles.followed}>
+                                <MaterialCommunityIcons style={styles.followedIcon} name='account-multiple-check' />
+                                <Text style={styles.followedLabel}>Siguiendo</Text>
+                            </View>
+                            :
+                            <View style={styles.follow_button}>
+                                <Text style={styles.follow_label}>Seguir</Text>
+                            </View>
+                        }
                     </View>
 
                     {/* Cuerpo de la publicacion */}
@@ -181,7 +220,6 @@ export default function Details(props) {
                         :
                         <View></View>
                     }
-                    {/* <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} /> */}
 
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
@@ -232,7 +270,7 @@ export default function Details(props) {
 
                 <View style={styles.new_comment_container}>
                     <View style={styles.new_comment_header}>
-                        <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
+                        <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
                         <View style={styles.new_comment_input_block}>
                             <TextInput
                                 style={styles.new_comment_input}
@@ -273,8 +311,22 @@ const styles = StyleSheet.create({
         flex: 1,
         flexGrow: 1,
         backgroundColor: "#210016",
-        paddingVertical: 40,
+        paddingBottom: 40,
         paddingHorizontal: 12
+    },
+    back_block: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10
+    },
+    back_label: {
+        fontSize: 22,
+        fontWeight: "bold",
+        color: "#4CC9F0"
+    },
+    back_button: {
+        fontSize: 50,
+        color: "#4CC9F0"
     },
     publication: {
         backgroundColor: "#550038",
@@ -287,7 +339,8 @@ const styles = StyleSheet.create({
         marginBottom: 15
     },
     perfil_user: {
-        flexDirection: "row"
+        flexDirection: "row",
+        alignItems: "center"
     },
     avatar: {
         height: 50,
@@ -320,6 +373,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         color: "#4CC9F0"
+    },
+    followed: {
+        flexDirection: "row",
+        marginVertical: 10
+    },
+    followedIcon: {
+        color: "#abf752",
+        fontSize: 24,
+        marginRight: 10
+    },
+    followedLabel: {
+        color: "#abf752",
+        fontSize: 16,
+        fontWeight: "bold"
     },
     publication_text: {
         fontSize: 18,

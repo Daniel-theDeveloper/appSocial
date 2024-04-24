@@ -1,7 +1,7 @@
 import { collection, getDocs } from 'firebase/firestore';
 import { database, auth } from '../utils/database';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { localUserLogin, setLocalUser } from './localstorage';
+import { localUserLogin, setLocalUser, saveMyAvatarURI } from './localstorage';
 
 export default async function LoginProcess(email, password) {
     const SaveUserData = async () => {
@@ -18,10 +18,12 @@ export default async function LoginProcess(email, password) {
             });
 
             localUserLogin.id = await userInfo.id;
-            localUserLogin.avatar = await userInfo.data.avatar;
             localUserLogin.username = await userInfo.data.username;
-            localUserLogin.nickname = await userInfo.data.nickname;
+            localUserLogin.nickname = await userInfo.data.name;
 
+            if (userInfo.data.avatar != null) {
+                await saveMyAvatarURI(userInfo.data.avatar);
+            }
             await setLocalUser(email, password);
 
             return true

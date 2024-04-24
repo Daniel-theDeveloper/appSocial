@@ -5,11 +5,14 @@ import { publication_selected } from '../components/Publish';
 import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 
-import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { database } from '../../utils/database';
 
 export default function FastComment(props) {
     const [avatarURL] = useState(publication_selected.avatar);
+    const [myAvatarURL] = useState(localUserLogin.avatar);
 
     const [myComment, setMyComment] = useState("");
     const [loadingButton, setLoadingButton] = useState(false);
@@ -42,8 +45,18 @@ export default function FastComment(props) {
         }
     }
 
+    function goBackAgain() {
+        props.navigation.goBack();
+    }
+
     return (
         <View style={styles.container}>
+            <TouchableOpacity onPress={goBackAgain}>
+                <View style={styles.back_block}>
+                    <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
+                    <Text style={styles.back_label}>Regresar</Text>
+                </View>
+            </TouchableOpacity>
             <View style={styles.comment_publication}>
                 {/* header */}
                 <View style={styles.perfil_header}>
@@ -70,8 +83,8 @@ export default function FastComment(props) {
 
             <View style={styles.comment_publication}>
                 <View style={styles.reply_row}>
-                    <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
-                    <Text style={styles.username2}>{localUserLogin.username}</Text>
+                    <Image style={styles.avatar} source={myAvatarURL != null ? {uri: myAvatarURL} : require('../../assets/avatar-default.png')} />
+                    <Text style={styles.username2}>{localUserLogin.nickname}</Text>
                 </View>
 
                 <View style={styles.new_comment_input_block}>
@@ -111,8 +124,22 @@ const styles = StyleSheet.create({
         flex: 1,
         flexGrow: 1,
         backgroundColor: "#210016",
-        paddingVertical: 40,
+        paddingBottom: 40,
         paddingHorizontal: 12
+    },
+    back_block: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10
+    },
+    back_label: {
+        fontSize: 22,
+        fontWeight: "bold",
+        color: "#4CC9F0"
+    },
+    back_button: {
+        fontSize: 50,
+        color: "#4CC9F0"
     },
     comment_publication: {
         backgroundColor: "#550038",

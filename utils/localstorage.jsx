@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 export let localUserLogin = {
     id: "",
@@ -10,7 +11,7 @@ export let localUserLogin = {
 export var myIdUser = "";
 export var myAvatarURL = "";
 
-export const setLocalUser = async(email, password) => {
+export const setLocalUser = async (email, password) => {
     try {
         await AsyncStorage.setItem('email', JSON.stringify(email));
         await AsyncStorage.setItem('password', JSON.stringify(password));
@@ -20,14 +21,14 @@ export const setLocalUser = async(email, password) => {
     }
 }
 
-export const getLocalUser = async() => {
+export const getLocalUser = async () => {
     try {
         let resLocal = [];
         const localEmail = await AsyncStorage.getItem('email');
         const localPassword = await AsyncStorage.getItem('password');
 
         if (localEmail !== null && localPassword !== null) {
-            resLocal = {email: localEmail, password: localPassword}
+            resLocal = { email: localEmail, password: localPassword }
             return resLocal;
         } else {
             return undefined;
@@ -39,6 +40,14 @@ export const getLocalUser = async() => {
 
 export function setIdUser(id) {
     localUserLogin.id = id;
+}
+
+export const saveMyAvatarURI = async (url) => {
+    const storage = getStorage();
+    const imageRef = ref(storage, url);
+    const saveURI = await getDownloadURL(imageRef);
+
+    localUserLogin.avatar = saveURI;
 }
 
 export async function erase_all() {

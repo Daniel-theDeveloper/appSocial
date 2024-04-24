@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
-import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
-export default function UserList(idUser, props) {
+export default function UserList({idUser, props}) {
     const [userData, setUserData] = useState({
         username: "",
         nickname: "",
@@ -15,7 +15,6 @@ export default function UserList(idUser, props) {
     const [userAvatar, setUserAvatar] = useState(null);
 
     useEffect(() => {
-        console.log(idUser);
         loadData();
     }, []);
 
@@ -25,29 +24,32 @@ export default function UserList(idUser, props) {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                setUserAvatar({
+                setUserData({
                     username: docSnap.data().username,
                     nickname: docSnap.data().name,
                     avatar: docSnap.data().avatar
-                })
+                });
+                if (userData.avatar != null) {
+                    await fetchImageAvatar(userData.avatar);
+                }
             } else {
                 setUserData({
                     username: null,
-                    nickname: "Usuario no encontrado o eliminado",
+                    nickname: "Usuario eliminado",
                     avatar: null
                 })
-            }
-
-            if (userData.avatar != null) {
-                const storage = getStorage();
-                const imageRef = ref(storage, userData.avatar);
-                const getUrl = await getDownloadURL(imageRef);
-
-                setUserAvatar(getUrl);
             }
         } catch (error) {
             console.error(error);
         }
+    }
+
+    const fetchImageAvatar = async (url) => {
+        const storage = getStorage();
+        const imageRef = ref(storage, url);
+        const getUrl = await getDownloadURL(imageRef);
+        
+        setUserAvatar(getUrl);
     }
 
     return (
@@ -66,7 +68,8 @@ const styles = StyleSheet.create({
         width: "100%",
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center"
+        alignItems: "center",
+        marginBottom: 20
     },
     avatar: {
         height: 50,
