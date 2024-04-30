@@ -22,16 +22,16 @@ export default function Loading(props) {
 
                 const resLogin = await LoginProcess(email, password);
                 if (resLogin) {
-                    props.navigation.navigate('Home');
+                    props.navigation.replace('Home');
                 } else {
-                    props.navigation.navigate('Login');
+                    props.navigation.replace('Login');
                 }
             } catch (error) {
                 console.error(error);
-                props.navigation.navigate('Login');
+                props.navigation.replace('Login');
             }
         } else {
-            props.navigation.navigate('Login');
+            props.navigation.replace('Login');
         }
     }
 

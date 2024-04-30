@@ -11,6 +11,7 @@ import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 import { globals } from '../../utils/globalVars';
+import { userId } from '../components/Publish';
 
 export let comment_Array = [];
 
@@ -27,6 +28,7 @@ export default function Comment({
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
     const [showAnswers, setShowAnswers] = React.useState(false);
     const [avatarURL, setAvatarURL] = useState(null);
+    const [username, setUsername] = useState(null);
     const [nickname, setNickname] = useState(null);
 
     const allAnswers = comment_answers.length
@@ -80,12 +82,18 @@ export default function Comment({
             userData.find(function (res) {
                 if (res.username === user) {
                     fetchImageAvatar(res.avatar);
+                    setUsername(res.username);
                     setNickname(res.name);
                 }
             })
         } catch (error) {
             console.error(error);
         }
+    }
+
+    function goPerfil() {
+        userId.id = username;
+        props.navigation.navigate('Perfil');
     }
 
     const setLikeComment = async () => {
@@ -235,13 +243,13 @@ export default function Comment({
             {/* Comentario principal */}
             <View style={styles.comment_view}>
 
-                <View style={styles.comment_left}>
+                <TouchableOpacity style={styles.comment_left} onPress={goPerfil}>
                     <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-                </View>
+                </TouchableOpacity>
 
                 <View style={styles.comment_right}>
 
-                    <View style={styles.comment_header}>
+                    <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
                         {user == localUserLogin.username ?
                             <Text style={styles.comment_myUsername}>{nickname}</Text>
                             :
@@ -249,7 +257,7 @@ export default function Comment({
                         }
                         <Text style={styles.comment_separator}>-</Text>
                         <Text style={styles.comment_date}>{convertDate(date)}</Text>
-                    </View>
+                    </TouchableOpacity>
 
                     <View>
                         <Text style={styles.comment}>{message}</Text>

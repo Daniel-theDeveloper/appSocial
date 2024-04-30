@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { database } from '../../utils/database';
 import { collection, addDoc } from 'firebase/firestore';
 import { localUserLogin } from '../../utils/localstorage';
@@ -7,23 +7,44 @@ import { getStorage, ref, uploadBytes } from "firebase/storage"
 
 import * as ImagePicker from 'expo-image-picker';
 
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Modal from 'react-native-modalbox';
+import EmojiSelector from 'react-native-emoji-selector';
+
+export let new_publication_params = {
+    isFhoto: false,
+    photoURI: null,
+    photoName: null,
+    photoType: 'pnj'
+}
 
 export default function New_publication(props) {
     const [newPublication, setNewPublication] = React.useState({
         body: '',
         urlImage: null,
         comments_container: [],
+        replyID: null,
         date: new Date(),
         likes: [],
-        shares: 0,
+        shares: [],
         user: localUserLogin.username
     })
     const [userImage, setUserImage] = useState(null);
     const [userImageName, setUserImageName] = useState("publish");
     const [userImageType, setUserImageType] = useState("pnj");
-    const [isUploadImage, setIsUploadImage] = useState((false));
-    const [loading_Button, setLoading_Button] = useState((false));
+    const [isUploadImage, setIsUploadImage] = useState(false);
+    const [loading_Button, setLoading_Button] = useState(false);
+    const [emojiModal, setEmojiModal] = useState(false);
+
+    useEffect(() => {
+        if (new_publication_params.isFhoto) {
+            setUserImage(new_publication_params.photoURI);
+            setUserImageName(new_publication_params.photoName);
+            setUserImageType(new_publication_params.photoType);
+
+            setIsUploadImage(true);
+        }
+    }, []);
 
     const UploadImage = async () => {
         const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -33,7 +54,7 @@ export default function New_publication(props) {
                 allowsEditing: true,
                 allowsMultipleSelection: false,
                 quality: 1,
-                aspect: [4,3],
+                aspect: [4, 3],
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
             });
             if (image.canceled) {
@@ -47,6 +68,32 @@ export default function New_publication(props) {
             }
         } else {
             Alert.alert("Permisos denegados", "Por favor, active el permiso de la galeria");
+        }
+    }
+
+    const pickPhoto = async () => {
+        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (granted) {
+            const image = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                allowsMultipleSelection: false,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                aspect: [4, 3],
+                quality: 1
+            });
+            if (image.canceled) {
+                // Nothing
+            } else {
+                setUserImage(image.assets[0].uri);
+                setUserImageName(image.assets[0].width);
+                setUserImageType(getFormatImage(image.assets[0].mimeType))
+
+                setIsUploadImage(true);
+            }
+
+        } else {
+            Alert.alert("Permisos denegados", "Sin permisos de la camara, no puedes tomar fotos en la aplicacion");
         }
     }
 
@@ -93,14 +140,14 @@ export default function New_publication(props) {
         );
 
     function goBackAgain() {
-        props.navigation.goBack()
+        props.navigation.goBack();
     }
 
     const sharePublish = async () => {
         setLoading_Button(true);
         try {
             if (userImage != null) {
-                const url = localUserLogin.username+"/publicationImages/"+userImageName+"."+userImageType;
+                const url = localUserLogin.username + "/publicationImages/" + userImageName + "." + userImageType;
 
                 const response = await fetch(userImage);
                 const blob = await response.blob();
@@ -126,55 +173,70 @@ export default function New_publication(props) {
         }
     }
 
+    function openEmojiModal() {
+        if (emojiModal) {
+            setEmojiModal(false);
+        } else {
+            setEmojiModal(true);
+        }
+    }
+
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={true}>
+        <View style={styles.container} showsVerticalScrollIndicator={true}>
+            <TouchableOpacity style={styles.back_button_block} onPress={showAlert}>
+                <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
+                <Text style={styles.back_button_label}>Salirse</Text>
+            </TouchableOpacity>
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={showAlert}>
-                        <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
-                    </TouchableOpacity>
                     <Text style={styles.title}>Nueva publicacion</Text>
                 </View>
 
                 <View style={styles.publish_buttons}>
-                    <TouchableOpacity>
-                        <MaterialCommunityIcons style={styles.insert_label} name='camera-plus-outline' />
-                    </TouchableOpacity>
-
-                    {isUploadImage ?
-                        <TouchableOpacity onPress={alertRemoveImage}>
-                            <MaterialCommunityIcons style={styles.remove_label} name='file-image-remove' />
+                    <View style={styles.publish_add_buttons}>
+                        <TouchableOpacity onPress={pickPhoto}>
+                            <MaterialCommunityIcons style={styles.insert_label} name='camera-plus-outline' />
                         </TouchableOpacity>
-                        :
-                        <TouchableOpacity onPress={UploadImage}>
-                            <MaterialCommunityIcons style={styles.insert_label} name='file-image-plus-outline' />
+
+                        {isUploadImage ?
+                            <TouchableOpacity onPress={alertRemoveImage}>
+                                <MaterialCommunityIcons style={styles.remove_label} name='file-image-remove' />
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={UploadImage}>
+                                <MaterialCommunityIcons style={styles.insert_label} name='file-image-plus-outline' />
+                            </TouchableOpacity>
+                        }
+
+                        {/* <TouchableOpacity>
+                            <MaterialCommunityIcons style={styles.insert_label} name='map-marker-plus-outline' />
+                        </TouchableOpacity> */}
+
+                        {/* <TouchableOpacity>
+                            <MaterialCommunityIcons style={styles.insert_label} name='file-gif-box' />
+                        </TouchableOpacity> */}
+
+                        <TouchableOpacity onPress={openEmojiModal}>
+                            <MaterialCommunityIcons style={styles.insert_label} name='emoticon-happy' />
                         </TouchableOpacity>
-                    }
-
-                    <TouchableOpacity>
-                        <MaterialCommunityIcons style={styles.insert_label} name='map-marker-plus-outline' />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity>
-                        <MaterialCommunityIcons style={styles.insert_label} name='file-gif-box' />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity>
-                        <MaterialCommunityIcons style={styles.insert_label} name='emoticon-happy' />
-                    </TouchableOpacity>
-
-                    {loading_Button ?
-                        <View style={styles.publish_loading_button}>
-                            <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
-                            <Text style={styles.publish_label}>Publicando</Text>
-                        </View>
-                        :
-                        <TouchableOpacity onPress={sharePublish}>
-                            <View style={styles.publish_button}>
-                                <Text style={styles.publish_label}>Publicar</Text>
+                    </View>
+                    
+                    <View style={styles.publich_block}>
+                        <Text style={styles.statistics_label}>{newPublication.body.length} / 500</Text>
+                        {loading_Button ?
+                            <View style={styles.publish_loading_button}>
+                                <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
+                                <Text style={styles.publish_label}>Publicando</Text>
                             </View>
-                        </TouchableOpacity>
-                    }
+                            :
+                            <TouchableOpacity onPress={sharePublish}>
+                                <View style={styles.publish_button}>
+                                    <Text style={styles.publish_label}>Publicar</Text>
+                                </View>
+                            </TouchableOpacity>
+                        }
+                    </View>
+
                 </View>
 
                 <View style={styles.line}></View>
@@ -184,11 +246,11 @@ export default function New_publication(props) {
                         placeholder='Escribe lo que piensas'
                         placeholderTextColor="#c50056"
                         onChangeText={(text) => setNewPublication({ ...newPublication, body: text })}
+                        value={newPublication.body}
                         style={styles.input}
                         autoFocus={true}
                         multiline={true}
                         maxLength={500} />
-                    <Text style={styles.statistics_label}>{newPublication.body.length} / 500</Text>
 
                     {isUploadImage ?
                         <View>
@@ -206,25 +268,12 @@ export default function New_publication(props) {
 
                     }
                 </View>
-                {
-                    // isUploadImage ?
-                    //     <View style={styles.multimedia_block}>
-                    //         <MaterialCommunityIcons style={styles.icon_media_status} name='map-marker-off' />
-                    //         {/* <MaterialCommunityIcons style={styles.icon_media_status} name='map-marker-check' /> */}
-                    //         <Text style={styles.text_media_status}>Ninguna ubicacion seleccionada</Text>
-                    //     </View>
-                    //     :
-                    //     <View>
-                    //         <View style={styles.multimedia_block}>
-                    //             <MaterialCommunityIcons style={styles.icon_media_status} name='map-marker-check' />
-                    //             <Text style={styles.text_media_status}>Se selecciono una imagen</Text>
-                    //         </View>
-                    //         <Image style={styles.publication_image} source={require('../../assets/publicationTest.png')} />
-                    //     </View>
-                }
-
             </View>
-        </ScrollView>
+            <Modal style={styles.modal} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
+                <View style={styles.modalLine}></View>
+                <EmojiSelector columns={8} onEmojiSelected={emoji => setNewPublication({ ...newPublication, body: newPublication.body+emoji })} />
+            </Modal>
+        </View>
     );
 }
 
@@ -232,7 +281,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexGrow: 1,
-        paddingVertical: 50,
+        paddingBottom: 50,
         paddingHorizontal: 20,
         backgroundColor: "#210016"
     },
@@ -241,9 +290,34 @@ const styles = StyleSheet.create({
         backgroundColor: "#550038",
         borderRadius: 15
     },
+    modal: {
+        alignItems: "center",
+        padding: 20,
+        height: 500,
+        borderTopRightRadius: 40,
+        borderTopLeftRadius: 40,
+        backgroundColor: "#550038"
+    },
+    modalLine: {
+        height: 3,
+        width: 50,
+        borderRadius: 5,
+        marginBottom: 30,
+        backgroundColor: "#e40068",
+    },
     header: {
         flexDirection: "row",
         alignItems: "center"
+    },
+    back_button_block: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginVertical: 15
+    },
+    back_button_label: {
+        fontSize: 25,
+        fontWeight: "bold",
+        color: "white"
     },
     back_button: {
         fontSize: 45,
@@ -252,7 +326,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 22,
         fontWeight: "bold",
-        marginVertical: 13,
+        marginVertical: 8,
         color: "white"
     },
     new_publication: {
@@ -275,12 +349,18 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center"
     },
+    publish_add_buttons: {
+        flexDirection: "row",
+        alignItems: "center"
+    },
     insert_label: {
+        marginRight: 15,
         color: "#4CC9F0",
         fontSize: 26,
         fontWeight: "bold"
     },
     remove_label: {
+        marginRight: 15,
         color: "#abf752",
         fontSize: 26,
         fontWeight: "bold"
@@ -347,9 +427,13 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         borderRadius: 20
     },
+    publich_block: {   
+        flexDirection: "row",
+        alignItems: 'center'
+    },
     statistics_label: {
         fontSize: 16,
-        marginLeft: 5,
+        marginRight: 10,
         color: "#ed007e"
     }
 })

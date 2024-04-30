@@ -8,9 +8,6 @@ export let localUserLogin = {
     nickname: ""
 }
 
-export var myIdUser = "";
-export var myAvatarURL = "";
-
 export const setLocalUser = async (email, password) => {
     try {
         await AsyncStorage.setItem('email', JSON.stringify(email));

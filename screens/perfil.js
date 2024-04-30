@@ -6,14 +6,13 @@ import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { convertDateLarge } from "../utils/convertDate";
 import { userId } from "./components/Publish";
-import { myIdUser } from "../utils/localstorage";
 import { userData } from "./sub-screens/configPerfil";
 import UserList from "./components/userList";
 
-import { doc, updateDoc, arrayUnion, collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../utils/database';
-import { isWasFollow } from "../utils/interations";
+import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess } from "../utils/interations";
 import { localUserLogin } from "../utils/localstorage";
 
 export default function Perfil(props) {
@@ -26,7 +25,8 @@ export default function Perfil(props) {
         name: "",
         username: "",
         wasCreated: "",
-        location: "",
+        city: "",
+        country: "",
         banner: null
     });
     const [publications, setPublications] = useState([]);
@@ -42,6 +42,7 @@ export default function Perfil(props) {
 
     const [followersList, setFollowersList] = useState(false);
     const [followingsList, setFollowingsList] = useState(false);
+    const [optionsPerfil, setOptionsPerfil] = useState(false);
 
     useEffect(() => {
         getUserData();
@@ -61,19 +62,35 @@ export default function Perfil(props) {
     }
 
     function openFollowersList() {
-        if (followersList) {
-            setFollowersList(false);
-        } else {
-            setFollowersList(true);
+        if (userArray.followers.length > 0) {
+            if (followersList) {
+                setFollowersList(false);
+            } else {
+                setFollowersList(true);
+            }
         }
     }
 
     function openFollowingList() {
-        if (followingsList) {
-            setFollowingsList(false);
-        } else {
-            setFollowingsList(true);
+        if (userArray.following.length > 0) {
+            if (followingsList) {
+                setFollowingsList(false);
+            } else {
+                setFollowingsList(true);
+            }
         }
+    }
+
+    function openOptionsList() {
+        if (optionsPerfil) {
+            setOptionsPerfil(false);
+        } else {
+            setOptionsPerfil(true);
+        }
+    }
+
+    function goBack() {
+        props.navigation.goBack()
     }
 
     function getUserData() {
@@ -99,7 +116,6 @@ export default function Perfil(props) {
                             name: res.data['name'],
                             username: res.data['username'],
                             wasCreated: res.data['wasCreated'],
-                            location: res.data['location'],
                             banner: res.data['banner'],
                             country: res.data['country'],
                             city: res.data['city']
@@ -117,8 +133,8 @@ export default function Perfil(props) {
                 }
                 setFollowsCount(getData.followers.length);
                 setFollowingsCount(getData.following.length);
-                setIsFollowed(isWasFollow(getData.followers));
-                setIsFollowedYou(isWasFollow(getData.following));
+                setIsFollowed(isWasInteractedByID(getData.followers));
+                setIsFollowedYou(isWasInteractedByID(getData.following));
                 setUserArray(getData);
             } catch (error) {
                 console.error(error);
@@ -143,6 +159,7 @@ export default function Perfil(props) {
                         name: doc.data().user,
                         comments: doc.data().comments,
                         comments_container: doc.data().comments_container,
+                        replyID: doc.data().replyID,
                         date: doc.data().date,
                         likes: doc.data().likes,
                         shares: doc.data().shares
@@ -159,37 +176,63 @@ export default function Perfil(props) {
     }
 
     const startFollow = async () => {
-        try {
-            const docRefUser = doc(database, 'users', userArray.id);
-            const docRefMyUser = doc(database, 'users', myIdUser);
-            await updateDoc(docRefUser, {
-                followers: arrayUnion(localUserLogin.id)
-            });
-            await updateDoc(docRefMyUser, {
-                following: arrayUnion(userArray.id)
-            });
-            setIsFollowed(true);
-        } catch (error) {
+        setIsFollowed(true);
+
+        const res = await startFollowProcess(userArray.id, localUserLogin.id);
+
+        if (res == false) {
+            setIsFollowed(false);
             Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
-            console.error(error);
+        }
+    }
+
+
+    const stopFollow = async () => {
+        setIsFollowed(false);
+
+        const res = await stopFollowProcess(userArray.id, localUserLogin.id);
+
+        if (res) {
+            setOptionsPerfil(false);
+        } else {
+            setIsFollowed(true);
+            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+        }
+    }
+
+    const deleteFollower = async () => {
+        setIsFollowedYou(false);
+
+        const res = await deleteFollowerProcess(userArray.id, localUserLogin.id);
+
+        if (res) {
+            setOptionsPerfil(false);
+        } else {
+            setIsFollowed(true);
+            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
         }
     }
 
     function goConfigMyPerfil() {
-        userData.id = userArray.id;
-        userData.avatar = avatarURI;
-        userData.banner = bannerURL;
-        userData.name = userArray.name;
-        userData.username = userArray.username;
-        userData.details = userArray.details;
-        userData.country = userArray.country;
-        userData.city = userArray.city;
-
-        props.navigation.navigate('ConfigPerfil');
+        if (userArray.id == localUserLogin.id) {
+            userData.id = userArray.id;
+            userData.avatar = avatarURI;
+            userData.banner = bannerURL;
+            userData.name = userArray.name;
+            userData.username = userArray.username;
+            userData.details = userArray.details;
+            userData.country = userArray.country;
+            userData.city = userArray.city;
+    
+            props.navigation.navigate('ConfigPerfil');
+        }
     }
 
     return (
         <ScrollView style={styles.container}>
+            <TouchableOpacity style={styles.back_button} onPress={goBack}>
+                <MaterialCommunityIcons style={styles.back_button_label} name='chevron-left' />
+            </TouchableOpacity>
             {bannerURL != null ?
                 <Image style={styles.image_header} source={{ uri: bannerURL }} />
                 :
@@ -220,7 +263,14 @@ export default function Perfil(props) {
                                 </View>
                             </TouchableOpacity>
                     }
-                    <MaterialCommunityIcons style={styles.interaction_options} name='dots-horizontal' />
+
+                    {isFollowed || isFollowedYou ?
+                        <TouchableOpacity onPress={openOptionsList}>
+                            <MaterialCommunityIcons style={styles.interaction_options} name='dots-horizontal' />
+                        </TouchableOpacity>
+                        :
+                        <View></View>
+                    }
                 </View>
 
                 <Text style={styles.nickname}>{userArray.name}</Text>
@@ -256,7 +306,9 @@ export default function Perfil(props) {
             <View style={styles.basicInfo}>
                 <View style={styles.basicInfo_block}>
                     <MaterialCommunityIcons style={styles.basicInfo_icon} name='map-marker-outline' />
-                    <Text style={styles.basicInfo_label}>{userArray.location}</Text>
+                    <Text style={styles.basicInfo_label}>{userArray.city}</Text>
+                    <Text style={styles.basicInfo_label}>, </Text>
+                    <Text style={styles.basicInfo_label}>{userArray.country}</Text>
                 </View>
                 <View style={styles.basicInfo_block}>
                     <MaterialCommunityIcons style={styles.basicInfo_icon} name='calendar-account-outline' />
@@ -281,16 +333,45 @@ export default function Perfil(props) {
                     </View>
             }
 
-            <Modal style={styles.modal} position={"bottom"} isOpen={followersList} onClosed={openFollowersList}>
+            <Modal style={styles.modal} position={"bottom"} isOpen={followersList} onClosed={openFollowersList} coverScreen={true}>
                 <View style={styles.modalLine}></View>
                 <Text style={styles.modalTitle}>Seguidores</Text>
-                {userArray.followers.map((follower, key) => (<UserList key={key} props={props} idUser={follower} />))}
+
+                <ScrollView>
+                    {userArray.followers.map((follower, key) => (<UserList key={key} props={props} idUser={follower} list_owner={userArray.username} followType={0} />))}
+                </ScrollView>
             </Modal>
-            
-            <Modal style={styles.modal} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList}>
+
+            <Modal style={styles.modal} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList} coverScreen={true}>
                 <View style={styles.modalLine}></View>
                 <Text style={styles.modalTitle}>Siguiendo</Text>
-                {userArray.following.map((following, key) => (<UserList key={key} props={props} idUser={following} />))}
+
+                <ScrollView>
+                    {userArray.following.map((following, key) => (<UserList key={key} props={props} idUser={following} list_owner={userArray.username} followType={1} />))}
+                </ScrollView>
+            </Modal>
+
+            <Modal style={styles.modalOptions} position={"bottom"} isOpen={optionsPerfil} onClosed={openOptionsList} coverScreen={true}>
+                {isFollowed ?
+                    <TouchableOpacity style={styles.modalButton} onPress={stopFollow}>
+                        <MaterialCommunityIcons style={styles.modalButtonIcon} name='account-minus-outline' />
+                        <Text style={styles.modalButtonLabel}>Dejar de seguir</Text>
+                    </TouchableOpacity>
+                    :
+                    <View></View>
+                }
+                {isFollowedYou ?
+                    <TouchableOpacity style={styles.modalButton} onPress={deleteFollower}>
+                        <MaterialCommunityIcons style={styles.modalButtonIcon} name='account-minus-outline' />
+                        <Text style={styles.modalButtonLabel}>Eliminar seguidor</Text>
+                    </TouchableOpacity>
+                    :
+                    <View></View>
+                }
+                <TouchableOpacity style={styles.modalButton} onPress={openOptionsList}>
+                    <MaterialCommunityIcons style={styles.modalButtonIcon} name='window-close' />
+                    <Text style={styles.modalButtonLabel}>Cerrar</Text>
+                </TouchableOpacity>
             </Modal>
         </ScrollView>
     )
@@ -300,6 +381,18 @@ const styles = StyleSheet.create({
         flex: 1,
         flexGrow: 1,
         backgroundColor: "#210016"
+    },
+    back_button: {
+        position: "absolute",
+        top: 20,
+        left: 20,
+        zIndex: 1,
+        backgroundColor: "black",
+        borderRadius: 100
+    },
+    back_button_label: {
+        fontSize: 50,
+        color: "white"
     },
     image_header: {
         width: "100%",
@@ -475,8 +568,17 @@ const styles = StyleSheet.create({
     modal: {
         alignItems: "center",
         padding: 20,
+        maxHeight: 700,
         borderTopRightRadius: 40,
         borderTopLeftRadius: 40,
+        backgroundColor: "#550038"
+    },
+    modalOptions: {
+        paddingTop: 20,
+        paddingHorizontal: 10,
+        maxHeight: 175,
+        borderTopRightRadius: 20,
+        borderTopLeftRadius: 20,
         backgroundColor: "#550038"
     },
     modalLine: {
@@ -490,5 +592,20 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
         marginVertical: 15
+    },
+    modalButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        margin: 10
+    },
+    modalButtonIcon: {
+        fontSize: 30,
+        color: "#ff0070",
+        marginRight: 15
+    },
+    modalButtonLabel: {
+        fontSize: 17,
+        color: "#ff0070",
+        fontWeight: "bold"
     }
 })

@@ -11,6 +11,7 @@ import New_publication from '../screens/sub-screens/new_publication';
 import ReplyScreen from '../screens/sub-screens/replyScreen';
 import Perfil from '../screens/perfil';
 import ConfigPerfil from '../screens/sub-screens/configPerfil';
+import ReplyPublishScreen from '../screens/sub-screens/replyPublishScreen';
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
@@ -35,6 +36,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="Sign_up_part2" component={Sign_up_part2} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="FastComment" component={FastComment} />
+                <Stack.Screen name="ReplyPublishScreen" component={ReplyPublishScreen} />
                 <Stack.Screen name="Details" component={Details} />
                 <Stack.Screen name="Perfil" component={Perfil} />
                 <Stack.Screen name="ConfigPerfil" component={ConfigPerfil} />

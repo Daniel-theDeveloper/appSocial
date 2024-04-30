@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasFollow } from '../../utils/interations';
+import { isWasInteracted, isWasInteractedByID } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
 import Comment from '../components/Comment';
+import ReplyPublish from '../components/replyPublish';
 // import { compareDesc } from "date-fns";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
@@ -20,6 +21,7 @@ export default function Details(props) {
         name: "",
         nickname: "",
         urlImage: null,
+        replyId: null,
         comments: "",
         comments_container: [],
         date: "",
@@ -31,13 +33,13 @@ export default function Details(props) {
     const [allLikes, setAllLikes] = useState(0)
     const [allComments, setAllComments] = useState(0);
 
+    const [replyId, setReplyId] = useState(null);
     const [isLike, setIsLike] = useState(false);
     const [isShared, setIsShared] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
     const [avatarURL, setAvatarURL] = useState(null);
     const [myAvatar, setMyAvatar] = useState(null);
-    const [isFollowing, setIsFollowing] = useState(false);
 
     const [myComment, setMyCommnent] = useState("");
 
@@ -70,6 +72,7 @@ export default function Details(props) {
                         body: res.data['body'],
                         name: res.data['user'],
                         urlImage: res.data['urlImage'],
+                        replyId: res.data['replyID'],
                         comments: res.data['comments'],
                         comments_container: res.data['comments_container'],
                         date: res.data['date'],
@@ -77,7 +80,7 @@ export default function Details(props) {
                         shares: res.data['shares']
                     }
                 }
-            })
+            });
 
             if (getData.urlImage != null) {
                 fetchImage(getData.urlImage);
@@ -88,12 +91,12 @@ export default function Details(props) {
             }
 
             setMyAvatar(localUserLogin.avatar);
-
-            setAllLikes(getData.likes.length)
-            setAllComments(getData.comments_container.length)
+            setReplyId(getData.replyId);
+            setAllLikes(getData.likes.length);
+            setAllComments(getData.comments_container.length);
             setIsLike(isWasInteracted(getData.likes));
+            setIsShared(isWasInteractedByID(getData.shares));
             setPublicationArray(getData);
-            setIsFollowing(isWasFollow(publicationData.following));
         })
         return unsuscribe;
     }, []);
@@ -165,23 +168,6 @@ export default function Details(props) {
         }
     }
 
-    // const startFollow = async () => {
-    //     try {
-    //         const docRefUser = doc(database, 'users', userArray.id);
-    //         const docRefMyUser = doc(database, 'users', myIdUser);
-    //         await updateDoc(docRefUser, {
-    //             followers: arrayUnion(localUserLogin.id)
-    //         });
-    //         await updateDoc(docRefMyUser, {
-    //             following: arrayUnion(publicationArray.id)
-    //         });
-    //         setIsFollowing(true);
-    //     } catch (error) {
-    //         Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
-    //         console.error(error);
-    //     }
-    // }
-
     return (
         <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
@@ -201,24 +187,17 @@ export default function Details(props) {
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
-                        {isFollowing ?
-                            <View style={styles.followed}>
-                                <MaterialCommunityIcons style={styles.followedIcon} name='account-multiple-check' />
-                                <Text style={styles.followedLabel}>Siguiendo</Text>
-                            </View>
-                            :
-                            <View style={styles.follow_button}>
-                                <Text style={styles.follow_label}>Seguir</Text>
-                            </View>
-                        }
                     </View>
 
                     {/* Cuerpo de la publicacion */}
                     <Text style={styles.publication_text}>{publicationArray.body}</Text>
-                    {imageURL != null ?
-                        <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                    {replyId != null || replyId != undefined ?
+                        <ReplyPublish  props={props} replyID={replyId} />
                         :
-                        <View></View>
+                        imageURL != null ?
+                            <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                            :
+                            <View></View>
                     }
 
                     {/* Zona de estadisticas */}

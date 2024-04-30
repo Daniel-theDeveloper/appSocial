@@ -6,6 +6,7 @@ import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import { globals } from '../../utils/globalVars';
+import { userId } from '../components/Publish';
 
 import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -26,6 +27,7 @@ export default function Comment_answer({
     const [isLike, setIsLike] = useState((isWasInteracted(likes)));
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
     const [avatarURL, setAvatarURL] = useState(null);
+    const [username, setUsername] = useState(null);
     const [nickname, setNickname] = useState(null);
 
     const likesCount = likes.length
@@ -71,12 +73,18 @@ export default function Comment_answer({
             userData.find(function (res) {
                 if (res.username === user) {
                     fetchImageAvatar(res.avatar);
+                    setUsername(res.username);
                     setNickname(res.name);
                 }
             })
         } catch (error) {
             console.error(error);
         }
+    }
+
+    function goPerfil() {
+        userId.id = username;
+        props.navigation.navigate('Perfil');
     }
 
     const setLikeComment = async () => {
@@ -235,13 +243,13 @@ export default function Comment_answer({
 
     return (
         <View style={styles.comment_responces}>
-            <View style={styles.comment_responces_left}>
+            <TouchableOpacity style={styles.comment_responces_left} onPress={goPerfil}>
                 <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.comment_responces_right}>
 
-                <View style={styles.comment_header}>
+                <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
                     {user == localUserLogin.username ?
                         <Text style={styles.comment_myUsername}>{nickname}</Text>
                         :
@@ -249,7 +257,7 @@ export default function Comment_answer({
                     }
                     <Text style={styles.comment_separator}>-</Text>
                     <Text style={styles.comment_date}>{convertDate(date)}</Text>
-                </View>
+                </TouchableOpacity>
 
                 <View>
                     <Text style={styles.comment}>{body}</Text>

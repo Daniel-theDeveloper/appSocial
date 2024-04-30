@@ -1,8 +1,11 @@
-import react, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { userId } from './components/Publish';
+import { new_publication_params } from './sub-screens/new_publication';
+
+import * as ImagePicker from 'expo-image-picker';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
@@ -34,6 +37,30 @@ export default function Homepage(props) {
             ],
         );
 
+    const takePhoto = async () => {
+        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (granted) {
+            const image = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                allowsMultipleSelection: false,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                aspect: [4, 3],
+                quality: 1
+            });
+            if (image.canceled) {
+                // Nothing
+            } else {
+                new_publication_params.isFhoto = true;
+                new_publication_params.photoURI = image.assets[0].uri;
+                new_publication_params.photoName = image.assets[0].width;
+                new_publication_params.photoType = image.assets[0].mimeType;
+
+                props.navigation.navigate('NewPublication');
+            }
+        }
+    }
+
     function loadAllPublish() {
         const collectionRef = collection(database, 'publications');
         const q = query(collectionRef, orderBy('date', 'desc'));
@@ -44,6 +71,7 @@ export default function Homepage(props) {
                     id: doc.id,
                     body: doc.data().body,
                     urlImage: doc.data().urlImage,
+                    replyID: doc.data().replyID,
                     name: doc.data().user,
                     comments: doc.data().comments,
                     comments_container: doc.data().comments_container,
@@ -61,9 +89,17 @@ export default function Homepage(props) {
         await erase_all();
         props.navigation.navigate('Login');
     }
-    
+
     function goNewPublish() {
-        props.navigation.navigate('NewPublication');
+        if (localUserLogin.id != undefined) {
+            new_publication_params.isFhoto = false;
+            new_publication_params.photoURI = null;
+            new_publication_params.photoName  = null;
+            
+            props.navigation.navigate('NewPublication');
+        } else {
+            Alert.alert("Sin conexion a internet", "Por favor, reinicie la aplicacion");
+        }
     }
 
     function goMyPerfil() {
@@ -81,7 +117,7 @@ export default function Homepage(props) {
                         </TouchableOpacity>
                         <Text style={styles.title}>Pagina principal</Text>
                         <TouchableOpacity onPress={goMyPerfil}>
-                            <Image style={styles.avatar} source={myAvatar != null ? {uri: myAvatar} : require('../assets/avatar-default.png')} />
+                            <Image style={styles.avatar} source={myAvatar != null ? { uri: myAvatar } : require('../assets/avatar-default.png')} />
                         </TouchableOpacity>
                     </View>
 
@@ -91,9 +127,11 @@ export default function Homepage(props) {
                                 <Text style={styles.new_publication_label}>Publica lo que estas pensando</Text>
                             </View>
                         </TouchableOpacity>
-                        <View style={styles.new_publication_button}>
-                            <MaterialCommunityIcons style={styles.menuButton2} name='camera' />
-                        </View>
+                        <TouchableOpacity onPress={takePhoto}>
+                            <View style={styles.new_publication_button}>
+                                <MaterialCommunityIcons style={styles.menuButton2} name='camera' />
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

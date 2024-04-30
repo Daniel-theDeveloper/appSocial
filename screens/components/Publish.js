@@ -3,7 +3,9 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasCommented } from '../../utils/interations';
+import { isWasInteracted, isWasCommented, isWasInteractedByID } from '../../utils/interations';
+import ReplyPublish from './replyPublish';
+import { replyPublishParams } from '../sub-screens/replyPublishScreen.js';
 
 import { doc, getDocs, updateDoc, arrayUnion, collection } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -25,17 +27,18 @@ export default function Publication({
     comments_container,
     date,
     likes,
+    replyID,
     shares,
     name
 }) {
-    const allLikes = likes.length
-    const allComments = comments_container.length
+    const allLikes = likes.length;
+    const allComments = comments_container.length;
+
     const [isLike, setIsLike] = useState(isWasInteracted(likes));
     const [isComment, setIsComment] = useState(isWasCommented(comments_container));
-    const [isShared, setIsShared] = useState(false);
+    const [isShared, setIsShared] = useState(isWasInteractedByID(shares));
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
-    const [followingList, setFollowingList] = useState([]);
 
     const [avatarURL, setAvatarURL] = useState(null);
     const [nickname, setNickname] = useState(null);
@@ -76,7 +79,6 @@ export default function Publication({
                 if (res.username === name) {
                     fetchImageAvatar(res.avatar);
                     setNickname(res.name);
-                    setFollowingList(res.following);
                 }
             })
         } catch (error) {
@@ -88,8 +90,7 @@ export default function Publication({
         publicationData = {
             id: id,
             nickname: nickname,
-            avatar: avatarURL,
-            following: followingList
+            avatar: avatarURL
         }
         props.navigation.navigate('Details');
     }
@@ -133,9 +134,10 @@ export default function Publication({
 
     const setShared = async () => {
         if (isShared) {
-            setIsShared(false)
+            // Show My Reply
         } else {
-            setIsShared(true)
+            replyPublishParams.replyID = id;
+            props.navigation.navigate('ReplyPublishScreen');
         }
     }
 
@@ -181,10 +183,13 @@ export default function Publication({
             <View style={styles.publication_container}>
                 <TouchableOpacity onPress={goDetails}>
                     <Text style={styles.publication_text}>{body}</Text>
-                    {urlImage != null ?
-                        <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                    {replyID != null || replyID != undefined ?
+                        <ReplyPublish props={props} replyID={replyID} />
                         :
-                        <View></View>
+                        urlImage != null ?
+                            <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                            :
+                            <View></View>
                     }
                 </TouchableOpacity>
 
@@ -225,12 +230,12 @@ export default function Publication({
                         {isShared ?
                             <View style={styles.interact_block}>
                                 <MaterialCommunityIcons style={styles.interacted_shared_icon} name='repeat-variant' />
-                                <Text style={styles.interacted_shared_label}>{shares}</Text>
+                                <Text style={styles.interacted_shared_label}>{shares.length}</Text>
                             </View>
                             :
                             <View style={styles.interact_block}>
                                 <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
-                                <Text style={styles.interact_label}>{shares}</Text>
+                                <Text style={styles.interact_label}>{shares.length}</Text>
                             </View>
                         }
                     </TouchableOpacity>
@@ -368,4 +373,4 @@ const styles = StyleSheet.create({
         fontSize: 23,
         color: "#ff6c00"
     },
-})
+});

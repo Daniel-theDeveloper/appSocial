@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { database } from '../utils/database';
+import { new_publication_params } from './sub-screens/new_publication';
+
+import * as ImagePicker from 'expo-image-picker';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -29,6 +32,7 @@ export default function CreatePost(props) {
                         id: doc.id,
                         body: doc.data().body,
                         urlImage: doc.data().urlImage,
+                        replyID: doc.data().replyID,
                         name: doc.data().user,
                         comments: doc.data().comments,
                         comments_container: doc.data().comments_container,
@@ -48,7 +52,35 @@ export default function CreatePost(props) {
         }
     }
 
+    const takePhoto = async () => {
+        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (granted) {
+            const image = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                allowsMultipleSelection: false,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                aspect: [4, 3],
+                quality: 1
+            });
+            if (image.canceled) {
+                // Nothing
+            } else {
+                new_publication_params.isFhoto = true;
+                new_publication_params.photoURI = image.assets[0].uri;
+                new_publication_params.photoName = image.assets[0].width;
+                new_publication_params.photoType = image.assets[0].mimeType;
+
+                props.navigation.navigate('NewPublication');
+            }
+        }
+    }
+
     function goNewPublish() {
+        new_publication_params.isFhoto = false;
+        new_publication_params.photoURI = null;
+        new_publication_params.photoName  = null;
+
         props.navigation.navigate('NewPublication')
     }
 
@@ -72,9 +104,11 @@ export default function CreatePost(props) {
                         <Text style={styles.new_publication_label}>Publica lo que estas pensando</Text>
                     </View>
                 </TouchableOpacity>
-                <View style={styles.new_publication_button}>
-                    <MaterialCommunityIcons style={styles.menuButton2} name='camera' />
-                </View>
+                <TouchableOpacity onPress={takePhoto}>
+                    <View style={styles.new_publication_button}>
+                        <MaterialCommunityIcons style={styles.menuButton2} name='camera' />
+                    </View>
+                </TouchableOpacity>
             </View>
 
             <Text style={styles.principal_title}>Tus publicaciones</Text>
