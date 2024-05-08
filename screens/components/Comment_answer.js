@@ -301,26 +301,26 @@ const styles = StyleSheet.create({
     },
     comment_username: {
         fontWeight: "bold",
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment_myUsername: {
         fontWeight: "bold",
-        fontSize: 17,
+        fontSize: 16,
         color: "#abf752"
     },
     comment_separator: {
         fontWeight: "bold",
         marginHorizontal: 5,
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment_date: {
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment: {
-        fontSize: 16,
+        fontSize: 15,
         marginVertical: 8,
         color: 'white'
     },
@@ -330,11 +330,11 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     comment_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#a6006a"
     },
     comment_counter: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "bold",
         marginHorizontal: 8,
         color: "#e8007c"
@@ -355,16 +355,16 @@ const styles = StyleSheet.create({
     },
     reply_button: {
         color: "#e8007c",
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         marginLeft: 10
     },
     comment_liked_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#abf752"
     },
     comment_disliked_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#994cf0"
     }
 })

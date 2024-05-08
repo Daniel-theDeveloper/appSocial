@@ -299,12 +299,12 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     back_label: {
-        fontSize: 22,
+        fontSize: 21,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
     back_button: {
-        fontSize: 50,
+        fontSize: 49,
         color: "#4CC9F0"
     },
     publication: {
@@ -331,12 +331,12 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },
     username: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
     date: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         color: "#235d6f"
     },
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
         outlineWidth: 4,
     },
     follow_label: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
@@ -359,16 +359,16 @@ const styles = StyleSheet.create({
     },
     followedIcon: {
         color: "#abf752",
-        fontSize: 24,
+        fontSize: 23,
         marginRight: 10
     },
     followedLabel: {
         color: "#abf752",
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold"
     },
     publication_text: {
-        fontSize: 18,
+        fontSize: 17,
         marginBottom: 15,
         color: "white"
     },
@@ -387,17 +387,17 @@ const styles = StyleSheet.create({
         flexDirection: "row"
     },
     statistics_num: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         color: "#ed007e"
     },
     statistics_label: {
-        fontSize: 16,
+        fontSize: 15,
         marginLeft: 5,
         color: "#ed007e"
     },
     statistics_separator: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: "bold",
         marginHorizontal: 15,
         color: "#ed007e"
@@ -408,23 +408,23 @@ const styles = StyleSheet.create({
         marginTop: 20
     },
     interact_icon: {
-        fontSize: 26,
+        fontSize: 25,
         color: "#a6006a"
     },
     interacted_icon_like: {
-        fontSize: 26,
+        fontSize: 25,
         color: "#ffe400"
     },
     interacted_icon_shared: {
-        fontSize: 26,
+        fontSize: 25,
         color: "#afff53"
     },
     interact_icon_saved: {
-        fontSize: 26,
+        fontSize: 25,
         color: "#ff6c00"
     },
     comment_principal_title: {
-        fontSize: 20,
+        fontSize: 19,
         fontWeight: "bold",
         marginVertical: 20,
         color: "#ed007e"
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
         padding: 5
     },
     new_comment_input: {
-        fontSize: 16,
+        fontSize: 15,
         color: "white"
     },
     new_comment_button: {
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#2f8dff"
     },
     new_comment_label: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         textAlign: "center",
         color: "white"
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#16457e"
     },
     loading_comment_label: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         textAlign: "center",
         color: "white"

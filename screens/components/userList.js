@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
@@ -13,6 +13,7 @@ import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollo
 // Tipo de seguidor:
 // 0 - Usuario que me sigue
 // 1 - Usuario que sigo
+// Si es sugerencia para chatear: 2
 export default function UserList({ idUser, list_owner, followType, props }) {
     const [userData, setUserData] = useState({
         username: "",
@@ -69,7 +70,10 @@ export default function UserList({ idUser, list_owner, followType, props }) {
     }
 
     function goDetails() {
-        if (userData.username !== null) {
+        if (followType === 2) {
+            userId.id = userData.username;
+            props.navigation.navigate('Perfil');
+        } else if (userData.username !== null) {
             userId.id = userData.username;
             props.navigation.replace('Perfil');
         } else {
@@ -119,14 +123,15 @@ export default function UserList({ idUser, list_owner, followType, props }) {
     return (
         <TouchableOpacity onPress={goDetails}>
             <View style={styles.container}>
-                <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
+                <View style={{ flexDirection: "row" }}>
+                    <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
 
-                {isMe ?
-                    <Text style={styles.my_nickname}>{userData.nickname}</Text>
-                    :
-                    <Text style={styles.nickname}>{userData.nickname}</Text>
-                }
-
+                    {isMe ?
+                        <Text style={styles.my_nickname}>{userData.nickname}</Text>
+                        :
+                        <Text style={styles.nickname}>{userData.nickname}</Text>
+                    }
+                </View>
                 {userData.nickname === "Usuario eliminado" ?
                     <View></View>
                     :
@@ -167,6 +172,7 @@ const styles = StyleSheet.create({
         height: 50,
         width: 50,
         borderRadius: 50,
+        marginRight: 10
     },
     nickname: {
         fontSize: 20,

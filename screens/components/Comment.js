@@ -332,7 +332,7 @@ export default function Comment({
 const styles = StyleSheet.create({
     comment_container: {
         backgroundColor: "#550038",
-        padding: 15,
+        padding: 12,
         flexDirection: "column",
         borderRadius: 20,
         marginBottom: 15
@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
     comment_avatar: {
         height: 42,
         width: 42,
+        margin: 6,
         borderRadius: 100
     },
     comment_view: {
@@ -356,26 +357,26 @@ const styles = StyleSheet.create({
     },
     comment_username: {
         fontWeight: "bold",
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment_myUsername: {
         fontWeight: "bold",
-        fontSize: 17,
+        fontSize: 16,
         color: "#abf752"
     },
     comment_separator: {
         fontWeight: "bold",
         marginHorizontal: 5,
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment_date: {
-        fontSize: 17,
+        fontSize: 16,
         color: "#4CC9F0"
     },
     comment: {
-        fontSize: 16,
+        fontSize: 15,
         marginVertical: 8,
         color: 'white'
     },
@@ -384,19 +385,19 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
     comment_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#a6006a"
     },
     comment_liked_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#abf752"
     },
     comment_disliked_buttons: {
-        fontSize: 20,
+        fontSize: 19,
         color: "#994cf0"
     },
     comment_counter: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "bold",
         marginHorizontal: 8,
         color: "#e8007c"
@@ -405,17 +406,17 @@ const styles = StyleSheet.create({
         flexDirection: "row"
     },
     load_comments_label: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         color: "#e8007c"
     },
     interact_icon: {
-        fontSize: 26,
+        fontSize: 25,
         color: "#a6006a"
     },
     comment_show_responces: {
         flexDirection: "row",
-        marginVertical: 10
+        marginTop: 10
     },
     comment_responces_block: {
         flexDirection: "row",
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
     },
     reply_button: {
         color: "#e8007c",
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         marginLeft: 10
     }

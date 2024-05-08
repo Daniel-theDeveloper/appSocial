@@ -276,31 +276,31 @@ const styles = StyleSheet.create({
     },
     username: {
         marginRight: 5,
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
     globalUsername: {
-        fontSize: 18,
+        fontSize: 17,
         color: "#ff0070"
     },
     myGlobalUsername: {
-        fontSize: 18,
+        fontSize: 17,
         color: "#7e8d3d"
     },
     myUsername: {
         marginRight: 5,
         fontWeight: "bold",
-        fontSize: 18,
+        fontSize: 17,
         color: "#abf752"
     },
     date: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: "bold",
         color: "#235d6f"
     },
     myDate: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: "bold",
         color: "#7e8d3d"
     },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
         borderRadius: 15
     },
     publication_text: {
-        fontSize: 18,
+        fontSize: 17,
         marginBottom: 15,
         color: "white"
     },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     interact_icon: {
-        fontSize: 23,
+        fontSize: 22,
         color: "#a6006a"
     },
     interact_block: {
@@ -334,43 +334,43 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     interact_label: {
-        fontSize: 14,
+        fontSize: 13,
         marginLeft: 5,
         fontWeight: "bold",
         color: "#a6006a"
     },
     interacted_like_icon: {
-        fontSize: 23,
+        fontSize: 22,
         color: "#ffe400"
     },
     interacted_like_label: {
-        fontSize: 14,
+        fontSize: 13,
         marginLeft: 5,
         fontWeight: "bold",
         color: "#ffe400"
     },
     interacted_comment_icon: {
-        fontSize: 23,
+        fontSize: 22,
         color: "#46b0d5"
     },
     interacted_comment_label: {
-        fontSize: 14,
+        fontSize: 13,
         marginLeft: 5,
         fontWeight: "bold",
         color: "#46b0d5"
     },
     interacted_shared_icon: {
-        fontSize: 23,
+        fontSize: 22,
         color: "#afff53"
     },
     interacted_shared_label: {
-        fontSize: 14,
+        fontSize: 13,
         marginLeft: 5,
         fontWeight: "bold",
         color: "#afff53"
     },
     interacted_saved_icon: {
-        fontSize: 23,
+        fontSize: 22,
         color: "#ff6c00"
     },
 });

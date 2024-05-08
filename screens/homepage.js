@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
-import { database } from '../utils/database';
+import { auth, database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { userId } from './components/Publish';
 import { new_publication_params } from './sub-screens/new_publication';
@@ -10,6 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { localUserLogin, erase_all } from '../utils/localstorage';
+import { signOut } from 'firebase/auth';
 
 export default function Homepage(props) {
     const [publications, setPublications] = useState([]);
@@ -86,8 +87,9 @@ export default function Homepage(props) {
     }
 
     const log_out = async () => {
+        signOut(auth).catch(error => console.error(error));
         await erase_all();
-        props.navigation.navigate('Login');
+        props.navigation.replace('Login');
     }
 
     function goNewPublish() {
@@ -208,11 +210,11 @@ const styles = StyleSheet.create({
         marginVertical: 8
     },
     menuButton: {
-        fontSize: 40,
+        fontSize: 39,
         color: "white"
     },
     menuButton2: {
-        fontSize: 30,
+        fontSize: 29,
         color: "#550038",
     },
     new_publication: {
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
         width: "82%"
     },
     new_publication_label: {
-        fontSize: 17,
+        fontSize: 16,
         padding: 2,
         color: "white"
     },
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
         borderRadius: 15
     },
     title: {
-        fontSize: 20,
+        fontSize: 19,
         fontWeight: "bold",
         color: "white"
     },

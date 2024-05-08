@@ -50,7 +50,8 @@ export async function startFollowProcess(UserID, myUserID) {
             followers: arrayUnion(myUserID)
         });
         await updateDoc(docRefMyUser, {
-            following: arrayUnion(UserID)
+            following: arrayUnion(UserID),
+            noChats: arrayUnion(UserID)
         });
         return true;
     } catch (error) {
@@ -69,11 +70,18 @@ export async function stopFollowProcess(UserID, myUserID) {
 
         if (docSnapMyUser.exists()) {
             let myFollowersSnapshot = docSnapMyUser.data().following;
+            let myNoChatsSnapshot = docSnapMyUser.data().noChats;
 
-            // Eliminando el usuario seleccionado de mi lista de siguiendo
+            // Eliminando el usuario seleccionado de mi lista de siguiendo y de no chats
             for (let i = 0; i < myFollowersSnapshot.length; i++) {
                 if (myFollowersSnapshot[i] === UserID) {
                     myFollowersSnapshot.splice(i, 1);
+                    break;
+                }
+            }
+            for (let i = 0; i < myNoChatsSnapshot.length; i++) {
+                if (myNoChatsSnapshot[i] === UserID) {
+                    myNoChatsSnapshot.splice(i, 1);
                     break;
                 }
             }

@@ -161,11 +161,11 @@ const styles = StyleSheet.create({
     replyTitleIcon: {
         marginRight: 10,
         color: "#ff0070",
-        fontSize: 25
+        fontSize: 24
     },
     replyTitleLabel: {
         color: "#ff0070",
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "bold",
         fontStyle: "italic"
     },
@@ -184,37 +184,37 @@ const styles = StyleSheet.create({
         flexDirection: "row",
     },
     myGlobalUsername: {
-        fontSize: 18,
+        fontSize: 17,
         color: "#7e8d3d"
     },
     myUsername: {
         marginRight: 5,
         fontWeight: "bold",
-        fontSize: 18,
+        fontSize: 17,
         color: "#abf752"
     },
     date: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: "bold",
         color: "#235d6f"
     },
     myDate: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: "bold",
         color: "#7e8d3d"
     },
     username: {
         marginRight: 5,
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: "bold",
         color: "#4CC9F0"
     },
     globalUsername: {
-        fontSize: 18,
+        fontSize: 17,
         color: "#ff0070"
     },
     publication_text: {
-        fontSize: 18,
+        fontSize: 17,
         marginBottom: 15,
         color: "white"
     },

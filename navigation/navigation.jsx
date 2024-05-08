@@ -12,6 +12,7 @@ import ReplyScreen from '../screens/sub-screens/replyScreen';
 import Perfil from '../screens/perfil';
 import ConfigPerfil from '../screens/sub-screens/configPerfil';
 import ReplyPublishScreen from '../screens/sub-screens/replyPublishScreen';
+import MyChat from '../screens/sub-screens/myChat';
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
@@ -38,6 +39,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="FastComment" component={FastComment} />
                 <Stack.Screen name="ReplyPublishScreen" component={ReplyPublishScreen} />
                 <Stack.Screen name="Details" component={Details} />
+                <Stack.Screen name="MyChat" component={MyChat} />
                 <Stack.Screen name="Perfil" component={Perfil} />
                 <Stack.Screen name="ConfigPerfil" component={ConfigPerfil} />
                 <Stack.Screen name="ReplyScreen" component={ReplyScreen} />

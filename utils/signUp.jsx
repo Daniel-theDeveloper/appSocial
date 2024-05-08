@@ -65,6 +65,7 @@ export default async function SignUp() {
             email: params.email,
             followers: [],
             following: [],
+            noChats: [],
             location: location,
             name: params.username,
             username: params.nickname,
