@@ -8,6 +8,7 @@ import { database } from '../../utils/database';
 
 import { params } from '../sub-screens/myChat';
 import { localUserLogin } from '../../utils/localstorage';
+import { fetchImage } from '../../utils/interations';
 
 export default function UserChatList({ idUser, props, isAdded, channelId }) {
     const [userData, setUserData] = useState({
@@ -44,7 +45,7 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
                     followingList: docSnap.data().following
                 });
                 if (docSnap.data().avatar != null) {
-                    await fetchImageAvatar(docSnap.data().avatar);
+                    setUserAvatar(await fetchImage(docSnap.data().avatar));
                 }
             } else {
                 setUserData({
@@ -102,16 +103,9 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
         }
     }
 
-    const fetchImageAvatar = async (url) => {
-        const storage = getStorage();
-        const imageRef = ref(storage, url);
-        const getUrl = await getDownloadURL(imageRef);
-
-        setUserAvatar(getUrl);
-    }
-
     const goToChat = async () => {
         params.channelId = channelId;
+        params.userId = idUser;
         params.nickname = userData.nickname;
         params.avatar = userAvatar;
         props.navigation.navigate('MyChat');
@@ -119,7 +113,7 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
 
     return (
         <TouchableOpacity style={styles.container}>
-            <View style={{ flexDirection: "row" }}>
+            <View style={{ flexDirection: "row", width: '65%' }}>
                 <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
                 <View>
                     <Text style={styles.nickname}>{userData.nickname}</Text>
@@ -152,7 +146,6 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
 
 const styles = StyleSheet.create({
     container: {
-        width: "100%",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",

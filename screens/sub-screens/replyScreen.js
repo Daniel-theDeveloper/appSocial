@@ -10,6 +10,7 @@ import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
+import { sendNotification } from '../../utils/interations';
 
 export default function ReplyScreen(props) {
     const [myComment, setMyComment] = useState("");
@@ -48,7 +49,7 @@ export default function ReplyScreen(props) {
                 }
             }
             try {
-                const docRef = doc(database, "publications", publicationData.id);
+                const docRef = doc(database, "publications", props.route.params?.id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -74,6 +75,9 @@ export default function ReplyScreen(props) {
                         }
                     }
                     await updateDoc(docRef, { comments_container: commentsSnapshot });
+                    if (props.route.params?.userIdSend !== localUserLogin.id) {
+                        await sendNotification('reply_c', props.route.params?.userIdSend, props.route.params?.id, myComment);
+                    }
                     props.navigation.goBack()
                     setLoadingButton(false);
                 } else {

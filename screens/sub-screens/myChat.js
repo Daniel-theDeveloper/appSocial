@@ -10,9 +10,11 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { localUserLogin } from '../../utils/localstorage';
 import { GiftedChat, Send, InputToolbar, Composer, Bubble, Day } from 'react-native-gifted-chat';
 import { convertUniversalDate } from '../../utils/convertDate';
+import { sendNotification } from '../../utils/interations';
 
 export let params = {
     channelId: "",
+    userId: "",
     userNickname: "Chat",
     avatar: null
 }
@@ -77,38 +79,10 @@ export default function MyChat(props) {
             console.error(error);
             goBack();
         }
-        // setMessages([
-        //     {
-        //         _id: 1,
-        //         text: 'Hello developer',
-        //         createdAt: new Date(),
-        //         user: {
-        //             _id: 2,
-        //             name: 'React Native'
-        //         },
-        //     },
-        //     {
-        //         _id: 2,
-        //         text: 'Hello developer',
-        //         createdAt: new Date(),
-        //         user: {
-        //             id: 3,
-        //             name: 'React Native'
-        //         },
-        //     }
-        // ])
     }, []);
 
     const goBack = () => {
         props.navigation.goBack()
-    }
-
-    const fetchImageAvatar = async (url) => {
-        const storage = getStorage();
-        const imageRef = ref(storage, url);
-        const getUrl = await getDownloadURL(imageRef);
-
-        return getUrl;
     }
 
     const onSend = useCallback((messages = []) => {
@@ -121,6 +95,7 @@ export default function MyChat(props) {
             userID: localUserLogin.id,
             name: localUserLogin.username
         };
+        sendNotification('message', params.userId, params.channelId, messageToSend.text);
 
         addDoc(collection(database, 'channels/' + params.channelId + '/chats'), messageToSend);
         setLastMessage(messages[0].text);

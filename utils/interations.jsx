@@ -1,6 +1,7 @@
 import { localUserLogin } from './localstorage';
 
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, collection, onSnapshot, query, orderBy, getDocs, addDoc } from 'firebase/firestore';
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from './database';
 
 export function isWasInteracted(array) {
@@ -39,7 +40,6 @@ export function isWasCommented(comments_array) {
     } else {
         return false
     }
-
 }
 
 export async function startFollowProcess(UserID, myUserID) {
@@ -53,6 +53,7 @@ export async function startFollowProcess(UserID, myUserID) {
             following: arrayUnion(UserID),
             noChats: arrayUnion(UserID)
         });
+        await sendNotification('follow', UserID, null, null);
         return true;
     } catch (error) {
         console.error(error);
@@ -122,7 +123,7 @@ export async function deleteFollowerProcess(UserID, myUserID) {
 
         if (docSnapMyUser.exists()) {
             let myFollowersSnapshot = docSnapMyUser.data().followers;
-            
+
             // Eliminado seguidor de mi lista de seguidores
             for (let i = 0; i < myFollowersSnapshot.length; i++) {
                 if (myFollowersSnapshot[i] === UserID) {
@@ -153,5 +154,90 @@ export async function deleteFollowerProcess(UserID, myUserID) {
     } catch (error) {
         console.error(error);
         return false;
+    }
+}
+
+export const fetchImage = async (url) => {
+    if (url != null) {
+        const storage = getStorage();
+        const imageRef = ref(storage, url);
+        const getUrl = await getDownloadURL(imageRef);
+
+        return getUrl;
+    } else {
+        return null;
+    }
+}
+
+export const getNotifications = async (idUser) => {
+    let notificationArray = [];
+    let no_readed_count = 0;
+    try {
+        const QuerySnapshot = await getDocs(collection(database, "users/" + idUser + "/notifications"));
+        QuerySnapshot.forEach(async (doc) => {
+            notificationArray.push(doc.data());
+        });
+        if (notificationArray != undefined) {
+            if (notificationArray.length > 0) {
+                console.log("Nuevo mensaje");
+                for (let x = 0; x < notificationArray.length; x++) {
+                    if (!notificationArray[x].readed) {
+                        no_readed_count++;
+                        console.log(notificationArray[x].body);
+                    }
+                }
+            } else {
+                console.log("No tienes nuevos mensajes");
+            }
+        } else {
+            console.log("No tienes nuevos mensajes");
+        }
+    } catch (error) {
+        console.error("Error en la obtencion de las notificaciones");
+        console.error(error);
+    }
+}
+
+export const sendNotification = async (type, idUserToSend, origin, messageToSend) => {
+    let message = "";
+    let optionalData = null;
+    switch (type) {
+        case 'message':
+            message = localUserLogin.nickname + ' te ha enviado un mensaje: "' + messageToSend + '".';
+            optionalData = { channel: origin };
+            break;
+        case 'follow':
+            message = localUserLogin.nickname + " te ha empezado a seguir.";
+            break;
+        case 'comment':
+            message = localUserLogin.nickname + " ha comentado en tu publicacion.";
+            optionalData = { publish: origin };
+            break;
+        case 'reply_c':
+            message = localUserLogin.nickname + ' ha respondido tu comentario: "' + messageToSend + '".';
+            optionalData = { publish: origin };
+            break;
+        case 'reply_p':
+            message = localUserLogin.nickname + ' ha replicado tu publicacion: "' + messageToSend + '".';
+            optionalData = { publish: origin };
+            break;
+        default:
+            console.error("Se establecio como: " + type);
+    }
+
+    const new_notification = {
+        body: message,
+        idUser: localUserLogin.id,
+        optionalData: optionalData,
+        readed: false,
+        type: type,
+        date: new Date()
+    }
+
+    try {
+        const url = "users/" + idUserToSend + "/notifications";
+        await addDoc(collection(database, url), new_notification);
+    } catch (error) {
+        console.error(error);
     }
 }

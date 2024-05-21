@@ -2,6 +2,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { database, auth } from '../utils/database';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { localUserLogin, setLocalUser, saveMyAvatarURI } from './localstorage';
+import { getNotifications } from './interations';
 
 export default async function LoginProcess(email, password) {
     const SaveUserData = async () => {
@@ -22,8 +23,9 @@ export default async function LoginProcess(email, password) {
             localUserLogin.nickname = await userInfo.data.name;
 
             if (userInfo.data.avatar != null) {
-                await saveMyAvatarURI(userInfo.data.avatar);
+                await saveMyAvatarURI(await userInfo.data.avatar);
             }
+            await getNotifications(await userInfo.id);
             await setLocalUser(email, password);
 
             return true

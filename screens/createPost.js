@@ -24,7 +24,7 @@ export default function CreatePost(props) {
         setLoading(true);
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, where("user", "==", localUserLogin.username), orderBy('date', orderStatus));
+            const q = query(collectionRef, where("userId", "==", localUserLogin.id), orderBy('date', orderStatus));
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
@@ -33,7 +33,7 @@ export default function CreatePost(props) {
                         body: doc.data().body,
                         urlImage: doc.data().urlImage,
                         replyID: doc.data().replyID,
-                        name: doc.data().user,
+                        userId: doc.data().userId,
                         comments: doc.data().comments,
                         comments_container: doc.data().comments_container,
                         date: doc.data().date,

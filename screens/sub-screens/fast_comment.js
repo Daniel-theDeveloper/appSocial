@@ -4,6 +4,7 @@ import { convertDate } from '../../utils/convertDate';
 import { publication_selected } from '../components/Publish';
 import { localUserLogin } from '../../utils/localstorage';
 import { publicationData } from '../components/Publish';
+import { sendNotification } from '../../utils/interations';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -33,6 +34,9 @@ export default function FastComment(props) {
                 await updateDoc(docRef, {
                     comments_container: arrayUnion(commentArray)
                 });
+                if (publicationData.userId !== localUserLogin.id) {
+                    await sendNotification('comment', publication_selected.userId, publicationData.id, myComment);
+                }
                 setLoadingButton(false);
                 props.navigation.goBack();
             } catch (error) {

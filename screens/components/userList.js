@@ -7,8 +7,7 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 import { localUserLogin } from '../../utils/localstorage';
-import { userId } from './Publish';
-import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess } from '../../utils/interations';
+import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess, fetchImage } from '../../utils/interations';
 
 // Tipo de seguidor:
 // 0 - Usuario que me sigue
@@ -16,6 +15,7 @@ import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollo
 // Si es sugerencia para chatear: 2
 export default function UserList({ idUser, list_owner, followType, props }) {
     const [userData, setUserData] = useState({
+        id: "",
         username: "",
         nickname: "",
         avatar: null,
@@ -43,7 +43,7 @@ export default function UserList({ idUser, list_owner, followType, props }) {
                     followingList: docSnap.data().following
                 });
                 if (docSnap.data().avatar != null) {
-                    await fetchImageAvatar(docSnap.data().avatar);
+                    setUserAvatar(await fetchImage(docSnap.data().avatar));
                 }
                 if (docSnap.data().username === localUserLogin.username) {
                     setIsMe(true);
@@ -61,21 +61,11 @@ export default function UserList({ idUser, list_owner, followType, props }) {
         }
     }
 
-    const fetchImageAvatar = async (url) => {
-        const storage = getStorage();
-        const imageRef = ref(storage, url);
-        const getUrl = await getDownloadURL(imageRef);
-
-        setUserAvatar(getUrl);
-    }
-
     function goDetails() {
         if (followType === 2) {
-            userId.id = userData.username;
-            props.navigation.navigate('Perfil');
+            props.navigation.navigate({ name: 'Perfil', params: { userId: userData.id }, merge: true });
         } else if (userData.username !== null) {
-            userId.id = userData.username;
-            props.navigation.replace('Perfil');
+            props.navigation.replace('Perfil', { userId: userData.id });
         } else {
             Alert.alert("Usuario eliminado", "Este usuario ya no existe");
         }

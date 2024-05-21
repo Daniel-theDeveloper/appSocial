@@ -3,18 +3,13 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasCommented, isWasInteractedByID } from '../../utils/interations';
+import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
-import { replyPublishParams } from '../sub-screens/replyPublishScreen.js';
 
-import { doc, getDocs, updateDoc, arrayUnion, collection } from 'firebase/firestore'
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
 
 export let publicationData = {
-    id: ""
-}
-export var userId = {
     id: ""
 }
 export let publication_selected = []
@@ -29,7 +24,7 @@ export default function Publication({
     likes,
     replyID,
     shares,
-    name
+    userId
 }) {
     const allLikes = likes.length;
     const allComments = comments_container.length;
@@ -41,63 +36,41 @@ export default function Publication({
     const [imageURL, setImageURL] = useState(null);
 
     const [avatarURL, setAvatarURL] = useState(null);
+    const [username, setUsername] = useState('');
     const [nickname, setNickname] = useState(null);
 
     useEffect(() => {
         loadUserData();
-        fetchImage();
-    }, [])
+        loadFhoto();
+    }, []);
 
-    const fetchImage = async () => {
-        if (urlImage != null) {
-            const storage = getStorage();
-            const imageRef = ref(storage, urlImage);
-            const getUrl = await getDownloadURL(imageRef);
-
-            setImageURL(getUrl);
-        }
-    }
-
-    const fetchImageAvatar = async (url) => {
-        if (url != null) {
-            const storage = getStorage();
-            const imageRef = ref(storage, url);
-            const getUrl = await getDownloadURL(imageRef);
-
-            setAvatarURL(getUrl);
-        }
+    const loadFhoto = async () => {
+        setImageURL(await fetchImage(urlImage));
     }
 
     const loadUserData = async () => {
-        let userData = [];
         try {
-            const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push(doc.data());
-            });
-            userData.find(function (res) {
-                if (res.username === name) {
-                    fetchImageAvatar(res.avatar);
-                    setNickname(res.name);
-                }
-            })
+            const docRef = doc(database, "users", userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setAvatarURL(await fetchImage(docSnap.data().avatar));
+                setNickname(docSnap.data().name);
+                setUsername(docSnap.data().username)
+            } else {
+                console.error("Sin conexion");
+            }
         } catch (error) {
             console.error(error);
         }
     }
 
     function goDetails() {
-        publicationData = {
-            id: id,
-            nickname: nickname,
-            avatar: avatarURL
-        }
-        props.navigation.navigate('Details');
+        props.navigation.navigate({ name: 'Details', params: { id: id, nickname: nickname, avatar: avatarURL }, merge: true });
     }
 
     function goPerfil() {
-        userId.id = name
-        props.navigation.navigate('Perfil');
+        props.navigation.navigate({ name: 'Perfil', params: { userId: userId }, merge: true });
     }
 
     const setLike = async () => {
@@ -124,7 +97,8 @@ export default function Publication({
             comments_container: comments_container,
             date: date,
             likes: likes.length,
-            user: nickname
+            user: nickname,
+            userId: userId
         }
         publicationData = {
             id: id
@@ -136,8 +110,7 @@ export default function Publication({
         if (isShared) {
             // Show My Reply
         } else {
-            replyPublishParams.replyID = id;
-            props.navigation.navigate('ReplyPublishScreen');
+            props.navigation.navigate({ name: 'ReplyPublishScreen', params: { id: id, userIdSend: userId }, merge: true });
         }
     }
 
@@ -158,12 +131,12 @@ export default function Publication({
                         :
                         <Image style={styles.avatar} source={require('../../assets/avatar-default.png')} />
                     }
-                    {name === localUserLogin.username ?
+                    {username === localUserLogin.username ?
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
                                 <Text style={styles.myUsername}>{nickname}</Text>
                                 <Text style={styles.myUsername}>-</Text>
-                                <Text style={styles.myGlobalUsername}>@{name}</Text>
+                                <Text style={styles.myGlobalUsername}>@{username}</Text>
                             </View>
                             <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
                         </View>
@@ -172,7 +145,7 @@ export default function Publication({
                             <View style={styles.perfil_usernames_block}>
                                 <Text style={styles.username}>{nickname}</Text>
                                 <Text style={styles.username}>-</Text>
-                                <Text style={styles.globalUsername}>@{name}</Text>
+                                <Text style={styles.globalUsername}>@{username}</Text>
                             </View>
                             <Text style={styles.date}>{convertDate(date.seconds)}</Text>
                         </View>

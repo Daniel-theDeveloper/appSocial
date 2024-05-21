@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasInteractedByID } from '../../utils/interations';
+import { isWasInteracted, isWasInteractedByID, sendNotification } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
-import { publicationData } from '../components/Publish';
 import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
 // import { compareDesc } from "date-fns";
@@ -18,7 +17,6 @@ export default function Details(props) {
     const [publicationArray, setPublicationArray] = useState({
         id: "",
         body: "",
-        name: "",
         nickname: "",
         urlImage: null,
         replyId: null,
@@ -26,7 +24,8 @@ export default function Details(props) {
         comments_container: [],
         date: "",
         likes: [],
-        shares: 0
+        shares: 0,
+        userId: ""
     });
     const [loadingButton, setLoadingButton] = useState((false));
 
@@ -66,11 +65,11 @@ export default function Details(props) {
                 data.push({ id: doc.id, data: doc.data() });
             })
             data.find(function (res) {
-                if (res.id === publicationData.id) {
+                if (res.id === props.route.params?.id) {
                     getData = {
                         id: res.id,
                         body: res.data['body'],
-                        name: res.data['user'],
+                        userId: res.data['userId'],
                         urlImage: res.data['urlImage'],
                         replyId: res.data['replyID'],
                         comments: res.data['comments'],
@@ -86,8 +85,8 @@ export default function Details(props) {
                 fetchImage(getData.urlImage);
             }
 
-            if (publicationData.avatar != null) {
-                setAvatarURL(publicationData.avatar);
+            if (props.route.params?.avatar != null) {
+                setAvatarURL(props.route.params?.avatar);
             }
 
             setMyAvatar(localUserLogin.avatar);
@@ -146,6 +145,9 @@ export default function Details(props) {
                 await updateDoc(docRef, {
                     comments_container: arrayUnion(commentArray)
                 });
+                if (publicationArray.userId !== localUserLogin.id) {
+                    await sendNotification('comment', publicationArray.userId, publicationArray.id, myComment);
+                }
                 setMyCommnent("");
                 setLoadingButton(false);
             } catch (error) {
@@ -183,7 +185,7 @@ export default function Details(props) {
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>{publicationData.nickname} publicó</Text>
+                                <Text style={styles.username}>{props.route.params?.nickname} publicó</Text>
                                 <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
@@ -275,7 +277,7 @@ export default function Details(props) {
                     }
                 </View>
 
-                {publicationArray.comments_container.map((comment, key) => (<Comment key={key} props={props} {...comment} />))}
+                {publicationArray.comments_container.map((comment, key) => (<Comment key={key} props={props} publicationId={props.route.params?.id} {...comment} />))}
                 {/* {orderComments.map((comment, key) => (<Comment key={key} props={props} {...comment} />))} */}
             </View>
         </ScrollView>

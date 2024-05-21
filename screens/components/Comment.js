@@ -16,6 +16,7 @@ import { userId } from '../components/Publish';
 export let comment_Array = [];
 
 export default function Comment({
+    publicationId,
     comment_answers,
     date,
     dislikes,
@@ -28,6 +29,7 @@ export default function Comment({
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
     const [showAnswers, setShowAnswers] = React.useState(false);
     const [avatarURL, setAvatarURL] = useState(null);
+    const [userId, setUserId] = useState(null);
     const [username, setUsername] = useState(null);
     const [nickname, setNickname] = useState(null);
 
@@ -51,7 +53,7 @@ export default function Comment({
             userAvatar: avatarURL
         }
         globals.isPrincipalComment = true;
-        props.navigation.navigate('ReplyScreen')
+        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId }, merge: true });
     }
 
     function show() {
@@ -62,7 +64,7 @@ export default function Comment({
         }
     }
 
-    const fetchImageAvatar = async (url) => {
+    const fetchImage = async (url) => {
         if (url != null) {
             const storage = getStorage();
             const imageRef = ref(storage, url);
@@ -77,13 +79,14 @@ export default function Comment({
         try {
             const QuerySnapshot = await getDocs(collection(database, "users"));
             QuerySnapshot.forEach((doc) => {
-                userData.push(doc.data());
+                userData.push({id: doc.id, data: doc.data()});
             });
             userData.find(function (res) {
-                if (res.username === user) {
-                    fetchImageAvatar(res.avatar);
-                    setUsername(res.username);
-                    setNickname(res.name);
+                if (res.data.username === user) {
+                    setUserId(res.id);
+                    fetchImage(res.data.avatar);
+                    setUsername(res.data.username);
+                    setNickname(res.data.name);
                 }
             })
         } catch (error) {
@@ -92,8 +95,7 @@ export default function Comment({
     }
 
     function goPerfil() {
-        userId.id = username;
-        props.navigation.navigate('Perfil');
+        props.navigation.navigate({ name: 'Perfil', params: { userId: userId }, merge: true });
     }
 
     const setLikeComment = async () => {
@@ -101,7 +103,7 @@ export default function Comment({
             if (isLike != true) {
                 setIsLike(true);
                 try {
-                    const docRef = doc(database, "publications", publicationData.id)
+                    const docRef = doc(database, "publications", publicationId)
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
@@ -131,7 +133,7 @@ export default function Comment({
             setIsDislike(false)
             setIsLike(true);
             try {
-                const docRef = doc(database, "publications", publicationData.id)
+                const docRef = doc(database, "publications", publicationId)
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -172,7 +174,7 @@ export default function Comment({
             if (isDislike != true) {
                 setIsDislike(true)
                 try {
-                    const docRef = doc(database, "publications", publicationData.id)
+                    const docRef = doc(database, "publications", publicationId)
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
@@ -202,7 +204,7 @@ export default function Comment({
             setIsLike(false)
             setIsDislike(true)
             try {
-                const docRef = doc(database, "publications", publicationData.id)
+                const docRef = doc(database, "publications", publicationId)
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -321,7 +323,7 @@ export default function Comment({
             </View>
             {/* Area de respuestas */}
             {showAnswers ?
-                comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} {...comment} />))
+                comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} publicationId={publicationId} {...comment} />))
                 :
                 <View></View>
             }

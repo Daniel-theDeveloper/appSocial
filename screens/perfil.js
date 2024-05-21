@@ -5,11 +5,10 @@ import Modal from 'react-native-modalbox';
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { convertDateLarge } from "../utils/convertDate";
-import { userId } from "./components/Publish";
 import { userData } from "./sub-screens/configPerfil";
 import UserList from "./components/userList";
 
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, query, where, orderBy, doc, getDoc } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../utils/database';
 import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess } from "../utils/interations";
@@ -93,62 +92,42 @@ export default function Perfil(props) {
         props.navigation.goBack()
     }
 
-    function getUserData() {
-        let data = []
-        let getData = []
-        const collectionRef = collection(database, 'users');
-        const q = query(collectionRef);
+    const getUserData = async () => {
+        try {
+            const docRef = doc(database, "users", props.route.params?.userId);
+            const docSnap = await getDoc(docRef);
 
-        const unsuscribe = onSnapshot(q, QuerySnapshot => {
-            try {
-                QuerySnapshot.docs.map(doc => {
-                    data.push({ id: doc.id, data: doc.data() });
-                })
-                data.find(function (res) {
-                    if (res.data['username'] === userId.id) {
-                        getData = {
-                            id: res.id,
-                            avatar: res.data['avatar'],
-                            details: res.data['details'],
-                            email: res.data['email'],
-                            followers: res.data['followers'],
-                            following: res.data['following'],
-                            name: res.data['name'],
-                            username: res.data['username'],
-                            wasCreated: res.data['wasCreated'],
-                            banner: res.data['banner'],
-                            country: res.data['country'],
-                            city: res.data['city']
-                        }
-                    }
-                })
-                if (getData.avatar != null) {
-                    fetchImage(getData.avatar, true);
+            if (docSnap.exists()) {
+                if (docSnap.data().avatar != null) {
+                    fetchImage(docSnap.data().avatar, true);
                 }
-                if (getData.banner != null) {
-                    fetchImage(getData.banner, false);
+                if (docSnap.data().banner != null) {
+                    fetchImage(docSnap.data().banner, false);
                 }
-                if (getData.username === localUserLogin.username) {
+                if (docSnap.data().username === localUserLogin.username) {
                     setMyPerfil(true);
                 }
-                setFollowsCount(getData.followers.length);
-                setFollowingsCount(getData.following.length);
-                setIsFollowed(isWasInteractedByID(getData.followers));
-                setIsFollowedYou(isWasInteractedByID(getData.following));
-                setUserArray(getData);
-            } catch (error) {
-                console.error(error);
+
+                setFollowsCount(docSnap.data().followers.length);
+                setFollowingsCount(docSnap.data().following.length);
+                setIsFollowed(isWasInteractedByID(docSnap.data().followers));
+                setIsFollowedYou(isWasInteractedByID(docSnap.data().following));
+                setUserArray(docSnap.data());
+            } else {
+                console.error('Usuario inexistente');
                 props.navigation.goBack()
             }
-        })
-        return unsuscribe;
+        } catch (error) {
+            console.error(error);
+            props.navigation.goBack()
+        }
     }
 
     function getPublishData() {
         setLoading(true);
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, where("user", "==", userId.id), orderBy('date', 'desc'));
+            const q = query(collectionRef, where("userId", "==", props.route.params?.userId), orderBy('date', 'desc'));
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
@@ -156,7 +135,7 @@ export default function Perfil(props) {
                         id: doc.id,
                         body: doc.data().body,
                         urlImage: doc.data().urlImage,
-                        name: doc.data().user,
+                        userId: doc.data().userId,
                         comments: doc.data().comments,
                         comments_container: doc.data().comments_container,
                         replyID: doc.data().replyID,
@@ -223,7 +202,7 @@ export default function Perfil(props) {
             userData.details = userArray.details;
             userData.country = userArray.country;
             userData.city = userArray.city;
-    
+
             props.navigation.navigate('ConfigPerfil');
         }
     }

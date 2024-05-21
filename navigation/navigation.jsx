@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -25,6 +26,16 @@ const tab3Name = "Crear"
 const tab4Name = "Notificaciones"
 const tab5Name = "Chats"
 
+let new_notifications = 0;
+
+export function setNewNotification (number) {
+    new_notifications = number;
+}
+
+export function getNewNotification () {
+    return new_notifications;
+}
+
 export default function MyRoutes() {
     function MyRoutes() {
         return (
@@ -37,12 +48,12 @@ export default function MyRoutes() {
                 <Stack.Screen name="Sign_up_part2" component={Sign_up_part2} />
                 <Stack.Screen name="Home" component={HomeTaps} />
                 <Stack.Screen name="FastComment" component={FastComment} />
-                <Stack.Screen name="ReplyPublishScreen" component={ReplyPublishScreen} />
-                <Stack.Screen name="Details" component={Details} />
+                <Stack.Screen name="ReplyPublishScreen" component={ReplyPublishScreen} initialParams={{ id: "", userIdSend: "" }} />
+                <Stack.Screen name="Details" component={Details} initialParams={{ id: "", nickname: "", avatar: null }}/>
                 <Stack.Screen name="MyChat" component={MyChat} />
-                <Stack.Screen name="Perfil" component={Perfil} />
+                <Stack.Screen name="Perfil" component={Perfil} initialParams={{ userId: "", userIdSend: "" }}/>
                 <Stack.Screen name="ConfigPerfil" component={ConfigPerfil} />
-                <Stack.Screen name="ReplyScreen" component={ReplyScreen} />
+                <Stack.Screen name="ReplyScreen" component={ReplyScreen} initialParams={{ id: "" }} />
                 <Stack.Screen name="NewPublication" component={New_publication} />
             </Stack.Navigator>
         );
@@ -52,17 +63,15 @@ export default function MyRoutes() {
 }
 
 export function HomeTaps() {
+    const [new_notification, setNewNotification] = useState(0);
+
+    function restNotifications() {
+        setNewNotification(new_notification - 1);
+    }
+
     return (
         <Tab.Navigator
             initialRouteName={tab1Name}
-            // screenOptions={{
-            //     tabBarShowLabel: false,
-            //     headerShown: false,
-            //     tabBarActiveBackgroundColor: "#220014",
-            //     tabBarInactiveBackgroundColor: "#220014",
-            //     tabBarActiveTintColor: '#ff0070',
-            //     tabBarInactiveTintColor: '#660031',
-            // }}
             screenOptions={({route}) => ({
                 tabBarIcon: ({focused, color, size}) => {
                     let iconName;
@@ -97,7 +106,7 @@ export function HomeTaps() {
             <Tab.Screen name={tab1Name} component={Homepage} />
             <Tab.Screen name={tab2Name} component={Trending} />
             <Tab.Screen name={tab3Name} component={Create} />
-            <Tab.Screen name={tab4Name} component={Notifications} />
+            <Tab.Screen options={new_notification > 0 ? {tabBarBadge: new_notification} : {title: ''}} name={tab4Name} component={Notifications} />
             <Tab.Screen name={tab5Name} component={Chats} />
         </Tab.Navigator>
     )

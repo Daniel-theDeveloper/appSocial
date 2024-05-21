@@ -8,9 +8,9 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { database } from '../../utils/database'; 
+import { database } from '../../utils/database';
 
-export default function ReplyPublish({props, replyID}) {
+export default function ReplyPublish({ props, replyID }) {
     const [replyData, setReplyData] = useState({
         id: "",
         username: "",
@@ -36,12 +36,11 @@ export default function ReplyPublish({props, replyID}) {
             if (docSnap.exists()) {
                 setReplyData({
                     id: docSnap.id,
-                    username: docSnap.data().user,
                     date: docSnap.data().date,
                     body: docSnap.data().body
                 });
                 await fetchImageReply(docSnap.data().urlImage);
-                await loadUserReplyData(docSnap.data().user);
+                await loadUserReplyData(docSnap.data().userId);
             } else {
                 setReplyDelete(true);
             }
@@ -71,32 +70,28 @@ export default function ReplyPublish({props, replyID}) {
         }
     }
 
-    const loadUserReplyData = async (name) => {
-        let userData = [];
+    const loadUserReplyData = async (userId) => {
         try {
-            const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push(doc.data());
-            });
-            userData.find(function (res) {
-                if (res.username === name) {
-                    setReplyNickname(res.name);
-                    setReplyFollows(res.following);
-                    fetchAvatarReply(res.avatar);
-                }
-            })
+            const docRef = doc(database, "users", userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setReplyNickname(docSnap.data().name);
+                setReplyFollows(docSnap.data().following);
+                fetchAvatarReply(docSnap.data().avatar);
+            } else {
+                setReplyNickname('USUARIO ELIMINADO');
+                setReplyFollows([]);
+                fetchAvatarReply(null);
+            }
         } catch (error) {
             console.error(error);
         }
     }
 
-    // function goDetails() {
-    //     publicationData.id = replyID;
-    //     publicationData.nickname = replyNickname;
-    //     publicationData.avatar = replyAvatar;
-    //     publicationData.following = replyFollows
-    //     props.navigation.navigate('Details');
-    // }
+    function goDetails() {
+        props.navigation.navigate({ name: 'Details', params: { id: replyID, nickname: replyNickname, avatar: replyAvatar }, merge: true });
+    }
 
     return (
         <View>
@@ -109,8 +104,7 @@ export default function ReplyPublish({props, replyID}) {
                 </View>
                 :
                 <View style={styles.replyContainer}>
-                    {/* <TouchableOpacity onPress={goDetails}> */}
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={goDetails}>
                         {/* Reply header */}
                         <View style={styles.replyTitleBlock}>
                             <MaterialCommunityIcons style={styles.replyTitleIcon} name='reply-outline' />

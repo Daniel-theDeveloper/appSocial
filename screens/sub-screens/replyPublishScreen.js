@@ -9,21 +9,18 @@ import ReplyPublish from '../components/replyPublish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Modal from 'react-native-modalbox';
 import EmojiSelector from 'react-native-emoji-selector';
-
-export let replyPublishParams = {
-    replyID: ""
-}
+import { sendNotification } from '../../utils/interations';
 
 export default function ReplyPublishScreen(props) {
     const [newPublication, setNewPublication] = React.useState({
         body: '',
         urlImage: null,
         comments_container: [],
-        replyID: replyPublishParams.replyID,
+        replyID: props.route.params?.id,
         date: new Date(),
         likes: [],
         shares: [],
-        user: localUserLogin.username
+        userId: localUserLogin.id
     });
     const [loading_Button, setLoading_Button] = useState(false);
     const [emojiModal, setEmojiModal] = useState(false);
@@ -50,6 +47,9 @@ export default function ReplyPublishScreen(props) {
             if (newPublication.body != '') {
                 await addDoc(collection(database, 'publications'), newPublication);
                 await setShare();
+                if (props.route.params?.userIdSend !== localUserLogin.id) {
+                    await sendNotification('reply_p', props.route.params?.userIdSend, props.route.params?.id, newPublication.body);
+                }
                 setLoading_Button(false);
                 goBackAgain();
             } else {
@@ -64,7 +64,7 @@ export default function ReplyPublishScreen(props) {
     }
 
     const setShare = async () => {
-        const docRef = doc(database, 'publications', replyPublishParams.replyID);
+        const docRef = doc(database, 'publications', props.route.params?.id);
         await updateDoc(docRef, {
             shares: arrayUnion(localUserLogin.id)
         });
@@ -96,19 +96,20 @@ export default function ReplyPublishScreen(props) {
                     <TouchableOpacity onPress={openEmojiModal}>
                         <MaterialCommunityIcons style={styles.insert_label} name='emoticon-happy' />
                     </TouchableOpacity>
-
-                    <Text style={styles.statistics_label}>{newPublication.body.length} / 500</Text>
                     {loading_Button ?
                         <View style={styles.publish_loading_button}>
                             <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
                             <Text style={styles.publish_label}>Publicando</Text>
                         </View>
                         :
-                        <TouchableOpacity onPress={sharePublish}>
-                            <View style={styles.publish_button}>
-                                <Text style={styles.publish_label}>Publicar</Text>
-                            </View>
-                        </TouchableOpacity>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <Text style={styles.statistics_label}>{newPublication.body.length} / 500</Text>
+                            <TouchableOpacity onPress={sharePublish}>
+                                <View style={styles.publish_button}>
+                                    <Text style={styles.publish_label}>Publicar</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     }
                 </View>
                 <View style={styles.line}></View>
@@ -123,7 +124,7 @@ export default function ReplyPublishScreen(props) {
                         autoFocus={true}
                         multiline={true}
                         maxLength={500} />
-                    <ReplyPublish props={props} replyID={replyPublishParams.replyID} />
+                    <ReplyPublish props={props} replyID={props.route.params?.id} />
                 </View>
             </View>
             <Modal style={styles.modal} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>

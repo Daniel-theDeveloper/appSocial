@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { auth, database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { userId } from './components/Publish';
+import { Platform } from 'react-native';
 import { new_publication_params } from './sub-screens/new_publication';
 
 import * as ImagePicker from 'expo-image-picker';
@@ -49,9 +49,7 @@ export default function Homepage(props) {
                 aspect: [4, 3],
                 quality: 1
             });
-            if (image.canceled) {
-                // Nothing
-            } else {
+            if (!image.canceled) {
                 new_publication_params.isFhoto = true;
                 new_publication_params.photoURI = image.assets[0].uri;
                 new_publication_params.photoName = image.assets[0].width;
@@ -73,7 +71,7 @@ export default function Homepage(props) {
                     body: doc.data().body,
                     urlImage: doc.data().urlImage,
                     replyID: doc.data().replyID,
-                    name: doc.data().user,
+                    userId: doc.data().userId,
                     comments: doc.data().comments,
                     comments_container: doc.data().comments_container,
                     date: doc.data().date,
@@ -105,8 +103,7 @@ export default function Homepage(props) {
     }
 
     function goMyPerfil() {
-        userId.id = localUserLogin.username;
-        props.navigation.navigate('Perfil');
+        props.navigation.navigate({name: 'Perfil', params: { userId: localUserLogin.id }, merge: true});
     }
 
     return (
@@ -114,7 +111,7 @@ export default function Homepage(props) {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <View style={styles.header_row}>
-                        <TouchableOpacity onPress={alertLogOut}>
+                        <TouchableOpacity onPress={Platform.OS === 'web' ? log_out : alertLogOut}>
                             <MaterialCommunityIcons style={styles.menuButton} name='logout' />
                         </TouchableOpacity>
                         <Text style={styles.title}>Pagina principal</Text>

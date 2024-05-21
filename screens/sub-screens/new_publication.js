@@ -27,7 +27,7 @@ export default function New_publication(props) {
         date: new Date(),
         likes: [],
         shares: [],
-        user: localUserLogin.username
+        userId: localUserLogin.id
     })
     const [userImage, setUserImage] = useState(null);
     const [userImageName, setUserImageName] = useState("publish");
@@ -207,14 +207,6 @@ export default function New_publication(props) {
                                 <MaterialCommunityIcons style={styles.insert_label} name='file-image-plus-outline' />
                             </TouchableOpacity>
                         }
-
-                        {/* <TouchableOpacity>
-                            <MaterialCommunityIcons style={styles.insert_label} name='map-marker-plus-outline' />
-                        </TouchableOpacity> */}
-
-                        {/* <TouchableOpacity>
-                            <MaterialCommunityIcons style={styles.insert_label} name='file-gif-box' />
-                        </TouchableOpacity> */}
 
                         <TouchableOpacity onPress={openEmojiModal}>
                             <MaterialCommunityIcons style={styles.insert_label} name='emoticon-happy' />
