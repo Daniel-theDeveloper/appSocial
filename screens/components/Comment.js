@@ -11,7 +11,7 @@ import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 import { globals } from '../../utils/globalVars';
-import { userId } from '../components/Publish';
+import { useTheme } from '@react-navigation/native';
 
 export let comment_Array = [];
 
@@ -37,6 +37,8 @@ export default function Comment({
     const likesCount = likes.length
     const dislikesCount = dislikes.length
     const likesTotal = likesCount - dislikesCount;
+
+    const { colors } = useTheme();
 
     useEffect(() => {
         loadUserData();
@@ -241,7 +243,7 @@ export default function Comment({
     }
 
     return (
-        <View style={styles.comment_container}>
+        <View style={{backgroundColor: colors.primary_dark, padding: 12, flexDirection: "column", borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
             {/* Comentario principal */}
             <View style={styles.comment_view}>
 
@@ -253,38 +255,38 @@ export default function Comment({
 
                     <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
                         {user == localUserLogin.username ?
-                            <Text style={styles.comment_myUsername}>{nickname}</Text>
+                            <Text style={{fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>{nickname}</Text>
                             :
-                            <Text style={styles.comment_username}>{nickname}</Text>
+                            <Text style={{fontWeight: "bold", fontSize: 16, color: colors.secondary}}>{nickname}</Text>
                         }
-                        <Text style={styles.comment_separator}>-</Text>
-                        <Text style={styles.comment_date}>{convertDate(date)}</Text>
+                        <Text style={{fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary}}>-</Text>
+                        <Text style={{fontSize: 16, color: colors.secondary}}>{convertDate(date)}</Text>
                     </TouchableOpacity>
 
                     <View>
-                        <Text style={styles.comment}>{message}</Text>
+                        <Text style={{fontSize: 15, marginVertical: 8, color: colors.text}}>{message}</Text>
                     </View>
 
                     <View style={styles.comment_footer}>
                         <View style={styles.comment_likes_block}>
                             {/* like comment */}
                             {isLike ?
-                                <MaterialCommunityIcons style={styles.comment_liked_buttons} name='thumb-up' />
+                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.like_comment}} name='thumb-up' />
                                 :
                                 <TouchableOpacity onPress={setLikeComment}>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
+                                    <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-up' />
                                 </TouchableOpacity>
                             }
 
                             {/* counter */}
-                            <Text style={styles.comment_counter}>{likesTotal}</Text>
+                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{likesTotal}</Text>
 
                             {/* dislike comment */}
                             {isDislike ?
-                                <MaterialCommunityIcons style={styles.comment_disliked_buttons} name='thumb-down' />
+                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.dislike_comment}} name='thumb-down' />
                                 :
                                 <TouchableOpacity onPress={setDisikeComment}>
-                                    <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
+                                    <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-down' />
                                 </TouchableOpacity>
                             }
 
@@ -293,11 +295,11 @@ export default function Comment({
 
                         </View>
                         <View style={styles.comment_responces_block}>
-                            <MaterialCommunityIcons style={styles.comment_buttons} name='message-processing' />
-                            <Text style={styles.comment_counter}>{allAnswers}</Text>
+                            <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='message-processing' />
+                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{allAnswers}</Text>
                         </View>
                         <TouchableOpacity onPress={replyComment}>
-                            <Text style={styles.reply_button}>Responder</Text>
+                            <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10}}>Responder</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -305,13 +307,13 @@ export default function Comment({
                         <TouchableOpacity onPress={show}>
                             {showAnswers ?
                                 <View style={styles.comment_show_responces}>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='chevron-up' />
-                                    <Text style={styles.load_comments_label}>Ocultar comentarios</Text>
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-up' />
+                                    <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>Ocultar comentarios</Text>
                                 </View>
                                 :
                                 <View style={styles.comment_show_responces}>
-                                    <MaterialCommunityIcons style={styles.interact_icon} name='chevron-down' />
-                                    <Text style={styles.load_comments_label}>Cargar comentarios</Text>
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-down' />
+                                    <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>Cargar comentarios</Text>
                                 </View>
                             }
                         </TouchableOpacity>
@@ -332,13 +334,6 @@ export default function Comment({
 }
 
 const styles = StyleSheet.create({
-    comment_container: {
-        backgroundColor: "#550038",
-        padding: 12,
-        flexDirection: "column",
-        borderRadius: 20,
-        marginBottom: 15
-    },
     comment_avatar: {
         height: 42,
         width: 42,
@@ -357,64 +352,12 @@ const styles = StyleSheet.create({
     comment_header: {
         flexDirection: "row"
     },
-    comment_username: {
-        fontWeight: "bold",
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment_myUsername: {
-        fontWeight: "bold",
-        fontSize: 16,
-        color: "#abf752"
-    },
-    comment_separator: {
-        fontWeight: "bold",
-        marginHorizontal: 5,
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment_date: {
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment: {
-        fontSize: 15,
-        marginVertical: 8,
-        color: 'white'
-    },
     comment_footer: {
         flexDirection: "row",
         marginVertical: 5,
     },
-    comment_buttons: {
-        fontSize: 19,
-        color: "#a6006a"
-    },
-    comment_liked_buttons: {
-        fontSize: 19,
-        color: "#abf752"
-    },
-    comment_disliked_buttons: {
-        fontSize: 19,
-        color: "#994cf0"
-    },
-    comment_counter: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginHorizontal: 8,
-        color: "#e8007c"
-    },
     comment_likes_block: {
         flexDirection: "row"
-    },
-    load_comments_label: {
-        fontSize: 15,
-        fontWeight: "bold",
-        color: "#e8007c"
-    },
-    interact_icon: {
-        fontSize: 25,
-        color: "#a6006a"
     },
     comment_show_responces: {
         flexDirection: "row",
@@ -423,11 +366,5 @@ const styles = StyleSheet.create({
     comment_responces_block: {
         flexDirection: "row",
         marginLeft: 30,
-    },
-    reply_button: {
-        color: "#e8007c",
-        fontSize: 15,
-        fontWeight: "bold",
-        marginLeft: 10
     }
 })

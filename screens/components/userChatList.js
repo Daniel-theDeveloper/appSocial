@@ -9,6 +9,7 @@ import { database } from '../../utils/database';
 import { params } from '../sub-screens/myChat';
 import { localUserLogin } from '../../utils/localstorage';
 import { fetchImage } from '../../utils/interations';
+import { useTheme } from '@react-navigation/native';
 
 export default function UserChatList({ idUser, props, isAdded, channelId }) {
     const [userData, setUserData] = useState({
@@ -22,6 +23,8 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
     const [lastMessage, setLastMessagge] = useState("Nuevo chat");
     const [userAvatar, setUserAvatar] = useState(null);
     const [loadingButton, setLoadingButton] = useState(false);
+
+    const { colors } = useTheme();
 
     useEffect(() => {
         loadData();
@@ -116,27 +119,43 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
             <View style={{ flexDirection: "row", width: '65%' }}>
                 <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
                 <View>
-                    <Text style={styles.nickname}>{userData.nickname}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary }}>{userData.nickname}</Text>
                     {isAdded ?
-                        <Text style={styles.description}>{lastMessage}</Text>
+                        <Text style={{ fontSize: 14, color: colors.text }}>{lastMessage}</Text>
                         :
-                        <Text style={styles.description}>{userData.description}</Text>
+                        <Text style={{ fontSize: 14, color: colors.text }}>{userData.description}</Text>
                     }
                 </View>
             </View>
 
             {isAdded ?
-                <TouchableOpacity style={styles.user_button_added} onPress={goToChat}>
-                    <MaterialCommunityIcons style={styles.user_button_icon_added} name='chat-processing' />
+                <TouchableOpacity style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: colors.primary, borderRadius: 10 }} onPress={goToChat}>
+                    <MaterialCommunityIcons style={{color: colors.background, fontSize: 30}} name='chat-processing' />
                 </TouchableOpacity>
                 :
                 loadingButton ?
-                    <View style={styles.user_loading_button}>
-                        <ActivityIndicator color={"#ff0070"} />
+                    <View style={{
+                        paddingVertical: 9,
+                        paddingHorizontal: 14,
+                        borderColor: colors.primary_dark,
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        outlineStyle: "solid",
+                        outlineWidth: 2
+                    }}>
+                        <ActivityIndicator color={colors.primary} />
                     </View>
                     :
-                    <TouchableOpacity style={styles.user_button} onPress={addChat}>
-                        <MaterialCommunityIcons style={styles.user_button_icon} name='chat-plus-outline' />
+                    <TouchableOpacity style={{
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        borderColor: colors.primary,
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        outlineStyle: "solid",
+                        outlineWidth: 2
+                    }} onPress={addChat}>
+                        <MaterialCommunityIcons style={{color: colors.primary, fontSize: 23}} name='chat-plus-outline' />
                     </TouchableOpacity>
             }
         </TouchableOpacity>
@@ -156,56 +175,5 @@ const styles = StyleSheet.create({
         height: 50,
         width: 50,
         borderRadius: 50,
-    },
-    nickname: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#e40068"
-    },
-    description: {
-        fontSize: 14,
-        color: 'white'
-    },
-    my_nickname: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#abf752"
-    },
-    user_button_added: {
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        backgroundColor: "#ff0070",
-        borderRadius: 10
-    },
-    user_loading_button: {
-        paddingVertical: 9,
-        paddingHorizontal: 14,
-        borderColor: "#65002c",
-        borderWidth: 2,
-        borderRadius: 10,
-        outlineStyle: "solid",
-        outlineWidth: 2,
-    },
-    user_button: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderColor: "#ff0070",
-        borderWidth: 2,
-        borderRadius: 10,
-        outlineStyle: "solid",
-        outlineWidth: 2,
-    },
-    user_button_icon_added: {
-        color: "#210016",
-        fontSize: 30
-    },
-    user_button_icon: {
-        color: "#e40068",
-        fontSize: 23
-    },
-    followLabel: {
-        color: "#ff0070",
-        fontSize: 15,
-        fontWeight: "bold"
     }
 });

@@ -11,6 +11,7 @@ import { userId } from '../components/Publish';
 import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
+import { useTheme } from '@react-navigation/native';
 
 export var replyComment_Array = []
 
@@ -35,6 +36,8 @@ export default function Comment_answer({
     const likesCount = likes.length
     const dislikesCount = dislikes.length
     const likesTotal = likesCount - dislikesCount;
+
+    const { colors } = useTheme();
 
     useEffect(() => {
         loadUserData();
@@ -253,38 +256,38 @@ export default function Comment_answer({
 
                 <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
                     {user == localUserLogin.username ?
-                        <Text style={styles.comment_myUsername}>{nickname}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>{nickname}</Text>
                         :
-                        <Text style={styles.comment_username}>{nickname}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 16, color: colors.secondary}}>{nickname}</Text>
                     }
-                    <Text style={styles.comment_separator}>-</Text>
-                    <Text style={styles.comment_date}>{convertDate(date)}</Text>
+                    <Text style={{fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary}}>-</Text>
+                    <Text style={{fontSize: 16, color: colors.secondary}}>{convertDate(date)}</Text>
                 </TouchableOpacity>
 
                 <View>
-                    <Text style={styles.comment}>{body}</Text>
+                    <Text style={{fontSize: 15, marginVertical: 8, color: colors.text}}>{body}</Text>
                 </View>
 
                 <View style={styles.comment_footer}>
                     <View style={styles.comment_likes_block}>
                         {isLike ?
-                            <MaterialCommunityIcons style={styles.comment_liked_buttons} name='thumb-up' />
+                            <MaterialCommunityIcons style={{fontSize: 19, color: colors.like_comment}} name='thumb-up' />
                             :
                             <TouchableOpacity onPress={setLikeComment}>
-                                <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-up' />
+                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-up' />
                             </TouchableOpacity>
                         }
-                        <Text style={styles.comment_counter}>{likesTotal}</Text>
+                        <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{likesTotal}</Text>
                         {isDislike ?
-                            <MaterialCommunityIcons style={styles.comment_disliked_buttons} name='thumb-down' />
+                            <MaterialCommunityIcons style={{fontSize: 19, color: colors.dislike_comment}} name='thumb-down' />
                             :
                             <TouchableOpacity onPress={setDislikeComment}>
-                                <MaterialCommunityIcons style={styles.comment_buttons} name='thumb-down' />
+                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-down' />
                             </TouchableOpacity>
                         }
                     </View>
                     <TouchableOpacity onPress={replyComment}>
-                        <Text style={styles.reply_button}>Responder</Text>
+                        <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10}}>Responder</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -301,45 +304,10 @@ const styles = StyleSheet.create({
     comment_header: {
         flexDirection: "row"
     },
-    comment_username: {
-        fontWeight: "bold",
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment_myUsername: {
-        fontWeight: "bold",
-        fontSize: 16,
-        color: "#abf752"
-    },
-    comment_separator: {
-        fontWeight: "bold",
-        marginHorizontal: 5,
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment_date: {
-        fontSize: 16,
-        color: "#4CC9F0"
-    },
-    comment: {
-        fontSize: 15,
-        marginVertical: 8,
-        color: 'white'
-    },
     comment_footer: {
         flexDirection: "row",
         marginTop: 5,
         marginBottom: 20
-    },
-    comment_buttons: {
-        fontSize: 19,
-        color: "#a6006a"
-    },
-    comment_counter: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginHorizontal: 8,
-        color: "#e8007c"
     },
     comment_likes_block: {
         flexDirection: "row"
@@ -354,19 +322,5 @@ const styles = StyleSheet.create({
     },
     comment_responces_right: {
         width: "80%",
-    },
-    reply_button: {
-        color: "#e8007c",
-        fontSize: 15,
-        fontWeight: "bold",
-        marginLeft: 10
-    },
-    comment_liked_buttons: {
-        fontSize: 19,
-        color: "#abf752"
-    },
-    comment_disliked_buttons: {
-        fontSize: 19,
-        color: "#994cf0"
     }
 })

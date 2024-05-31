@@ -8,6 +8,7 @@ import ReplyPublish from './replyPublish';
 
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
+import { useTheme } from '@react-navigation/native';
 
 export let publicationData = {
     id: ""
@@ -38,6 +39,8 @@ export default function Publication({
     const [avatarURL, setAvatarURL] = useState(null);
     const [username, setUsername] = useState('');
     const [nickname, setNickname] = useState(null);
+
+    const { colors } = useTheme();
 
     useEffect(() => {
         loadUserData();
@@ -134,28 +137,28 @@ export default function Publication({
                     {username === localUserLogin.username ?
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
-                                <Text style={styles.myUsername}>{nickname}</Text>
-                                <Text style={styles.myUsername}>-</Text>
-                                <Text style={styles.myGlobalUsername}>@{username}</Text>
+                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>{nickname}</Text>
+                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>-</Text>
+                                <Text style={{fontSize: 17, color: colors.tertiary_dark}}>@{username}</Text>
                             </View>
-                            <Text style={styles.myDate}>{convertDate(date.seconds)}</Text>
+                            <Text style={{fontSize: 13, fontWeight: "bold", color: colors.tertiary_dark_alternative}}>{convertDate(date.seconds)}</Text>
                         </View>
                         :
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
-                                <Text style={styles.username}>{nickname}</Text>
-                                <Text style={styles.username}>-</Text>
-                                <Text style={styles.globalUsername}>@{username}</Text>
+                                <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{nickname}</Text>
+                                <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>-</Text>
+                                <Text style={{fontSize: 17, color: colors.primary}}>@{username}</Text>
                             </View>
-                            <Text style={styles.date}>{convertDate(date.seconds)}</Text>
+                            <Text style={{fontSize: 13, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(date.seconds)}</Text>
                         </View>
                     }
                 </View>
             </TouchableOpacity>
 
-            <View style={styles.publication_container}>
+            <View style={{padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15, shadowColor: colors.shadow, shadowOffset: { width: 4, height: 4 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
                 <TouchableOpacity onPress={goDetails}>
-                    <Text style={styles.publication_text}>{body}</Text>
+                    <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{body}</Text>
                     {replyID != null || replyID != undefined ?
                         <ReplyPublish props={props} replyID={replyID} />
                         :
@@ -172,13 +175,13 @@ export default function Publication({
                     <TouchableOpacity onPress={setLike}>
                         {isLike ?
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interacted_like_icon} name='star' />
-                                <Text style={styles.interacted_like_label}>{allLikes}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.like}} name='heart' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.like}}>{allLikes}</Text>
                             </View>
                             :
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interact_icon} name='star-outline' />
-                                <Text style={styles.interact_label}>{allLikes}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='heart-outline' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.primary_dark_alternative}}>{allLikes}</Text>
                             </View>
                         }
                     </TouchableOpacity>
@@ -187,13 +190,13 @@ export default function Publication({
                     <TouchableOpacity onPress={setCommment}>
                         {isComment ?
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interacted_comment_icon} name='message' />
-                                <Text style={styles.interacted_comment_label}>{allComments}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.comment}} name='message' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.comment}}>{allComments}</Text>
                             </View>
                             :
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interact_icon} name='message-outline' />
-                                <Text style={styles.interact_label}>{allComments}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='message-outline' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.primary_dark_alternative}}>{allComments}</Text>
                             </View>
                         }
                     </TouchableOpacity>
@@ -202,25 +205,25 @@ export default function Publication({
                     <TouchableOpacity onPress={setShared}>
                         {isShared ?
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interacted_shared_icon} name='repeat-variant' />
-                                <Text style={styles.interacted_shared_label}>{shares.length}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.share}} name='repeat-variant' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.share}}>{shares.length}</Text>
                             </View>
                             :
                             <View style={styles.interact_block}>
-                                <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
-                                <Text style={styles.interact_label}>{shares.length}</Text>
+                                <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='repeat-variant' />
+                                <Text style={{fontSize: 13, marginLeft: 5, fontWeight: "bold", color: colors.primary_dark_alternative}}>{shares.length}</Text>
                             </View>
                         }
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={setSaved}>
                         {isSaved ?
-                            <MaterialCommunityIcons style={styles.interacted_saved_icon} name='book' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.save}} name='book' />
                             :
-                            <MaterialCommunityIcons style={styles.interact_icon} name='book-outline' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='book-outline' />
                         }
                     </TouchableOpacity>
-                    <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
+                    <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='share-variant' />
                 </View>
             </View>
         </View>
@@ -247,46 +250,6 @@ const styles = StyleSheet.create({
     perfil_usernames_block: {
         flexDirection: "row",
     },
-    username: {
-        marginRight: 5,
-        fontSize: 17,
-        fontWeight: "bold",
-        color: "#4CC9F0"
-    },
-    globalUsername: {
-        fontSize: 17,
-        color: "#ff0070"
-    },
-    myGlobalUsername: {
-        fontSize: 17,
-        color: "#7e8d3d"
-    },
-    myUsername: {
-        marginRight: 5,
-        fontWeight: "bold",
-        fontSize: 17,
-        color: "#abf752"
-    },
-    date: {
-        fontSize: 13,
-        fontWeight: "bold",
-        color: "#235d6f"
-    },
-    myDate: {
-        fontSize: 13,
-        fontWeight: "bold",
-        color: "#7e8d3d"
-    },
-    publication_container: {
-        padding: 10,
-        backgroundColor: "#550038",
-        borderRadius: 15
-    },
-    publication_text: {
-        fontSize: 17,
-        marginBottom: 15,
-        color: "white"
-    },
     publication_image: {
         height: 200,
         width: "100%",
@@ -298,52 +261,8 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         padding: 5,
     },
-    interact_icon: {
-        fontSize: 22,
-        color: "#a6006a"
-    },
     interact_block: {
         flexDirection: "row",
         alignItems: "center"
-    },
-    interact_label: {
-        fontSize: 13,
-        marginLeft: 5,
-        fontWeight: "bold",
-        color: "#a6006a"
-    },
-    interacted_like_icon: {
-        fontSize: 22,
-        color: "#ffe400"
-    },
-    interacted_like_label: {
-        fontSize: 13,
-        marginLeft: 5,
-        fontWeight: "bold",
-        color: "#ffe400"
-    },
-    interacted_comment_icon: {
-        fontSize: 22,
-        color: "#46b0d5"
-    },
-    interacted_comment_label: {
-        fontSize: 13,
-        marginLeft: 5,
-        fontWeight: "bold",
-        color: "#46b0d5"
-    },
-    interacted_shared_icon: {
-        fontSize: 22,
-        color: "#afff53"
-    },
-    interacted_shared_label: {
-        fontSize: 13,
-        marginLeft: 5,
-        fontWeight: "bold",
-        color: "#afff53"
-    },
-    interacted_saved_icon: {
-        fontSize: 22,
-        color: "#ff6c00"
-    },
+    }
 });

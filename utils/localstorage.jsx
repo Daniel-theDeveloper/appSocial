@@ -47,9 +47,36 @@ export const saveMyAvatarURI = async (url) => {
     localUserLogin.avatar = saveURI;
 }
 
+export const setSaveTheme = async (name) => {
+    try {
+        await AsyncStorage.setItem('theme', JSON.stringify(name));
+    } catch (error) {
+        console.error('Error en el guardado del tema: ' + error);
+    }
+}
+
+export const getSaveTheme = async () => {
+    try {
+        const themeName = await AsyncStorage.getItem('theme');
+
+        if (themeName !== null) {
+            const themeCrude = themeName.split('"');
+            const theme = themeCrude[1];
+
+            return theme;
+        } else {
+            return 'system';
+        }
+    } catch (error) {
+        console.error("Error en la obtencion del tema: " + error);
+        return 'system';
+    }
+}
+
 export async function erase_all() {
     try {
-        await AsyncStorage.clear();
+        await AsyncStorage.removeItem('email');
+        await AsyncStorage.removeItem('password');
     } catch (error) {
         console.error(error);
     }

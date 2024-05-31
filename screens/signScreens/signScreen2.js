@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import SignUp, { params } from '../../utils/signUp';
@@ -13,6 +14,8 @@ export default function Sign_up_part2(props) {
 
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const { colors } = useTheme();
 
     function exitBack() {
         props.navigation.goBack()
@@ -65,77 +68,161 @@ export default function Sign_up_part2(props) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.subContainer}>
+        <View style={{
+            flex: 1,
+            flexGrow: 1,
+            padding: 10,
+            backgroundColor: colors.background,
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}>
+            <View style={{
+                backgroundColor: colors.primary_dark,
+                width: "100%",
+                padding: 10,
+                borderRadius: 24,
+                shadowColor: colors.shadow,
+                shadowOffset: {
+                    width: 10,
+                    height: 10
+                },
+                shadowOpacity: 0.55,
+                shadowRadius: 4,
+                elevation: 5
+            }}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={exitBack}>
-                        <MaterialCommunityIcons style={styles.icon_close} name='close' />
+                        <MaterialCommunityIcons style={{fontSize: 35, fontWeight: 'bold', color: colors.text}} name='close' />
                     </TouchableOpacity>
-                    <Text style={styles.title}>Cree una cuenta nueva</Text>
+                    <Text style={{fontSize: 30, fontWeight: 'bold', color: colors.text}}>Cree una cuenta nueva</Text>
                     <View></View>
                 </View>
 
-                <Text style={styles.label}>Ingrese su nombre:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='mi nombre' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setName(text)} autoCorrect={false} />
+                <Text style={{marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text}}>Ingrese su nombre:</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Mi nombre' placeholderTextColor={colors.holderText} style={{fontSize: 18, fontWeight: 'bold', color: colors.secondary}} onChangeText={(text) => setName(text)} autoCorrect={false} />
                 </View>
 
-                <Text style={styles.label}>Ingrese su apellido:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='Mi apellido' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
+                <Text style={{marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text}}>Ingrese su apellido:</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Mi apellido' placeholderTextColor={colors.holderText} style={{fontSize: 18, fontWeight: 'bold', color: colors.secondary}} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
                 </View>
 
-                <Text style={styles.label}>Ingrese contraseña:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='Contraseña' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setPassword(text)} secureTextEntry={hidePassword} autoCorrect={false} />
+                <Text style={{marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text}}>Ingrese contraseña:</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Contraseña' placeholderTextColor={colors.holderText} style={{fontSize: 18, fontWeight: 'bold', color: colors.secondary}} onChangeText={(text) => setPassword(text)} secureTextEntry={hidePassword} autoCorrect={false} />
                     {hidePassword ?
                         <TouchableOpacity onPress={setPasswordStatus}>
-                            <MaterialCommunityIcons style={styles.icon_password_hide} name='eye-off-outline' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='eye-off-outline' />
                         </TouchableOpacity>
                         :
                         <TouchableOpacity onPress={setPasswordStatus}>
-                            <MaterialCommunityIcons style={styles.icon_password_show} name='eye' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.secondary}} name='eye' />
                         </TouchableOpacity>
                     }
                 </View>
                 {password.length >= 6 ?
                     <View style={styles.password_message_block}>
-                        <MaterialCommunityIcons style={styles.password_icon_good} name='shield-check' />
-                        <Text style={styles.password_message_good}>La contraseña tiene 6 caracteres</Text>
+                        <MaterialCommunityIcons style={{color: colors.tertiary, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7}} name='shield-check' />
+                        <Text style={{color: colors.tertiary, fontSize: 16, fontWeight: 'bold'}}>La contraseña tiene 6 caracteres</Text>
                     </View>
                     :
                     <View style={styles.password_message_block}>
-                        <MaterialCommunityIcons style={styles.password_icon_bad} name='shield-alert-outline' />
-                        <Text style={styles.password_message_bad}>La contraseña debe tener 6 caracteres</Text>
+                        <MaterialCommunityIcons style={{color: colors.text_error, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7}} name='shield-alert-outline' />
+                        <Text style={{color: colors.text_error, fontSize: 16, fontWeight: 'bold'}}>La contraseña debe tener 6 caracteres</Text>
                     </View>
 
                 }
 
 
-                <Text style={styles.label}>Vuelva a escribir su contraseña:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
+                <Text style={{marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text}}>Vuelva a escribir su contraseña:</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor={colors.holderText} style={{fontSize: 18, fontWeight: 'bold', color: colors.secondary}} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
                     {hidePassword ?
                         <TouchableOpacity onPress={setPasswordStatus}>
-                            <MaterialCommunityIcons style={styles.icon_password_hide} name='eye-off-outline' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='eye-off-outline' />
                         </TouchableOpacity>
                         :
                         <TouchableOpacity onPress={setPasswordStatus}>
-                            <MaterialCommunityIcons style={styles.icon_password_show} name='eye' />
+                            <MaterialCommunityIcons style={{fontSize: 22, color: colors.secondary}} name='eye' />
                         </TouchableOpacity>
                     }
                 </View>
 
-                <Text style={styles.conditions}>Al crear la cuenta nueva, aceptas los terminos y condiciones de Social App, ademas de las normas de comunidad de esta red social.</Text>
+                <Text style={{marginTop: 20, color: colors.text, fontSize: 17, fontWeight: 'bold', textAlign: 'center'}}>Al crear la cuenta nueva, aceptas los terminos y condiciones de Social App, ademas de las normas de comunidad de esta red social.</Text>
 
                 {loading ?
-                    <View style={styles.signLoadingButton}>
-                        <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
-                        <Text style={styles.signTextButton}>Cargando</Text>
+                    <View style={{marginVertical: 15, flexDirection: 'row', justifyContent: 'center', alignContent: 'center', backgroundColor: secondary_dark, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%'}}>
+                        <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16}}>Cargando</Text>
                     </View>
                     :
-                    <TouchableOpacity style={styles.signButton} onPress={trySingUp}>
-                        <Text style={styles.signTextButton}>Crear la cuenta</Text>
+                    <TouchableOpacity style={{marginVertical: 15, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%'}} onPress={trySingUp}>
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16}}>Crear la cuenta</Text>
                     </TouchableOpacity>
                 }
             </View>
@@ -144,141 +231,17 @@ export default function Sign_up_part2(props) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        padding: 10,
-        backgroundColor: '#210016',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    subContainer: {
-        backgroundColor: '#550038',
-        width: "100%",
-        padding: 10,
-        borderRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 10,
-            height: 10
-        },
-        shadowOpacity: 0.55,
-        shadowRadius: 4,
-        elevation: 5
-    },
     header: {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center'
     },
-    title: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    icon_close: {
-        fontSize: 35,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    label: {
-        marginTop: 20,
-        marginBottom: 10,
-        marginLeft: 15,
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    textContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 18,
-        backgroundColor: '#210016',
-        borderRadius: 20,
-        width: '100%',
-        height: 55,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 1,
-            height: 3
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-    },
-    input: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: "#4895EF",
-    },
-    signButton: {
-        marginVertical: 15,
-        backgroundColor: '#4895EF',
-        borderRadius: 30,
-        width: 100,
-        paddingVertical: 10,
-        width: '100%'
-    },
-    signTextButton: {
-        color: 'white',
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 16
-    },
-    signLoadingButton: {
-        marginVertical: 15,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignContent: 'center',
-        backgroundColor: '#20456e',
-        borderRadius: 30,
-        width: 100,
-        paddingVertical: 10,
-        width: '100%'
-    },
     loadingSpinner: {
         marginRight: 10
-    },
-    icon_password_hide: {
-        fontSize: 22,
-        color: "#a1006a"
-    },
-    icon_password_show: {
-        fontSize: 22,
-        color: "#46b0d5"
     },
     password_message_block: {
         flexDirection: 'row',
         marginTop: 15
-    },
-    password_message_good: {
-        color: "#abf752",
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    password_icon_good: {
-        color: "#abf752",
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginHorizontal: 7
-    },
-    password_message_bad: {
-        color: "#ff0078",
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    password_icon_bad: {
-        color: "#ff0078",
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginHorizontal: 7
-    },
-    conditions: {
-        marginTop: 20,
-        color: 'white',
-        fontSize: 17,
-        fontWeight: 'bold',
-        textAlign: 'center'
     }
 })

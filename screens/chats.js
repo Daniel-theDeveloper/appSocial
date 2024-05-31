@@ -6,11 +6,14 @@ import UserChatList from './components/userChatList';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { localUserLogin } from '../utils/localstorage';
+import { useTheme } from '@react-navigation/native';
 
 export default function Chats(props) {
     const [suggestionList, setSuggestionList] = useState([]);
     const [chatList, setChatList] = useState([]);
     const [anotherChatList, setAnotherChatList] = useState([]);
+
+    const { colors } = useTheme();
 
     useEffect(() => {
         loadUserData();
@@ -74,16 +77,16 @@ export default function Chats(props) {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Chats</Text>
+        <View style={{flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15}}>
+            <Text style={{fontSize: 30, fontWeight: "bold", color: colors.primary,}}>Chats</Text>
 
-            <Text style={styles.sub_title}>Mensajes</Text>
+            <Text style={{marginVertical: 15, fontSize: 21, fontWeight: "bold", color: colors.text}}>Mensajes</Text>
 
             {chatList.length == 0 && anotherChatList.length == 0 ?
                 <View style={styles.empty_components}>
-                    <MaterialCommunityIcons style={styles.empty_icon} name='chat-alert-outline' />
-                    <Text style={styles.empty_Title}>Sin nadie con quien chatear</Text>
-                    <Text style={styles.empty_subtitle}>Comience a seguir gente para chatear</Text>
+                    <MaterialCommunityIcons style={{color: colors.primary_dark_alternative, fontSize: 80, marginBottom: 10}} name='chat-alert-outline' />
+                    <Text style={{color: colors.primary_dark_alternative, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>Sin nadie con quien chatear</Text>
+                    <Text style={{color: colors.primary_dark_alternative, fontSize: 18, textAlign: "center",}}>Comience a seguir gente para chatear</Text>
                 </View>
                 :
                 chatList.map((data, key) => (<UserChatList key={key} props={props} idUser={data.userId} isAdded={true} channelId={data.id} />))
@@ -94,51 +97,17 @@ export default function Chats(props) {
                 <View></View>
             }
 
-            <Text style={styles.sub_title}>Sugerencias</Text>
+            <Text style={{marginVertical: 15, fontSize: 21, fontWeight: "bold", color: colors.text}}>Sugerencias</Text>
             {suggestionList.map((following, key) => (<UserChatList key={key} props={props} idUser={following} isAdded={false} channelId={null} />))}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        backgroundColor: "#210016",
-        padding: 15
-    },
-    title: {
-        fontSize: 30,
-        fontWeight: "bold",
-        color: "#ed007e",
-    },
-    sub_title: {
-        marginVertical: 15,
-        fontSize: 21,
-        fontWeight: "bold",
-        color: "white"
-    },
-    empty_icon: {
-        color: "#a00055",
-        fontSize: 80,
-        marginBottom: 10
-    },
     empty_components: {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         height: 250
-    },
-    empty_Title: {
-        color: "#ed007e",
-        fontSize: 26,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginBottom: 8
-    },
-    empty_subtitle: {
-        color: "#a00055",
-        fontSize: 18,
-        textAlign: "center",
     }
 })

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 import { getLocalUser } from '../utils/localstorage';
 import LoginProcess from '../utils/loginProcess';
@@ -7,16 +8,18 @@ import LoginProcess from '../utils/loginProcess';
 export default function Loading(props) {
     useEffect(() => {
         autoLogin();
-    }, [])
+    }, []);
+
+    const { colors } = useTheme();
 
     const autoLogin = async () => {
         const resLocalUser = await getLocalUser();
-        
+
         if (resLocalUser != undefined) {
             try {
                 const emailCrude = resLocalUser.email.split('"');
                 const email = emailCrude[1];
-    
+
                 const passwordCrude = resLocalUser.password.split('"');
                 const password = passwordCrude[1];
 
@@ -36,25 +39,21 @@ export default function Loading(props) {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={{
+            flex: 1,
+            flexGrow: 1,
+            padding: 10,
+            backgroundColor: colors.background,
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}>
             <StatusBar
                 animated={true}
-                backgroundColor={'#220014'}
+                backgroundColor={colors.background}
                 barStyle={"light-content"}
             />
-            <ActivityIndicator color={'#ff0070'} size='large'/>
+            <ActivityIndicator color={colors.primary} size='large' />
         </View>
     );
 
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        padding: 10,
-        backgroundColor: '#210016',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});

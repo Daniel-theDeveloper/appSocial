@@ -179,7 +179,6 @@ export const getNotifications = async (idUser) => {
         });
         if (notificationArray != undefined) {
             if (notificationArray.length > 0) {
-                console.log("Nuevo mensaje");
                 for (let x = 0; x < notificationArray.length; x++) {
                     if (!notificationArray[x].readed) {
                         no_readed_count++;

@@ -5,6 +5,7 @@ import { isWasInteracted, isWasInteractedByID, sendNotification } from '../../ut
 import { localUserLogin } from '../../utils/localstorage';
 import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
+import { useTheme } from '@react-navigation/native';
 // import { compareDesc } from "date-fns";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
@@ -41,6 +42,8 @@ export default function Details(props) {
     const [myAvatar, setMyAvatar] = useState(null);
 
     const [myComment, setMyCommnent] = useState("");
+
+    const { colors } = useTheme();
 
     // const orderComments = publicationArray.comments_container.sort(function(a, b) {
     //     return compareDesc(a.date, b.date);
@@ -171,28 +174,28 @@ export default function Details(props) {
     }
 
     return (
-        <ScrollView style={styles.father} showsVerticalScrollIndicator={true}>
+        <ScrollView style={{backgroundColor: colors.background}} showsVerticalScrollIndicator={true}>
             <View style={styles.container}>
                 <TouchableOpacity onPress={goBackAgain}>
                     <View style={styles.back_block}>
-                        <MaterialCommunityIcons style={styles.back_button} name='chevron-left' />
-                        <Text style={styles.back_label}>Regresar</Text>
+                        <MaterialCommunityIcons style={{fontSize: 49, color: colors.secondary}} name='chevron-left' />
+                        <Text style={{fontSize: 21, fontWeight: "bold", color: colors.secondary}}>Regresar</Text>
                     </View>
                 </TouchableOpacity>
-                <View style={styles.publication}>
+                <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
                     {/* Encabezado de la publicacion */}
                     <View style={styles.perfil_header}>
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                             <View style={styles.perfil_usernames_container}>
-                                <Text style={styles.username}>{props.route.params?.nickname} publicó</Text>
-                                <Text style={styles.date}>{convertDate(publicationArray.date)}</Text>
+                                <Text style={{fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{props.route.params?.nickname} publicó</Text>
+                                <Text style={{fontSize: 15, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(publicationArray.date)}</Text>
                             </View>
                         </View>
                     </View>
 
                     {/* Cuerpo de la publicacion */}
-                    <Text style={styles.publication_text}>{publicationArray.body}</Text>
+                    <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{publicationArray.body}</Text>
                     {replyId != null || replyId != undefined ?
                         <ReplyPublish  props={props} replyID={replyId} />
                         :
@@ -205,58 +208,58 @@ export default function Details(props) {
                     {/* Zona de estadisticas */}
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>{allComments}</Text>
-                            <Text style={styles.statistics_label}>Comentarios</Text>
+                            <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allComments}</Text>
+                            <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Comentarios</Text>
                         </View>
-                        <Text style={styles.statistics_separator}>|</Text>
+                        <Text style={{fontSize: 17, fontWeight: "bold", marginHorizontal: 15, color: colors.primary}}>|</Text>
                         <View style={styles.statistics_block}>
-                            <Text style={styles.statistics_num}>{allLikes}</Text>
-                            <Text style={styles.statistics_label}>Likes</Text>
+                            <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allLikes}</Text>
+                            <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Likes</Text>
                         </View>
                     </View>
                     {/* Zona de interaccion */}
                     <View style={styles.interact_container}>
                         <TouchableOpacity onPress={setLike}>
                             {isLike ?
-                                <MaterialCommunityIcons style={styles.interacted_icon_like} name='star' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.like}} name='heart' />
                                 :
-                                <MaterialCommunityIcons style={styles.interact_icon} name='star-outline' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='heart-outline' />
                             }
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={setShared}>
                             {isShared ?
-                                <MaterialCommunityIcons style={styles.interacted_icon_shared} name='repeat-variant' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.share}} name='repeat-variant' />
                                 :
-                                <MaterialCommunityIcons style={styles.interact_icon} name='repeat-variant' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='repeat-variant' />
                             }
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={saveThisPublish}>
                             {isSaved ?
-                                <MaterialCommunityIcons style={styles.interacted_icon_shared} name='book' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.save}} name='book' />
                                 :
-                                <MaterialCommunityIcons style={styles.interact_icon} name='book-outline' />
+                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='book-outline' />
                             }
                         </TouchableOpacity>
 
 
-                        <MaterialCommunityIcons style={styles.interact_icon} name='share-variant' />
-                        <MaterialCommunityIcons style={styles.interact_icon} name='chevron-down' />
+                        <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='share-variant' />
+                        <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-down' />
                     </View>
                 </View>
 
                 {/* Zona de comentarios */}
-                <Text style={styles.comment_principal_title}>Comentarios</Text>
+                <Text style={{fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Comentarios</Text>
 
-                <View style={styles.new_comment_container}>
+                <View style={{backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
                     <View style={styles.new_comment_header}>
                         <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
-                        <View style={styles.new_comment_input_block}>
+                        <View style={{backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5}}>
                             <TextInput
-                                style={styles.new_comment_input}
+                                style={{fontSize: 15, color: colors.text}}
                                 placeholder='Escribe un comentario'
-                                placeholderTextColor="#ed007e"
+                                placeholderTextColor={colors.holderText}
                                 multiline={true}
                                 onChangeText={(text) => setMyCommnent(text)}
                                 maxLength={500} />
@@ -264,14 +267,14 @@ export default function Details(props) {
                     </View>
 
                     {loadingButton ?
-                        <View style={styles.loading_comment_button}>
-                            <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
-                            <Text style={styles.loading_comment_label}>Publicando</Text>
+                        <View style={{flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark}}>
+                            <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                            <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicando</Text>
                         </View>
                         :
                         <TouchableOpacity onPress={sendMyComment}>
-                            <View style={styles.new_comment_button}>
-                                <Text style={styles.new_comment_label}>Publicar</Text>
+                            <View style={{padding: 10, borderRadius: 10, backgroundColor: colors.quartet}}>
+                                <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicar</Text>
                             </View>
                         </TouchableOpacity>
                     }
@@ -285,34 +288,16 @@ export default function Details(props) {
 }
 
 const styles = StyleSheet.create({
-    father: {
-        backgroundColor: "#210016"
-    },
     container: {
         flex: 1,
         flexGrow: 1,
-        backgroundColor: "#210016",
         paddingBottom: 40,
-        paddingHorizontal: 12
+        paddingHorizontal: 12,
     },
     back_block: {
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 10
-    },
-    back_label: {
-        fontSize: 21,
-        fontWeight: "bold",
-        color: "#4CC9F0"
-    },
-    back_button: {
-        fontSize: 49,
-        color: "#4CC9F0"
-    },
-    publication: {
-        backgroundColor: "#550038",
-        padding: 18,
-        borderRadius: 20
     },
     perfil_header: {
         flexDirection: "row",
@@ -332,48 +317,6 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         marginLeft: 10
     },
-    username: {
-        fontSize: 17,
-        fontWeight: "bold",
-        color: "#4CC9F0"
-    },
-    date: {
-        fontSize: 15,
-        fontWeight: "bold",
-        color: "#235d6f"
-    },
-    follow_button: {
-        padding: 10,
-        borderWidth: 2,
-        borderRadius: 10,
-        borderColor: "#4CC9F0",
-        outlineStyle: "solid",
-        outlineWidth: 4,
-    },
-    follow_label: {
-        fontSize: 15,
-        fontWeight: "bold",
-        color: "#4CC9F0"
-    },
-    followed: {
-        flexDirection: "row",
-        marginVertical: 10
-    },
-    followedIcon: {
-        color: "#abf752",
-        fontSize: 23,
-        marginRight: 10
-    },
-    followedLabel: {
-        color: "#abf752",
-        fontSize: 15,
-        fontWeight: "bold"
-    },
-    publication_text: {
-        fontSize: 17,
-        marginBottom: 15,
-        color: "white"
-    },
     publication_image: {
         minHeight: 200,
         maxHeight: 400,
@@ -388,96 +331,16 @@ const styles = StyleSheet.create({
     statistics_block: {
         flexDirection: "row"
     },
-    statistics_num: {
-        fontSize: 15,
-        fontWeight: "bold",
-        color: "#ed007e"
-    },
-    statistics_label: {
-        fontSize: 15,
-        marginLeft: 5,
-        color: "#ed007e"
-    },
-    statistics_separator: {
-        fontSize: 17,
-        fontWeight: "bold",
-        marginHorizontal: 15,
-        color: "#ed007e"
-    },
     interact_container: {
         flexDirection: "row",
         justifyContent: "space-between",
         marginTop: 20
-    },
-    interact_icon: {
-        fontSize: 25,
-        color: "#a6006a"
-    },
-    interacted_icon_like: {
-        fontSize: 25,
-        color: "#ffe400"
-    },
-    interacted_icon_shared: {
-        fontSize: 25,
-        color: "#afff53"
-    },
-    interact_icon_saved: {
-        fontSize: 25,
-        color: "#ff6c00"
-    },
-    comment_principal_title: {
-        fontSize: 19,
-        fontWeight: "bold",
-        marginVertical: 20,
-        color: "#ed007e"
-    },
-    new_comment_container: {
-        backgroundColor: "#550038",
-        padding: 15,
-        borderRadius: 20,
-        marginBottom: 15
     },
     new_comment_header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 10
-    },
-    new_comment_input_block: {
-        backgroundColor: "#220014",
-        minHeight: 50,
-        maxHeight: 300,
-        width: "85%",
-        borderRadius: 10,
-        padding: 5
-    },
-    new_comment_input: {
-        fontSize: 15,
-        color: "white"
-    },
-    new_comment_button: {
-        padding: 10,
-        borderRadius: 10,
-        backgroundColor: "#2f8dff"
-    },
-    new_comment_label: {
-        fontSize: 15,
-        fontWeight: "bold",
-        textAlign: "center",
-        color: "white"
-    },
-    loading_comment_button: {
-        flexDirection: "row",
-        justifyContent: "center",
-        padding: 10,
-        borderRadius: 10,
-        backgroundColor: "#16457e"
-    },
-    loading_comment_label: {
-        fontSize: 15,
-        fontWeight: "bold",
-        textAlign: "center",
-        color: "white"
     },
     loadingSpinner: {
         marginRight: 10

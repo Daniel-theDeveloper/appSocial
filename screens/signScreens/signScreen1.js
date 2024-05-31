@@ -5,6 +5,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { getAuth, fetchSignInMethodsForEmail } from 'firebase/auth';
 import appFirebase from '../../utils/database';
 import { params } from '../../utils/signUp';
+import { useTheme } from '@react-navigation/native';
 
 const auth = getAuth(appFirebase);
 
@@ -15,6 +16,8 @@ export default function Sign_up_part1(props) {
 
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const { colors } = useTheme();
 
     function exitBack() {
         props.navigation.goBack()
@@ -30,7 +33,7 @@ export default function Sign_up_part1(props) {
                     if (isEmailExits.length == 0) {
                         // Save data
                         params.email = email,
-                        params.country = country
+                            params.country = country
                         params.city = city
                         setLoading(false);
                         props.navigation.navigate('Sign_up_part2');
@@ -51,44 +54,116 @@ export default function Sign_up_part1(props) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.subContainer}>
+        <View style={{
+            flex: 1,
+            flexGrow: 1,
+            padding: 10,
+            backgroundColor: colors.background,
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}>
+            <View style={{
+                backgroundColor: colors.primary_dark,
+                width: "100%",
+                padding: 10,
+                borderRadius: 24,
+                shadowColor: colors.shadow,
+                shadowOffset: {
+                    width: 10,
+                    height: 10
+                },
+                shadowOpacity: 0.55,
+                shadowRadius: 4,
+                elevation: 5
+            }}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={exitBack}>
-                        <MaterialCommunityIcons style={styles.icon_close} name='close' />
+                        <MaterialCommunityIcons style={{ fontSize: 35, fontWeight: 'bold', color: colors.text }} name='close' />
                     </TouchableOpacity>
-                    <Text style={styles.title}>Cree una cuenta nueva</Text>
+                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text }}>Cree una cuenta nueva</Text>
                     <View></View>
                 </View>
 
-                <Text style={styles.label}>Ingrese su correo electronico:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='minombre@social.com' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} />
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>Ingrese su correo electronico:</Text>
+                <View style={{
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='minombre@social.com' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} />
                 </View>
                 {error ?
-                    <Text style={styles.label_error}>Este correo ya esta en uso, por favor, use otro</Text>
+                    <Text style={{ color: colors.text_error, marginTop: 5, fontSize: 16, fontWeight: 'bold' }}>Este correo ya esta en uso, por favor, use otro</Text>
                     :
                     <View></View>
                 }
 
-                <Text style={styles.label}>Ingrese su pais:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='Mi pais actual' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setCountry(text)} autoCorrect={false} />
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>Ingrese su pais:</Text>
+                <View style={{
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Mi pais actual' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCountry(text)} autoCorrect={false} />
                 </View>
 
-                <Text style={styles.label}>(opcional) Ingrese su ciudad:</Text>
-                <View style={styles.textContainer}>
-                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor="#7b0051" style={styles.input} onChangeText={(text) => setCity(text)} autoCorrect={false} />
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>(opcional) Ingrese su ciudad:</Text>
+                <View style={{
+                    padding: 18,
+                    backgroundColor: colors.background,
+                    borderRadius: 20,
+                    width: '100%',
+                    height: 55,
+                    shadowColor: colors.shadow,
+                    shadowOffset: {
+                        width: 1,
+                        height: 3
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5
+                }}>
+                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCity(text)} autoCorrect={false} />
                 </View>
 
                 {loading ?
-                    <View style={styles.signLoadingButton}>
-                        <ActivityIndicator color="#00feff" style={styles.loadingSpinner} />
-                        <Text style={styles.signTextButton}>Cargando</Text>
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                        marginTop: 35,
+                        backgroundColor: colors.secondary_dark,
+                        borderRadius: 30,
+                        width: 100,
+                        paddingVertical: 10,
+                        width: '100%'
+                    }}>
+                        <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Cargando</Text>
                     </View>
                     :
-                    <TouchableOpacity style={styles.signButton} onPress={trySingUp}>
-                        <Text style={styles.signTextButton}>Siguiente</Text>
+                    <TouchableOpacity style={{ marginTop: 35, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={trySingUp}>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Siguiente</Text>
                     </TouchableOpacity>
                 }
             </View>
@@ -97,102 +172,11 @@ export default function Sign_up_part1(props) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        padding: 10,
-        backgroundColor: '#210016',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    subContainer: {
-        backgroundColor: '#550038',
-        width: "100%",
-        padding: 10,
-        borderRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 10,
-            height: 10
-        },
-        shadowOpacity: 0.55,
-        shadowRadius: 4,
-        elevation: 5
-    },
     header: {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center'
-    },
-    title: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    icon_close: {
-        fontSize: 35,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    label: {
-        marginTop: 20,
-        marginBottom: 10,
-        marginLeft: 15,
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    label_error: {
-        color: "#4895ef",
-        marginTop: 5,
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    textContainer: {
-        padding: 18,
-        backgroundColor: '#210016',
-        borderRadius: 20,
-        width: '100%',
-        height: 55,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 1,
-            height: 3
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-    },
-    input: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: "#4895EF",
-    },
-    signButton: {
-        marginTop: 35,
-        backgroundColor: '#4895EF',
-        borderRadius: 30,
-        width: 100,
-        paddingVertical: 10,
-        width: '100%'
-    },
-    signTextButton: {
-        color: 'white',
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 16
-    },
-    signLoadingButton: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignContent: 'center',
-        marginTop: 35,
-        backgroundColor: '#20456e',
-        borderRadius: 30,
-        width: 100,
-        paddingVertical: 10,
-        width: '100%'
     },
     loadingSpinner: {
         marginRight: 10

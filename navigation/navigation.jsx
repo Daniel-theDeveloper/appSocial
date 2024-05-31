@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useTheme } from '@react-navigation/native';
 
 import Loading from '../screens/loading';
 import Login from '../screens/login';
@@ -15,7 +16,7 @@ import ConfigPerfil from '../screens/sub-screens/configPerfil';
 import ReplyPublishScreen from '../screens/sub-screens/replyPublishScreen';
 import MyChat from '../screens/sub-screens/myChat';
 
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -64,6 +65,7 @@ export default function MyRoutes() {
 
 export function HomeTaps() {
     const [new_notification, setNewNotification] = useState(0);
+    const { colors } = useTheme();
 
     function restNotifications() {
         setNewNotification(new_notification - 1);
@@ -93,14 +95,14 @@ export function HomeTaps() {
                 },
                 tabBarShowLabel: false,
                 headerShown: false,
-                tabBarActiveBackgroundColor: "#220014",
-                tabBarInactiveBackgroundColor: "#220014",
+                tabBarActiveBackgroundColor: colors.background,
+                tabBarInactiveBackgroundColor: colors.background,
                 tabBarStyle: {
-                    borderBlockColor: "#220014",
+                    borderBlockColor: colors.background,
                     borderWidth: 2
                 },
-                tabBarActiveTintColor: '#ff0070',
-                tabBarInactiveTintColor: '#660031',
+                tabBarActiveTintColor: colors.primary,
+                tabBarInactiveTintColor: colors.primary_dark_alternative,
             })}
         >
             <Tab.Screen name={tab1Name} component={Homepage} />
