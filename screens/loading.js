@@ -52,7 +52,7 @@ export default function Loading(props) {
                 backgroundColor={colors.background}
                 barStyle={"light-content"}
             />
-            <ActivityIndicator color={colors.primary} size='large' />
+            <ActivityIndicator color={colors.primary} size={70} />
         </View>
     );
 

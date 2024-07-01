@@ -6,28 +6,22 @@ import { getNotifications } from './interations';
 
 export default async function LoginProcess(email, password) {
     const SaveUserData = async () => {
-        let userData = [];
         try {
             const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push({ id: doc.id, data: doc.data() });
-            });
-            const userInfo = userData.find(function (res) {
-                if (res.data.email === email) {
-                    return res;
+            QuerySnapshot.forEach(async (doc) => {
+                if (doc.data().email === email) {
+                    localUserLogin.id = doc.id;
+                    localUserLogin.username = doc.data().username;
+                    localUserLogin.nickname = doc.data().name;
+
+                    if (doc.data().avatar != null) {
+                        await saveMyAvatarURI(await doc.data().avatar);
+                    }
+
+                    await getNotifications(doc.id);
+                    await setLocalUser(email, password);
                 }
             });
-
-            localUserLogin.id = await userInfo.id;
-            localUserLogin.username = await userInfo.data.username;
-            localUserLogin.nickname = await userInfo.data.name;
-
-            if (userInfo.data.avatar != null) {
-                await saveMyAvatarURI(await userInfo.data.avatar);
-            }
-            await getNotifications(await userInfo.id);
-            await setLocalUser(email, password);
-
             return true
         } catch (error) {
             console.error(error);

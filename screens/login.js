@@ -128,21 +128,21 @@ export default function Login(props) {
                     <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', textAlign: 'center' }}> Bienvenido usuario </Text>
                     <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center' }}> Regístrese para disfurtar la mejor red social  </Text>
 
-                    <View style={{ padding: 16, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
-                        <TextInput placeholder='Usuario' placeholderTextColor={colors.holderText} style={{ fontSize: 16, fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} editable={canEdit} />
+                    <View style={{ padding: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                        <TextInput placeholder='Usuario' placeholderTextColor={colors.holderText} style={{ fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} editable={canEdit} />
                     </View>
-                    <View style={{ padding: 16, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
-                        <TextInput placeholder='Contraseña' placeholderTextColor={colors.holderText} style={{ fontSize: 16, fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setPassword(text)} secureTextEntry={true} autoCorrect={false} editable={canEdit} />
+                    <View style={{ padding: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                        <TextInput placeholder='Contraseña' placeholderTextColor={colors.holderText} style={{ fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setPassword(text)} secureTextEntry={true} autoCorrect={false} editable={canEdit} />
                     </View>
 
                     {loginButtomVisible ?
                         <TouchableOpacity style={{ marginTop: 35, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={login}>
-                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Ingresar</Text>
+                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 15 }}>Ingresar</Text>
                         </TouchableOpacity>
                         :
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignContent: 'center', marginTop: 35, backgroundColor: colors.secondary_dark, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }}>
                             <ActivityIndicator color={colors.secondary} style={styles.loadingSpinner} />
-                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Cargando</Text>
+                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 15 }}>Cargando</Text>
                         </View>
                     }
 

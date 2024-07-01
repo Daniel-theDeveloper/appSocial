@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage } from '../../utils/interations';
+import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage, savePublish, isWasSaved } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
 
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
@@ -58,8 +58,9 @@ export default function Publication({
 
             if (docSnap.exists()) {
                 setAvatarURL(await fetchImage(docSnap.data().avatar));
-                setNickname(docSnap.data().name);
-                setUsername(docSnap.data().username)
+                setNickname(await docSnap.data().name);
+                setUsername(await docSnap.data().username);
+                setIsSaved(await isWasSaved(id));
             } else {
                 console.error("Sin conexion");
             }
@@ -119,9 +120,13 @@ export default function Publication({
 
     const setSaved = async () => {
         if (isSaved) {
-            setIsSaved(false)
+            // setIsSaved(false)
         } else {
-            setIsSaved(true)
+            setIsSaved(true);
+            const res = await savePublish(id);
+            if (!res) {
+                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            }
         }
     }
 
@@ -137,20 +142,20 @@ export default function Publication({
                     {username === localUserLogin.username ?
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
-                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>{nickname}</Text>
-                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>-</Text>
-                                <Text style={{fontSize: 17, color: colors.tertiary_dark}}>@{username}</Text>
+                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>{nickname}</Text>
+                                <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>-</Text>
+                                <Text style={{fontSize: 16, color: colors.tertiary_dark}}>@{username}</Text>
                             </View>
-                            <Text style={{fontSize: 13, fontWeight: "bold", color: colors.tertiary_dark_alternative}}>{convertDate(date.seconds)}</Text>
+                            <Text style={{fontSize: 12, fontWeight: "bold", color: colors.tertiary_dark_alternative}}>{convertDate(date.seconds)}</Text>
                         </View>
                         :
                         <View style={styles.perfil_usernames_container}>
                             <View style={styles.perfil_usernames_block}>
-                                <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{nickname}</Text>
-                                <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>-</Text>
-                                <Text style={{fontSize: 17, color: colors.primary}}>@{username}</Text>
+                                <Text style={{marginRight: 5, fontSize: 16, fontWeight: "bold", color: colors.secondary}}>{nickname}</Text>
+                                <Text style={{marginRight: 5, fontSize: 16, fontWeight: "bold", color: colors.secondary}}>-</Text>
+                                <Text style={{fontSize: 16, color: colors.primary}}>@{username}</Text>
                             </View>
-                            <Text style={{fontSize: 13, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(date.seconds)}</Text>
+                            <Text style={{fontSize: 12, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(date.seconds)}</Text>
                         </View>
                     }
                 </View>
@@ -158,7 +163,7 @@ export default function Publication({
 
             <View style={{padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15, shadowColor: colors.shadow, shadowOffset: { width: 4, height: 4 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
                 <TouchableOpacity onPress={goDetails}>
-                    <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{body}</Text>
+                    <Text style={{fontSize: 15, marginBottom: 15, color: colors.text}}>{body}</Text>
                     {replyID != null || replyID != undefined ?
                         <ReplyPublish props={props} replyID={replyID} />
                         :

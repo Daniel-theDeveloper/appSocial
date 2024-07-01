@@ -2,12 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 
 import { auth, database } from '../utils/database';
-import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, getDoc, where } from 'firebase/firestore';
 import RadioGroup from 'react-native-radio-buttons-group';
 
-import { Platform } from 'react-native';
 import { new_publication_params } from './sub-screens/new_publication';
-import { userData } from "./sub-screens/configPerfil";
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -17,7 +15,6 @@ import { localUserLogin, erase_all, getSaveTheme, setSaveTheme } from '../utils/
 import Modal from 'react-native-modalbox';
 import { signOut } from 'firebase/auth';
 import { useTheme } from '@react-navigation/native';
-import { fetchImage } from '../utils/interations';
 
 export default function Homepage(props) {
     const [publications, setPublications] = useState([]);
@@ -53,7 +50,7 @@ export default function Homepage(props) {
 
     useEffect(() => {
         setMyAvatar(localUserLogin.avatar);
-        loadAllPublish();
+        loadAllFollowersPublish();
         getSelectedTheme();
     }, []);
 
@@ -97,7 +94,7 @@ export default function Homepage(props) {
             setSelectedTheme(1);
         } else if (theme == 'dark') {
             setSelectedTheme(2);
-        }  else if (theme == 'system') {
+        } else if (theme == 'system') {
             setSelectedTheme(3);
         }
     }
@@ -136,7 +133,7 @@ export default function Homepage(props) {
         }
     }
 
-    function loadAllPublish() {
+    async function loadAllFollowersPublish() {
         const collectionRef = collection(database, 'publications');
         const q = query(collectionRef, orderBy('date', 'desc'));
 
@@ -182,30 +179,19 @@ export default function Homepage(props) {
         props.navigation.navigate({ name: 'Perfil', params: { userId: localUserLogin.id }, merge: true });
     }
 
-    const goMyConfig = async () => {
-        // try {
-        //     const docRef = doc(database, "users", localUserLogin.id);
-        //     const docSnap = await getDoc(docRef);
+    const goSaves = async () => {
+        try {
+            const docRef = doc(database, "users", localUserLogin.id);
+            const docSnap = await getDoc(docRef);
 
-        //     if (docSnap.exists()) {
-        //         userData.id = docSnap.id;
-        //         userData.avatar = fetchImage(docSnap.data().avatar);
-        //         userData.banner = fetchImage(docSnap.data().banner);
-        //         userData.name = docSnap.data().name;
-        //         userData.username = docSnap.data().username;
-        //         userData.details = docSnap.data().details;
-        //         userData.country = docSnap.data().country;
-        //         userData.city = docSnap.data().city;
-
-        //         props.navigation.navigate('ConfigPerfil');
-        //     } else {
-        //         Alert.alert("Error en el servidor", "Vuelve a intentar mas tarde");
-        //     }
-        // } catch (error) {
-        //     console.error(error);
-        //     Alert.alert("Error en el servidor", "Vuelve a intentar mas tarde");
-        // }
-        console.log("Ir a configuracion");
+            if (docSnap.exists()) {
+                props.navigation.navigate({ name: 'Saves', params: { saves: docSnap.data().saves }, merge: true });
+            } else {
+                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            }
+        } catch (error) {
+            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+        }
     }
 
     return (
@@ -386,15 +372,11 @@ export default function Homepage(props) {
                 backgroundColor: colors.primary_dark,
                 alignItems: 'flex-start'
             }} position={"center"} isOpen={modalOptions} onClosed={openModalOptions} coverScreen={true}>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goMyConfig}>
-                    <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='account-cog-outline' />
-                    <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Configurar perfil</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalConfig}>
                     <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='theme-light-dark' />
                     <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar tema</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goSaves}>
                     <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='book-search-outline' />
                     <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Guardados</Text>
                 </TouchableOpacity>
@@ -413,15 +395,15 @@ export default function Homepage(props) {
                 backgroundColor: colors.background,
                 alignItems: 'flex-start'
             }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
-                <View style={{alignItems: 'center', width: '100%'}}>
+                <View style={{ alignItems: 'center', width: '100%' }}>
                     <View style={{ height: 3, width: 150, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
                 </View>
                 <RadioGroup
-                    containerStyle={{alignItems: 'flex-start'}}
+                    containerStyle={{ alignItems: 'flex-start' }}
                     radioButtons={radioButtons}
                     onPress={setNewTheme}
                     selectedId={selectedTheme}
-                    labelStyle={{color: colors.text}}
+                    labelStyle={{ color: colors.text }}
                 />
             </Modal>
         </ScrollView>

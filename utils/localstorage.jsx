@@ -35,10 +35,6 @@ export const getLocalUser = async () => {
     }
 }
 
-export function setIdUser(id) {
-    localUserLogin.id = id;
-}
-
 export const saveMyAvatarURI = async (url) => {
     const storage = getStorage();
     const imageRef = ref(storage, url);

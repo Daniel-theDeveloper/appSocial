@@ -20,7 +20,7 @@ export var params = {
 }
 
 export default async function SignUp() {
-    console.log(params);
+    // console.log(params);
     try {
         let location;
         let avatarSaveURL = null;

@@ -119,25 +119,25 @@ export default function ReplyPublish({ props, replyID }) {
                         {replyData.username === localUserLogin.username ?
                             <View style={styles.reply_usernames_container}>
                                 <View style={styles.perfil_usernames_block}>
-                                    <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>{replyNickname}</Text>
-                                    <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 17, color: colors.tertiary}}>-</Text>
-                                    <Text style={{fontSize: 17, color: colors.tertiary_dark}}>@{replyData.username}</Text>
+                                    <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>{replyNickname}</Text>
+                                    <Text style={{marginRight: 5, fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>-</Text>
+                                    <Text style={{fontSize: 16, color: colors.tertiary_dark}}>@{replyData.username}</Text>
                                 </View>
-                                <Text style={{fontSize: 13, fontWeight: "bold", color: "#7e8d3d"}}>{convertDate(replyData.date)}</Text>
+                                <Text style={{fontSize: 12, fontWeight: "bold", color: "#7e8d3d"}}>{convertDate(replyData.date)}</Text>
                             </View>
                             :
                             <View style={styles.reply_usernames_container}>
                                 <View style={styles.perfil_usernames_block}>
-                                    <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{replyNickname}</Text>
-                                    <Text style={{marginRight: 5, fontSize: 17, fontWeight: "bold", color: colors.secondary}}>-</Text>
-                                    <Text style={{fontSize: 17, color: colors.primary}}>@{replyData.username}</Text>
+                                    <Text style={{marginRight: 5, fontSize: 16, fontWeight: "bold", color: colors.secondary}}>{replyNickname}</Text>
+                                    <Text style={{marginRight: 5, fontSize: 16, fontWeight: "bold", color: colors.secondary}}>-</Text>
+                                    <Text style={{fontSize: 16, color: colors.primary}}>@{replyData.username}</Text>
                                 </View>
-                                <Text style={{fontSize: 13, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(replyData.date)}</Text>
+                                <Text style={{fontSize: 12, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(replyData.date)}</Text>
                             </View>
                         }
 
                         {/* Reply body */}
-                        <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{replyData.body}</Text>
+                        <Text style={{fontSize: 15, marginBottom: 15, color: colors.text}}>{replyData.body}</Text>
                         {replyImage != null ?
                             <Image style={styles.publication_image} source={{ uri: replyImage }} />
                             :

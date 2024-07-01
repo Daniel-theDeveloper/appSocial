@@ -8,8 +8,6 @@ export function convertDate(date) {
     const d = dateString.split(' ');
     const finalDate = d[2] + " de " + d[1];
 
-    // console.log(d);
-    // console.log(d[2] + " de " + d[1])
     return finalDate;
 }
 

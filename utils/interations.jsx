@@ -42,6 +42,37 @@ export function isWasCommented(comments_array) {
     }
 }
 
+export const isWasSaved = async (publishId) => {
+    let key = false;
+
+    const docRef = doc(database, "users", localUserLogin.id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        docSnap.data().saves.find(function (res) {
+            if (res === publishId) {
+                key = true;
+            }
+        })
+    }
+
+    return key;
+}
+
+export const savePublish = async (publishId) => {
+    try {
+        const docRef = doc(database, 'users', localUserLogin.id);
+        await updateDoc(docRef, {
+            saves: arrayUnion(publishId)
+        });
+
+        return true
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 export async function startFollowProcess(UserID, myUserID) {
     try {
         const docRefUser = doc(database, 'users', UserID);
