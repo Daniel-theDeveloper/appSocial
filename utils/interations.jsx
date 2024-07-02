@@ -59,6 +59,46 @@ export const isWasSaved = async (publishId) => {
     return key;
 }
 
+export const likePublish = async (publishId) => {
+    try {
+        const docRef = doc(database, 'publications', publishId);
+        await updateDoc(docRef, {
+            likes: arrayUnion(localUserLogin.username)
+        });
+        return true
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+export const deleteLike = async (publishId) => {
+    try {
+        const docRef = doc(database, 'publications', publishId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            let AllLikes = docSnap.data().likes;
+
+            // Eliminando mi like en la lista de likes
+            for (let i = 0; i < AllLikes.length; i++) {
+                if (AllLikes[i] === localUserLogin.username) {
+                    AllLikes.splice(i, 1);
+                }
+            }
+
+            await updateDoc(docRef, { likes: AllLikes });
+
+            return true
+        } else {
+            return false
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 export const savePublish = async (publishId) => {
     try {
         const docRef = doc(database, 'users', localUserLogin.id);
@@ -67,6 +107,33 @@ export const savePublish = async (publishId) => {
         });
 
         return true
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+export const deleteSavePublish = async (publishId) => {
+    try {
+        const docRef = doc(database, 'users', localUserLogin.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            let mySavesList = docSnap.data().saves;
+
+            // Eliminando la publicacion de mi lista de guardados
+            for (let i = 0; i < mySavesList.length; i++) {
+                if (mySavesList[i] === publishId) {
+                    mySavesList.splice(i, 1);
+                }
+            }
+
+            await updateDoc(docRef, { saves: mySavesList });
+
+            return true
+        } else {
+            return false
+        }
     } catch (error) {
         console.error(error);
         return false;

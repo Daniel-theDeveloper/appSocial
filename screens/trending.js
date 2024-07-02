@@ -6,7 +6,7 @@ import Publication from './components/Publish';
 import { localUserLogin } from '../utils/localstorage';
 
 import { database } from '../utils/database';
-import { collection, orderBy, where, or, query, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, where, query, onSnapshot } from 'firebase/firestore';
 
 export default function Trending(props) {
     const [allPublish, setAllPublish] = useState([]);

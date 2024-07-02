@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { getAuth, fetchSignInMethodsForEmail } from 'firebase/auth';
-import appFirebase from '../../utils/database';
 import { params } from '../../utils/signUp';
 import { useTheme } from '@react-navigation/native';
 
-const auth = getAuth(appFirebase);
+import { database } from '../../utils/database';
+import { getDocs, collection } from 'firebase/firestore';
 
 export default function Sign_up_part1(props) {
     const [email, setEmail] = useState("");
@@ -29,13 +28,14 @@ export default function Sign_up_part1(props) {
                 setError(false);
                 setLoading(true);
                 if (email.length != 0 && country.length != 0) {
-                    const isEmailExits = await fetchSignInMethodsForEmail(auth, email)
-                    if (isEmailExits.length == 0) {
+                    const emailNoExits = await searchEmail(email)
+                    if (emailNoExits) {
                         // Save data
-                        params.email = email,
-                            params.country = country
-                        params.city = city
+                        params.email = email;
+                        params.country = country;
+                        params.city = city;
                         setLoading(false);
+                        setError(false);
                         props.navigation.navigate('Sign_up_part2');
                     } else {
                         setLoading(false);
@@ -53,11 +53,28 @@ export default function Sign_up_part1(props) {
         }
     }
 
+    const searchEmail = async (email) => {
+        let key = true;
+        try {
+            const QuerySnapshot = await getDocs(collection(database, "users"));
+            QuerySnapshot.forEach((doc) => {
+                if (doc.data().email == email) {
+                    key = false
+                }
+            });
+
+            return key;
+        } catch (error) {
+            console.log(error);
+            return false
+        }
+    }
+
     return (
         <View style={{
             flex: 1,
             flexGrow: 1,
-            padding: 10,
+            padding: 14,
             backgroundColor: colors.background,
             alignItems: 'center',
             justifyContent: 'center',
@@ -65,7 +82,7 @@ export default function Sign_up_part1(props) {
             <View style={{
                 backgroundColor: colors.primary_dark,
                 width: "100%",
-                padding: 10,
+                padding: 14,
                 borderRadius: 24,
                 shadowColor: colors.shadow,
                 shadowOffset: {
@@ -84,13 +101,13 @@ export default function Sign_up_part1(props) {
                     <View></View>
                 </View>
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>Ingrese su correo electronico:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Ingrese su correo electronico:</Text>
                 <View style={{
-                    padding: 18,
+                    padding: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 55,
+                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,
@@ -100,21 +117,21 @@ export default function Sign_up_part1(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='minombre@social.com' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} />
+                    <TextInput placeholder='minombre@social.com' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} />
                 </View>
                 {error ?
-                    <Text style={{ color: colors.text_error, marginTop: 5, fontSize: 16, fontWeight: 'bold' }}>Este correo ya esta en uso, por favor, use otro</Text>
+                    <Text style={{ color: colors.text_error, marginTop: 5, marginLeft: 14, fontSize: 14, fontWeight: 'bold' }}>Este correo ya esta en uso, por favor, use otro</Text>
                     :
                     <View></View>
                 }
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>Ingrese su pais:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Ingrese su pais:</Text>
                 <View style={{
-                    padding: 18,
+                    padding: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 55,
+                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,
@@ -124,16 +141,16 @@ export default function Sign_up_part1(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Mi pais actual' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCountry(text)} autoCorrect={false} />
+                    <TextInput placeholder='Mi pais actual' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCountry(text)} autoCorrect={false} />
                 </View>
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 15, fontSize: 17, fontWeight: 'bold', color: colors.text }}>(opcional) Ingrese su ciudad:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>(opcional) Ingrese su ciudad:</Text>
                 <View style={{
-                    padding: 18,
+                    padding: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 55,
+                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,
@@ -143,7 +160,7 @@ export default function Sign_up_part1(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCity(text)} autoCorrect={false} />
+                    <TextInput placeholder='Mi ciudad actual' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setCity(text)} autoCorrect={false} />
                 </View>
 
                 {loading ?
@@ -154,16 +171,15 @@ export default function Sign_up_part1(props) {
                         marginTop: 35,
                         backgroundColor: colors.secondary_dark,
                         borderRadius: 30,
-                        width: 100,
                         paddingVertical: 10,
                         width: '100%'
                     }}>
                         <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Cargando</Text>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Cargando</Text>
                     </View>
                     :
-                    <TouchableOpacity style={{ marginTop: 35, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={trySingUp}>
-                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>Siguiente</Text>
+                    <TouchableOpacity style={{ marginTop: 35, backgroundColor: colors.secondary, borderRadius: 30, paddingVertical: 10, width: '100%' }} onPress={trySingUp}>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Siguiente</Text>
                     </TouchableOpacity>
                 }
             </View>

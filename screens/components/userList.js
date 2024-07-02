@@ -116,36 +116,36 @@ export default function UserList({ idUser, list_owner, followType, props }) {
     return (
         <TouchableOpacity onPress={goDetails}>
             <View style={styles.container}>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", alignItems: 'center' }}>
                     <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
 
                     {isMe ?
-                        <Text style={{fontSize: 20, fontWeight: "bold", color: colors.tertiary}}>{userData.nickname}</Text>
+                        <Text style={{fontSize: 16, fontWeight: "bold", color: colors.tertiary}}>{userData.nickname}</Text>
                         :
-                        <Text style={{fontSize: 20, fontWeight: "bold", color: colors.primary}}>{userData.nickname}</Text>
+                        <Text style={{fontSize: 16, fontWeight: "bold", color: colors.primary}}>{userData.nickname}</Text>
                     }
                 </View>
                 {userData.nickname === "Usuario eliminado" ?
                     <View></View>
                     :
                     list_owner === localUserLogin.username ?
-                        <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 133, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={deleteFollower}>
-                            <MaterialCommunityIcons style={{color: colors.primary, fontSize: 23, marginRight: 6}} name='account-minus-outline' />
-                            <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold"}}>Eliminar</Text>
+                        <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={deleteFollower}>
+                            <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-minus-outline' />
+                            <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Eliminar</Text>
                         </TouchableOpacity>
                         :
                         userData.username === localUserLogin.username ?
                             <View></View>
                             :
                             isFollowed ?
-                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 133, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={stopFollow}>
-                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 23, marginRight: 6}} name='account-minus-outline' />
-                                    <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold"}}>Siguiendo</Text>
+                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={stopFollow}>
+                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-minus-outline' />
+                                    <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Siguiendo</Text>
                                 </TouchableOpacity>
                                 :
-                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 133, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={startFollow}>
-                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 23, marginRight: 6}} name='account-multiple-plus-outline' />
-                                    <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold"}}>Seguir</Text>
+                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={startFollow}>
+                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-multiple-plus-outline' />
+                                    <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Seguir</Text>
                                 </TouchableOpacity>
                 }
             </View>
@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     avatar: {
-        height: 50,
-        width: 50,
+        height: 45,
+        width: 45,
         borderRadius: 50,
         marginRight: 10
     }

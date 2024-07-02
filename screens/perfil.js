@@ -255,31 +255,31 @@ export default function Perfil(props) {
                     }
                 </View>
 
-                <Text style={{color: colors.secondary, fontSize: 28, fontWeight: "bold", marginTop: 10, marginBottom: 5}}>{userArray.name}</Text>
+                <Text style={{color: colors.secondary, fontSize: 24, fontWeight: "bold", marginTop: 10, marginBottom: 5}}>{userArray.name}</Text>
                 {isFollowedYou ?
                     <View style={styles.nickname_footer}>
-                        <Text style={{color: colors.tertiary, fontSize: 18, fontWeight: "bold"}}>@{userArray.username}</Text>
+                        <Text style={{color: colors.tertiary, fontSize: 16, fontWeight: "bold"}}>@{userArray.username}</Text>
                         <MaterialCommunityIcons style={{color: colors.tertiary, fontSize: 24, marginLeft: 10}} name='account-star-outline' />
                         <Text style={{color: colors.tertiary, fontSize: 18, fontWeight: "bold"}}>Te esta siguiendo</Text>
                     </View>
                     :
-                    <Text style={{color: colors.primary, fontSize: 18, fontWeight: "bold"}}>{userArray.username}</Text>
+                    <Text style={{color: colors.primary, fontSize: 16, fontWeight: "bold"}}>@{userArray.username}</Text>
                 }
 
-                <Text style={{color: colors.text, fontSize: 16, textAlign: "justify", marginTop: 10}}>{userArray.details}</Text>
+                <Text style={{color: colors.text, fontSize: 15, textAlign: "justify", marginTop: 10}}>{userArray.details}</Text>
 
                 <View style={styles.follows_block}>
                     <TouchableOpacity onPress={openFollowersList}>
                         <View style={styles.follows_part}>
-                            <Text style={{color: colors.text, fontSize: 22, fontWeight: "bold", marginRight: 5}}>{followsCount}</Text>
-                            <Text style={{color: colors.secondary, fontSize: 17, fontWeight: "bold"}}>Seguidores</Text>
+                            <Text style={{color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5}}>{followsCount}</Text>
+                            <Text style={{color: colors.secondary, fontSize: 15, fontWeight: "bold"}}>Seguidores</Text>
                         </View>
                     </TouchableOpacity>
                     <View style={{backgroundColor: colors.secondary, height: 26, width: 2.5}} />
                     <TouchableOpacity onPress={openFollowingList}>
                         <View style={styles.follows_part}>
-                            <Text style={{color: colors.text, fontSize: 22, fontWeight: "bold", marginRight: 5}}>{followingsCount}</Text>
-                            <Text style={{color: colors.secondary, fontSize: 17, fontWeight: "bold"}}>Siguiendo</Text>
+                            <Text style={{color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5}}>{followingsCount}</Text>
+                            <Text style={{color: colors.secondary, fontSize: 15, fontWeight: "bold"}}>Siguiendo</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -287,14 +287,14 @@ export default function Perfil(props) {
 
             <View style={styles.basicInfo}>
                 <View style={styles.basicInfo_block}>
-                    <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 24, marginRight: 5}} name='map-marker-outline' />
-                    <Text style={{color: colors.secondary, fontSize: 16}}>{userArray.city}</Text>
-                    <Text style={{color: colors.secondary, fontSize: 16}}>, </Text>
-                    <Text style={{color: colors.secondary, fontSize: 16}}>{userArray.country}</Text>
+                    <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 20, marginRight: 5}} name='map-marker-outline' />
+                    <Text style={{color: colors.secondary, fontSize: 14}}>{userArray.city}</Text>
+                    <Text style={{color: colors.secondary, fontSize: 14}}>, </Text>
+                    <Text style={{color: colors.secondary, fontSize: 14}}>{userArray.country}</Text>
                 </View>
                 <View style={styles.basicInfo_block}>
-                    <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 24, marginRight: 5}} name='calendar-account-outline' />
-                    <Text style={{color: colors.secondary, fontSize: 16}}>Usuario desde {convertDateLarge(userArray.wasCreated)}</Text>
+                    <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 20, marginRight: 5}} name='calendar-account-outline' />
+                    <Text style={{color: colors.secondary, fontSize: 14}}>Usuario desde {convertDateLarge(userArray.wasCreated)}</Text>
                 </View>
             </View>
 
@@ -398,10 +398,10 @@ const styles = StyleSheet.create({
     },
     avatar: {
         position: "absolute",
-        top: 150,
+        top: 170,
         left: 30,
-        height: 110,
-        width: 110,
+        height: 90,
+        width: 90,
         borderRadius: 50,
         zIndex: 1
     },

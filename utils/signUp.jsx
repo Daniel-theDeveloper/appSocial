@@ -27,35 +27,9 @@ export default async function SignUp() {
         let bannerSaveURL = null;
 
         if (params.city.length != undefined) {
-            location = params.city + ", " + params.country;
+            location = params.country + ", " + params.city;
         } else {
             location = params.country;
-        }
-
-        if (params.avatar != null) {
-            const url = params.username + params.avatarName + "." + params.avatarExt;
-
-            const response = await fetch(params.avatar);
-            const blob = await response.blob();
-            const storage = getStorage();
-            const storageRef = ref(storage, url);
-
-            const snapshot = await uploadBytes(storageRef, blob);
-
-            avatarSaveURL = snapshot.ref.fullPath;
-        }
-
-        if (params.banner != null) {
-            const url = params.username + params.bannerName + "." + params.bannerExt;
-
-            const response = await fetch(params.banner);
-            const blob = await response.blob();
-            const storage = getStorage();
-            const storageRef = ref(storage, url);
-
-            const snapshot = await uploadBytes(storageRef, blob);
-
-            bannerSaveURL = snapshot.ref.fullPath;
         }
 
         const userData = {
@@ -66,6 +40,7 @@ export default async function SignUp() {
             followers: [],
             following: [],
             noChats: [],
+            saves: [],
             location: location,
             name: params.username,
             username: params.nickname,

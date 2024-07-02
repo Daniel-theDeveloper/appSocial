@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasInteractedByID, sendNotification } from '../../utils/interations';
+import { isWasInteracted, isWasInteractedByID, sendNotification, likePublish } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
@@ -111,15 +111,11 @@ export default function Details(props) {
         if (isLike) {
             // Show a list like person
         } else {
-            try {
-                const docRef = doc(database, 'publications', publicationArray.id);
-                await updateDoc(docRef, {
-                    likes: arrayUnion(localUserLogin.username)
-                });
-                setIsLike(true);
-            } catch (error) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
-                console.error(error);
+            setIsLike(true);
+            const res = await likePublish(id);
+            if (!res) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                setIsLike(false);
             }
         }
     }

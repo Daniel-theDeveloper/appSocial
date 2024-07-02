@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-na
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage, savePublish, isWasSaved } from '../../utils/interations';
+import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage, savePublish, isWasSaved, deleteSavePublish, likePublish, deleteLike } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
 
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
@@ -79,17 +79,18 @@ export default function Publication({
 
     const setLike = async () => {
         if (isLike) {
-            // Show a list like person
-        } else {
-            try {
-                const docRef = doc(database, 'publications', id);
-                await updateDoc(docRef, {
-                    likes: arrayUnion(localUserLogin.username)
-                });
+            setIsLike(false);
+            const res = await deleteLike(id);
+            if (!res) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
                 setIsLike(true);
-            } catch (error) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
-                console.error(error);
+            }
+        } else {
+            setIsLike(true);
+            const res = await likePublish(id);
+            if (!res) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                setIsLike(false);
             }
         }
     }
@@ -120,11 +121,21 @@ export default function Publication({
 
     const setSaved = async () => {
         if (isSaved) {
-            // setIsSaved(false)
+            setIsSaved(false);
+            const res = await deleteSavePublish(id);
+            if (res) {
+                console.log("Publicacion eliminada exitosamente");
+            } else {
+                setIsSaved(true);
+                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            }
         } else {
             setIsSaved(true);
             const res = await savePublish(id);
-            if (!res) {
+            if (res) {
+                console.log("Publicacion guardada exitosamente");
+            } else {
+                setIsSaved(false);
                 Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
             }
         }
