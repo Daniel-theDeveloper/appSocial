@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "690285034741",
+    "project_id": "social-database-1ca38",
+    "storage_bucket": "social-database-1ca38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690285034741:android:1402be4c381ec6cf3219bc",
+        "android_client_info": {
+          "package_name": "com.daniel_developer2000.appSocial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCT7iAhxydiV6UZaOhhvjIYL8LdF0nF7Gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

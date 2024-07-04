@@ -31,7 +31,7 @@ export default function Sign_up_part1(props) {
                     const emailNoExits = await searchEmail(email)
                     if (emailNoExits) {
                         // Save data
-                        params.email = email;
+                        params.email = email.toLowerCase();
                         params.country = country;
                         params.city = city;
                         setLoading(false);
@@ -53,8 +53,9 @@ export default function Sign_up_part1(props) {
         }
     }
 
-    const searchEmail = async (email) => {
+    const searchEmail = async (myEmail) => {
         let key = true;
+        const email = myEmail.toLowerCase();
         try {
             const QuerySnapshot = await getDocs(collection(database, "users"));
             QuerySnapshot.forEach((doc) => {
