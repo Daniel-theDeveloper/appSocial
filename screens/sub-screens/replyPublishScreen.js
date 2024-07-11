@@ -30,8 +30,8 @@ export default function ReplyPublishScreen(props) {
 
     const showAlert = () =>
         Alert.alert(
-            'Salir de la publicacion',
-            '¿Desea salirse de la publicacion sin guardar ni publicar nada?',
+            'Salir de la publicación',
+            '¿Desea salirse de la publicación sin guardar ni publicar nada?',
             [
                 {
                     text: 'Continuar creando',
@@ -57,7 +57,7 @@ export default function ReplyPublishScreen(props) {
                 goBackAgain();
             } else {
                 setLoading_Button(false);
-                Alert.alert("Publicacion vacia", "Por favor escribe algo");
+                Alert.alert("publicación vacia", "Por favor escribe algo");
             }
         } catch (error) {
             setLoading_Button(false);

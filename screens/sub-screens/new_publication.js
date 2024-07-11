@@ -96,7 +96,7 @@ export default function New_publication(props) {
             }
 
         } else {
-            Alert.alert("Permisos denegados", "Sin permisos de la camara, no puedes tomar fotos en la aplicacion");
+            Alert.alert("Permisos denegados", "Sin permisos de la camara, no puedes tomar fotos en la aplicación");
         }
     }
 
@@ -112,8 +112,8 @@ export default function New_publication(props) {
 
     const showAlert = () =>
         Alert.alert(
-            'Salir de la publicacion',
-            '¿Desea salirse de la publicacion sin guardar ni publicar nada?',
+            'Salir de la publicación',
+            '¿Desea salirse de la publicación sin guardar ni publicar nada?',
             [
                 {
                     text: 'Continuar creando',
@@ -167,7 +167,7 @@ export default function New_publication(props) {
                 goBackAgain();
             } else {
                 setLoading_Button(false);
-                Alert.alert("Publicacion vacia", "Por favor escribe algo");
+                Alert.alert("publicación vacia", "Por favor escribe algo");
             }
         } catch (error) {
             setLoading_Button(false);
@@ -192,7 +192,7 @@ export default function New_publication(props) {
             </TouchableOpacity>
             <View style={{ padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15 }}>
                 <View style={styles.header}>
-                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>Nueva publicacion</Text>
+                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>Nueva publicación</Text>
                 </View>
 
                 <View style={styles.publish_buttons}>

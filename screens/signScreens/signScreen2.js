@@ -75,7 +75,7 @@ export default function Sign_up_part2(props) {
                                 }
                             } else {
                                 setLoading(false);
-                                Alert.alert("Error en el servidor", "Ha ocurrido un error, vuelvelo a intentar mas tarde");
+                                Alert.alert("Error en el servidor", "Ha ocurrido un error, Vuélvalo a intentar mas tarde");
                                 props.navigation.navigate('Login');
                             }
                         })

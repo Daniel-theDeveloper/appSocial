@@ -153,7 +153,7 @@ export default function Perfil(props) {
         } catch (error) {
             setLoading(false);
             console.error(error);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde")
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde")
         }
     }
 
@@ -164,7 +164,7 @@ export default function Perfil(props) {
 
         if (res == false) {
             setIsFollowed(false);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 
@@ -178,7 +178,7 @@ export default function Perfil(props) {
             setOptionsPerfil(false);
         } else {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 
@@ -191,7 +191,7 @@ export default function Perfil(props) {
             setOptionsPerfil(false);
         } else {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 
@@ -307,7 +307,7 @@ export default function Perfil(props) {
                 publications.length == 0 ?
                     <View style={styles.empty_components}>
                         <MaterialCommunityIcons style={{color: colors.primary, fontSize: 80, marginBottom: 10}} name='book-open-page-variant-outline' />
-                        <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>No ha hecho ninguna publicacion</Text>
+                        <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>No ha hecho ninguna publicación</Text>
                     </View>
                     :
                     <View style={{marginHorizontal: 15}}>

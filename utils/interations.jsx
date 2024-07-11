@@ -121,7 +121,7 @@ export const deleteSavePublish = async (publishId) => {
         if (docSnap.exists()) {
             let mySavesList = docSnap.data().saves;
 
-            // Eliminando la publicacion de mi lista de guardados
+            // Eliminando la publicación de mi lista de guardados
             for (let i = 0; i < mySavesList.length; i++) {
                 if (mySavesList[i] === publishId) {
                     mySavesList.splice(i, 1);
@@ -290,7 +290,7 @@ export const getNotifications = async (idUser) => {
             console.log("No tienes nuevos mensajes");
         }
     } catch (error) {
-        console.error("Error en la obtencion de las notificaciones");
+        console.error("Error en la obtención de las notificaciones");
         console.error(error);
     }
 }
@@ -307,7 +307,7 @@ export const sendNotification = async (type, idUserToSend, origin, messageToSend
             message = localUserLogin.nickname + " te ha empezado a seguir.";
             break;
         case 'comment':
-            message = localUserLogin.nickname + " ha comentado en tu publicacion.";
+            message = localUserLogin.nickname + " ha comentado en tu publicación.";
             optionalData = { publish: origin };
             break;
         case 'reply_c':
@@ -315,11 +315,11 @@ export const sendNotification = async (type, idUserToSend, origin, messageToSend
             optionalData = { publish: origin };
             break;
         case 'reply_p':
-            message = localUserLogin.nickname + ' ha replicado tu publicacion: "' + messageToSend + '".';
+            message = localUserLogin.nickname + ' ha replicado tu publicación: "' + messageToSend + '".';
             optionalData = { publish: origin };
             break;
         default:
-            console.error("Se establecio como: " + type);
+            console.error("Se estableció como: " + type);
     }
 
     const new_notification = {

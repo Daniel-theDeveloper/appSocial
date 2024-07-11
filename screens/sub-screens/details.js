@@ -179,7 +179,7 @@ export default function Details(props) {
                     </View>
                 </TouchableOpacity>
                 <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
-                    {/* Encabezado de la publicacion */}
+                    {/* Encabezado de la publicación */}
                     <View style={styles.perfil_header}>
                         <View style={styles.perfil_user}>
                             <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
@@ -190,7 +190,7 @@ export default function Details(props) {
                         </View>
                     </View>
 
-                    {/* Cuerpo de la publicacion */}
+                    {/* Cuerpo de la publicación */}
                     <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{publicationArray.body}</Text>
                     {replyId != null || replyId != undefined ?
                         <ReplyPublish  props={props} replyID={replyId} />

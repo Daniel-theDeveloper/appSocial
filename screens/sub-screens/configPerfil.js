@@ -94,11 +94,11 @@ export default function ConfigPerfil(props) {
                 props.navigation.navigate('Perfil');
             } catch (error) {
                 setLoading(false);
-                Alert.alert("Error en el servidor", "Por favor, vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Por favor, Vuélvalo a intentar mas tarde");
                 console.error(error);
             }
         } else {
-            Alert.alert("Datos vacios", "Por favor, llene todos los campos requeridos");
+            Alert.alert("Datos vacíos", "Por favor, llene todos los campos requeridos");
         }
     }
 

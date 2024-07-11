@@ -112,7 +112,7 @@ export default function SignScreen3(props) {
             props.navigation.replace('WelcomeScreen');
         } catch (error) {
             setLoading(false);
-            Alert.alert("Error en el servidor", "Por favor, vuelvelo a intentar en la configuracion del perfil");
+            Alert.alert("Error en el servidor", "Por favor, Vuélvalo a intentar en la configuracion del perfil");
             console.error(error);
             props.navigation.replace('WelcomeScreen');
         }

@@ -80,7 +80,7 @@ export default function UserList({ idUser, list_owner, followType, props }) {
 
         if (res == false) {
             setIsFollowed(false);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 
@@ -91,7 +91,7 @@ export default function UserList({ idUser, list_owner, followType, props }) {
 
         if (res == false) {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 
@@ -100,13 +100,13 @@ export default function UserList({ idUser, list_owner, followType, props }) {
             const res = await deleteFollowerProcess(userData.id, localUserLogin.id);
 
             if (res == false) {
-                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             }
         } else if (followType == 1) {
             const res = await stopFollow(userData.id, localUserLogin.id);
 
             if (res == false) {
-                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             }
         } else {
             console.error("Tipo de seguidor invalido");

@@ -108,7 +108,7 @@ export default function Homepage(props) {
         } else if (e === 3) {
             await setSaveTheme('system');
         }
-        Alert.alert('Reinicio necesario', 'Reinicie la aplicacion para aplicar los cambios');
+        Alert.alert('Reinicio necesario', 'Reinicie la aplicación para aplicar los cambios');
     }
 
     const takePhoto = async () => {
@@ -171,7 +171,7 @@ export default function Homepage(props) {
 
             props.navigation.navigate('NewPublication');
         } else {
-            Alert.alert("Sin conexion a internet", "Por favor, reinicie la aplicacion");
+            Alert.alert("Sin conexión a internet", "Por favor, reinicie la aplicación");
         }
     }
 
@@ -187,10 +187,10 @@ export default function Homepage(props) {
             if (docSnap.exists()) {
                 props.navigation.navigate({ name: 'Saves', params: { saves: docSnap.data().saves }, merge: true });
             } else {
-                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             }
         } catch (error) {
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
         }
     }
 

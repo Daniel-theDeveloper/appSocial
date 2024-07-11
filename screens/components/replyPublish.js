@@ -103,7 +103,7 @@ export default function ReplyPublish({ props, replyID }) {
                 <View style={{padding: 10, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 4,}}>
                     <View style={styles.replyTitleBlock}>
                         <MaterialCommunityIcons style={{marginRight: 10, color: colors.primary, fontSize: 24}} name='alert-box-outline' />
-                        <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic"}}>Esta publicacion se ha eliminado.</Text>
+                        <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic"}}>Esta publicación se ha eliminado.</Text>
                     </View>
                 </View>
                 :

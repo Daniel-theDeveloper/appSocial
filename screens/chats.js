@@ -69,7 +69,7 @@ export default function Chats(props) {
             if (docSnap.exists()) {
                 setSuggestionList(docSnap.data().noChats);
             } else {
-                console.error("Sin conexion");
+                console.error("Sin conexión");
             }
         } catch (error) {
             console.error(error);

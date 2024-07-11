@@ -112,7 +112,7 @@ export default function Trending(props) {
             {loading ?
                 <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
                     <ActivityIndicator color={colors.loading} style={{ marginBottom: 10 }} size={60} />
-                    <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Buscando publicacion</Text>
+                    <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Buscando publicación</Text>
                 </View>
                 :
                 publications.length <= 0 ?

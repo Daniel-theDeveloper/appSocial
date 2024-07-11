@@ -62,7 +62,7 @@ export default function Publication({
                 setUsername(await docSnap.data().username);
                 setIsSaved(await isWasSaved(id));
             } else {
-                console.error("Sin conexion");
+                console.error("Sin conexión");
             }
         } catch (error) {
             console.error(error);
@@ -124,19 +124,19 @@ export default function Publication({
             setIsSaved(false);
             const res = await deleteSavePublish(id);
             if (res) {
-                console.log("Publicacion eliminada exitosamente");
+                console.log("publicación eliminada exitosamente");
             } else {
                 setIsSaved(true);
-                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             }
         } else {
             setIsSaved(true);
             const res = await savePublish(id);
             if (res) {
-                console.log("Publicacion guardada exitosamente");
+                console.log("publicación guardada exitosamente");
             } else {
                 setIsSaved(false);
-                Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             }
         }
     }

@@ -91,7 +91,7 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
                 props.navigation.navigate('MyChat');
             }
         } catch (error) {
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde");
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
             setLoadingButton(false);
             console.error(error);
         }

@@ -51,7 +51,7 @@ export default function CreatePost(props) {
             setIsEmpty(true);
             setLoading(false);
             console.error(error);
-            Alert.alert("Error en el servidor", "Vuelvelo a intentar mas tarde")
+            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde")
         }
     }
 
@@ -165,7 +165,7 @@ export default function CreatePost(props) {
                     <View style={styles.empty_components}>
                         <MaterialCommunityIcons style={{color: colors.primary, fontSize: 80, marginBottom: 10}} name='book-open-page-variant-outline' />
                         <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>Todas tus futuras publicaciones apareceran aqui</Text>
-                        <Text style={{color: colors.primary, fontSize: 18, textAlign: "center",}}>Comience creando su primer publicacion</Text>
+                        <Text style={{color: colors.primary, fontSize: 18, textAlign: "center",}}>Comience creando su primer publicación</Text>
                     </View>
                     :
                     publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)

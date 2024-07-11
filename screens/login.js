@@ -66,7 +66,7 @@ export default function Login(props) {
         } else if (e === 3) {
             await setSaveTheme('system');
         }
-        Alert.alert('Reinicio necesario', 'Reinicie la aplicacion para aplicar los cambios');
+        Alert.alert('Reinicio necesario', 'Reinicie la aplicación para aplicar los cambios');
     }
 
     function goSing_up() {
@@ -88,12 +88,12 @@ export default function Login(props) {
             if (resLogin) {
                 props.navigation.navigate('Home');
             } else {
-                Alert.alert("Credenciales incorrectas", "El usuario y contraseña no estan correctos");
+                Alert.alert("Credenciales incorrectas", "El usuario y contraseña no están correctos");
                 canEdit = true
                 setloginButtomVisible(true)
             }
         } else {
-            Alert.alert("Campos vacios", "Por favor, llene todos los campos");
+            Alert.alert("Campos vacíos", "Por favor, llene todos los campos");
         }
     };
 
@@ -148,7 +148,7 @@ export default function Login(props) {
 
                     <TouchableOpacity onPress={goSing_up} style={styles.sign_up}>
                         <Text style={{ marginTop: 20, color: colors.text, fontSize: 16, fontWeight: 'bold', textAlign: 'center', }}>¿No tienes una cuenta?</Text>
-                        <Text style={{ marginTop: 20, marginLeft: 5, color: colors.secondary, fontSize: 16, fontWeight: 'bold', textAlign: 'center', }}>Registrese ahora</Text>
+                        <Text style={{ marginTop: 20, marginLeft: 5, color: colors.secondary, fontSize: 16, fontWeight: 'bold', textAlign: 'center', }}>Registrase ahora</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.sign_up} onPress={openModalConfig}>
