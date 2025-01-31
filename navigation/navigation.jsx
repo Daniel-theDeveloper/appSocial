@@ -30,14 +30,6 @@ const tab5Name = "Chats"
 
 let new_notifications = 0;
 
-export function setNewNotification (number) {
-    new_notifications = number;
-}
-
-export function getNewNotification () {
-    return new_notifications;
-}
-
 export default function MyRoutes() {
     function MyRoutes() {
         return (

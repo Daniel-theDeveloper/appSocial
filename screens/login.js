@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '@react-navigation/native';
+import Container, { Toast } from 'toastify-react-native';
 
-import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from 'react-native';
+import { StyleSheet, Text, TextInput, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modalbox';
 import RadioGroup from 'react-native-radio-buttons-group';
 import LoginProcess from '../utils/loginProcess';
@@ -33,7 +34,7 @@ export default function Login(props) {
         },
         {
             id: 3,
-            label: 'Configuracion del sistema',
+            label: 'Configuración del sistema',
             value: 'system',
             color: colors.primary
         }
@@ -44,6 +45,18 @@ export default function Login(props) {
     useEffect(() => {
         getSelectedTheme();
     }, []);
+
+    const showToastsLoginFailed = () => {
+        Toast.error('El usuario y contraseña no están correctos');
+    }
+
+    const showToastsNoData = () => {
+        Toast.error('Por favor, llene todos los campos');
+    }
+
+    const showToastsInfo = () => {
+        Toast.success('Reinicie la aplicación para aplicar los cambios');
+    }
 
     const getSelectedTheme = async () => {
         const theme = await getSaveTheme();
@@ -66,7 +79,7 @@ export default function Login(props) {
         } else if (e === 3) {
             await setSaveTheme('system');
         }
-        Alert.alert('Reinicio necesario', 'Reinicie la aplicación para aplicar los cambios');
+        showToastsInfo();
     }
 
     function goSing_up() {
@@ -88,12 +101,12 @@ export default function Login(props) {
             if (resLogin) {
                 props.navigation.navigate('Home');
             } else {
-                Alert.alert("Credenciales incorrectas", "El usuario y contraseña no están correctos");
+                showToastsLoginFailed();
                 canEdit = true
                 setloginButtomVisible(true)
             }
         } else {
-            Alert.alert("Campos vacíos", "Por favor, llene todos los campos");
+            showToastsNoData();
         }
     };
 
@@ -107,6 +120,7 @@ export default function Login(props) {
 
     return (
         <View style={{ flex: 1, flexGrow: 1, padding: 10, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', }}>
+            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
             <View style={{
                 backgroundColor: colors.primary_dark,
                 width: "100%",
@@ -166,7 +180,7 @@ export default function Login(props) {
                 alignItems: 'flex-start'
             }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
                 <View style={{alignItems: 'center', width: '100%'}}>
-                    <View style={{ height: 3, width: 150, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
+                    <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
                 </View>
                 <RadioGroup
                     containerStyle={{alignItems: 'flex-start'}}

@@ -13,7 +13,7 @@ export const setLocalUser = async (email, password) => {
         await AsyncStorage.setItem('email', JSON.stringify(email));
         await AsyncStorage.setItem('password', JSON.stringify(password));
     } catch (error) {
-        console.error("No fue posible guardar los parametros para el autologueo, detalles: ");
+        console.error("No fue posible guardar los parámetros para el autologueo, detalles: ");
         console.error(error);
     }
 }

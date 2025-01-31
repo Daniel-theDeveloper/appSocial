@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 
 import { auth, database } from '../utils/database';
-import { collection, onSnapshot, orderBy, query, doc, getDoc, where } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import RadioGroup from 'react-native-radio-buttons-group';
+import Container from 'toastify-react-native';
 
 import { new_publication_params } from './sub-screens/new_publication';
 
@@ -15,6 +16,7 @@ import { localUserLogin, erase_all, getSaveTheme, setSaveTheme } from '../utils/
 import Modal from 'react-native-modalbox';
 import { signOut } from 'firebase/auth';
 import { useTheme } from '@react-navigation/native';
+import { isWasInteracted, isWasCommented, isWasInteractedByID, isWasSaved } from '../utils/interations';
 
 export default function Homepage(props) {
     const [publications, setPublications] = useState([]);
@@ -42,7 +44,7 @@ export default function Homepage(props) {
         },
         {
             id: 3,
-            label: 'Configuracion del sistema',
+            label: 'Configuración del sistema',
             value: 'system',
             color: colors.primary
         }
@@ -56,8 +58,8 @@ export default function Homepage(props) {
 
     const alertLogOut = () =>
         Alert.alert(
-            'Salirse de la plaforma',
-            '¿Desea cerrar su sesion?',
+            'Salirse de la plataforma',
+            '¿Desea cerrar su sesión?',
             [
                 {
                     text: 'No',
@@ -79,7 +81,6 @@ export default function Homepage(props) {
     }
 
     function openModalConfig() {
-        setModalOptions(false);
         if (configTheme) {
             setConfigTheme(false);
         } else {
@@ -108,7 +109,7 @@ export default function Homepage(props) {
         } else if (e === 3) {
             await setSaveTheme('system');
         }
-        Alert.alert('Reinicio necesario', 'Reinicie la aplicación para aplicar los cambios');
+        // Restart
     }
 
     const takePhoto = async () => {
@@ -160,7 +161,7 @@ export default function Homepage(props) {
     const log_out = async () => {
         signOut(auth).catch(error => console.error(error));
         await erase_all();
-        props.navigation.replace('Login');
+        // Restart
     }
 
     function goNewPublish() {
@@ -195,218 +196,221 @@ export default function Homepage(props) {
     }
 
     return (
-        <ScrollView style={{ backgroundColor: colors.background }} showsVerticalScrollIndicator={true}>
-            <View style={styles.container}>
-                <View style={{
-                    flexDirection: "column",
-                    backgroundColor: colors.primary_dark,
-                    paddingLeft: 20,
-                    paddingRight: 20,
-                    paddingBottom: 10
-                }}>
-                    <View style={styles.header_row}>
-                        <TouchableOpacity onPress={openModalOptions}>
-                            <MaterialCommunityIcons style={{ fontSize: 39, color: colors.text }} name='dots-grid' />
-                        </TouchableOpacity>
-                        <Text style={{ fontSize: 19, fontWeight: "bold", color: colors.text }}>Pagina principal</Text>
-                        <TouchableOpacity onPress={goMyPerfil}>
-                            <Image style={styles.avatar} source={myAvatar != null ? { uri: myAvatar } : require('../assets/avatar-default.png')} />
-                        </TouchableOpacity>
-                    </View>
+        <View style={{ backgroundColor: colors.background }}>
+            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
+            <View style={{
+                flexDirection: "column",
+                backgroundColor: colors.primary_dark,
+                paddingLeft: 20,
+                paddingRight: 20,
+                paddingBottom: 10
+            }}>
+                <View style={styles.header_row}>
+                    <TouchableOpacity onPress={openModalOptions}>
+                        <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='dots-grid' />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 19, fontWeight: "bold", color: colors.text }}>Pagina principal</Text>
+                    <TouchableOpacity onPress={goMyPerfil}>
+                        <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='account-box-outline' />
+                    </TouchableOpacity>
+                </View>
 
-                    <View style={styles.header_row}>
-                        <TouchableOpacity style={styles.new_publication_zone} onPress={goNewPublish}>
+                <View style={styles.header_row}>
+                    <TouchableOpacity style={styles.new_publication_zone} onPress={goNewPublish}>
+                        <View style={{
+                            padding: 10,
+                            borderColor: colors.primary,
+                            borderWidth: 2,
+                            borderRadius: 10,
+                            outlineStyle: "solid",
+                            outlineWidth: 4,
+                        }}>
+                            <Text style={{ fontSize: 16, padding: 2, color: colors.text }}>Publica lo que estas pensando</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={takePhoto}>
+                        <View style={{ backgroundColor: colors.primary, padding: 11, borderRadius: 15 }}>
+                            <MaterialCommunityIcons style={{ fontSize: 29, color: colors.background }} name='camera' />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={true}>
+                <View style={styles.container}>
+                    {loading ?
+                        <View style={loadingStyle.container}>
+                            <View style={loadingStyle.perfil_header}>
+                                <View style={{
+                                    height: 50,
+                                    width: 50,
+                                    borderRadius: 100,
+                                    backgroundColor: colors.primary_dark
+                                }}></View>
+                                <View style={loadingStyle.perfil_usernames_container}>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        backgroundColor: colors.primary_dark,
+                                        marginBottom: 10,
+                                        borderRadius: 5
+                                    }}></View>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        borderRadius: 5,
+                                        backgroundColor: colors.primary_dark
+                                    }}></View>
+                                </View>
+                            </View>
                             <View style={{
                                 padding: 10,
-                                borderColor: colors.primary,
-                                borderWidth: 2,
-                                borderRadius: 10,
-                                outlineStyle: "solid",
-                                outlineWidth: 4,
-                            }}>
-                                <Text style={{ fontSize: 16, padding: 2, color: colors.text }}>Publica lo que estas pensando</Text>
+                                height: 120,
+                                backgroundColor: colors.primary_dark,
+                                borderRadius: 15,
+                                marginBottom: 20
+                            }}></View>
+                            <View style={loadingStyle.perfil_header}>
+                                <View style={{
+                                    height: 50,
+                                    width: 50,
+                                    borderRadius: 100,
+                                    backgroundColor: colors.primary_dark
+                                }}></View>
+                                <View style={loadingStyle.perfil_usernames_container}>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        backgroundColor: colors.primary_dark,
+                                        marginBottom: 10,
+                                        borderRadius: 5
+                                    }}></View>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        borderRadius: 5,
+                                        backgroundColor: colors.primary_dark
+                                    }}></View>
+                                </View>
                             </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={takePhoto}>
-                            <View style={{ backgroundColor: colors.primary, padding: 11, borderRadius: 15 }}>
-                                <MaterialCommunityIcons style={{ fontSize: 29, color: colors.background }} name='camera' />
+                            <View style={{
+                                padding: 10,
+                                height: 120,
+                                backgroundColor: colors.primary_dark,
+                                borderRadius: 15,
+                                marginBottom: 20
+                            }}></View>
+                            <View style={loadingStyle.perfil_header}>
+                                <View style={{
+                                    height: 50,
+                                    width: 50,
+                                    borderRadius: 100,
+                                    backgroundColor: colors.primary_dark
+                                }}></View>
+                                <View style={loadingStyle.perfil_usernames_container}>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        backgroundColor: colors.primary_dark,
+                                        marginBottom: 10,
+                                        borderRadius: 5
+                                    }}></View>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        borderRadius: 5,
+                                        backgroundColor: colors.primary_dark
+                                    }}></View>
+                                </View>
                             </View>
-                        </TouchableOpacity>
-                    </View>
+                            <View style={{
+                                padding: 10,
+                                height: 120,
+                                backgroundColor: colors.primary_dark,
+                                borderRadius: 15,
+                                marginBottom: 20
+                            }}></View>
+                            <View style={loadingStyle.perfil_header}>
+                                <View style={{
+                                    height: 50,
+                                    width: 50,
+                                    borderRadius: 100,
+                                    backgroundColor: colors.primary_dark
+                                }}></View>
+                                <View style={loadingStyle.perfil_usernames_container}>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        backgroundColor: colors.primary_dark,
+                                        marginBottom: 10,
+                                        borderRadius: 5
+                                    }}></View>
+                                    <View style={{
+                                        height: 18,
+                                        width: 150,
+                                        borderRadius: 5,
+                                        backgroundColor: colors.primary_dark
+                                    }}></View>
+                                </View>
+                            </View>
+                            <View style={{
+                                padding: 10,
+                                height: 120,
+                                backgroundColor: colors.primary_dark,
+                                borderRadius: 15,
+                                marginBottom: 20
+                            }}></View>
+                        </View>
+                        :
+                        <View style={loadingStyle.publications_colections}>
+                            {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                        </View>
+                    }
                 </View>
+                <Modal style={{
+                    padding: 20,
+                    maxHeight: 160,
+                    maxWidth: 330,
+                    borderRadius: 20,
+                    backgroundColor: colors.primary_dark,
+                    alignItems: 'flex-start'
+                }} position={"center"} isOpen={modalOptions} onClosed={openModalOptions} coverScreen={true}>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalConfig}>
+                        <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='theme-light-dark' />
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar tema</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goSaves}>
+                        <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='book-search-outline' />
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Guardados</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={alertLogOut}>
+                        <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='logout' />
+                        <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>Cerrar sesión</Text>
+                    </TouchableOpacity>
+                </Modal>
 
-                {loading ?
-                    <View style={loadingStyle.container}>
-                        <View style={loadingStyle.perfil_header}>
-                            <View style={{
-                                height: 50,
-                                width: 50,
-                                borderRadius: 100,
-                                backgroundColor: colors.primary_dark
-                            }}></View>
-                            <View style={loadingStyle.perfil_usernames_container}>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    backgroundColor: colors.primary_dark,
-                                    marginBottom: 10,
-                                    borderRadius: 5
-                                }}></View>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    borderRadius: 5,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                            </View>
-                        </View>
-                        <View style={{
-                            padding: 10,
-                            height: 120,
-                            backgroundColor: colors.primary_dark,
-                            borderRadius: 15,
-                            marginBottom: 20
-                        }}></View>
-                        <View style={loadingStyle.perfil_header}>
-                            <View style={{
-                                height: 50,
-                                width: 50,
-                                borderRadius: 100,
-                                backgroundColor: colors.primary_dark
-                            }}></View>
-                            <View style={loadingStyle.perfil_usernames_container}>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    backgroundColor: colors.primary_dark,
-                                    marginBottom: 10,
-                                    borderRadius: 5
-                                }}></View>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    borderRadius: 5,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                            </View>
-                        </View>
-                        <View style={{
-                            padding: 10,
-                            height: 120,
-                            backgroundColor: colors.primary_dark,
-                            borderRadius: 15,
-                            marginBottom: 20
-                        }}></View>
-                        <View style={loadingStyle.perfil_header}>
-                            <View style={{
-                                height: 50,
-                                width: 50,
-                                borderRadius: 100,
-                                backgroundColor: colors.primary_dark
-                            }}></View>
-                            <View style={loadingStyle.perfil_usernames_container}>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    backgroundColor: colors.primary_dark,
-                                    marginBottom: 10,
-                                    borderRadius: 5
-                                }}></View>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    borderRadius: 5,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                            </View>
-                        </View>
-                        <View style={{
-                            padding: 10,
-                            height: 120,
-                            backgroundColor: colors.primary_dark,
-                            borderRadius: 15,
-                            marginBottom: 20
-                        }}></View>
-                        <View style={loadingStyle.perfil_header}>
-                            <View style={{
-                                height: 50,
-                                width: 50,
-                                borderRadius: 100,
-                                backgroundColor: colors.primary_dark
-                            }}></View>
-                            <View style={loadingStyle.perfil_usernames_container}>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    backgroundColor: colors.primary_dark,
-                                    marginBottom: 10,
-                                    borderRadius: 5
-                                }}></View>
-                                <View style={{
-                                    height: 18,
-                                    width: 150,
-                                    borderRadius: 5,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                            </View>
-                        </View>
-                        <View style={{
-                            padding: 10,
-                            height: 120,
-                            backgroundColor: colors.primary_dark,
-                            borderRadius: 15,
-                            marginBottom: 20
-                        }}></View>
+                <Modal style={{
+                    paddingTop: 20,
+                    paddingHorizontal: 10,
+                    maxHeight: 190,
+                    borderTopRightRadius: 20,
+                    borderTopLeftRadius: 20,
+                    backgroundColor: colors.background,
+                    alignItems: 'flex-start'
+                }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
+                    <View style={{ alignItems: 'center', width: '100%' }}>
+                        <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 10 }}></View>
+                        <Text style={{ color: colors.text, textAlign: 'center', marginBottom: 20, fontSize: 16, fontWeight: 'bold' }}>¡Al elegir una opción, se reiniciara la aplicación!</Text>
                     </View>
-                    :
-                    <View style={loadingStyle.publications_colections}>
-                        {publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)}
-                    </View>
-                }
-            </View>
-            <Modal style={{
-                padding: 20,
-                maxHeight: 200,
-                maxWidth: 330,
-                borderRadius: 20,
-                backgroundColor: colors.primary_dark,
-                alignItems: 'flex-start'
-            }} position={"center"} isOpen={modalOptions} onClosed={openModalOptions} coverScreen={true}>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalConfig}>
-                    <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='theme-light-dark' />
-                    <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar tema</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goSaves}>
-                    <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='book-search-outline' />
-                    <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Guardados</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={alertLogOut}>
-                    <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='logout' />
-                    <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>Cerrar sesión</Text>
-                </TouchableOpacity>
-            </Modal>
-
-            <Modal style={{
-                paddingTop: 20,
-                paddingHorizontal: 10,
-                maxHeight: 175,
-                borderTopRightRadius: 20,
-                borderTopLeftRadius: 20,
-                backgroundColor: colors.background,
-                alignItems: 'flex-start'
-            }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
-                <View style={{ alignItems: 'center', width: '100%' }}>
-                    <View style={{ height: 3, width: 150, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
-                </View>
-                <RadioGroup
-                    containerStyle={{ alignItems: 'flex-start' }}
-                    radioButtons={radioButtons}
-                    onPress={setNewTheme}
-                    selectedId={selectedTheme}
-                    labelStyle={{ color: colors.text }}
-                />
-            </Modal>
-        </ScrollView>
+                    <RadioGroup
+                        containerStyle={{ alignItems: 'flex-start' }}
+                        radioButtons={radioButtons}
+                        onPress={setNewTheme}
+                        selectedId={selectedTheme}
+                        labelStyle={{ color: colors.text }}
+                    />
+                </Modal>
+            </ScrollView>
+        </View>
     );
 }
 

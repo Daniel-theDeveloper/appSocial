@@ -5,6 +5,7 @@ import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage, savePublish, isWasSaved, deleteSavePublish, likePublish, deleteLike } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
+import { Toast } from 'toastify-react-native';
 
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
@@ -17,6 +18,10 @@ export let publication_selected = []
 
 export default function Publication({
     props,
+    isLike,
+    isComment,
+    isShared,
+    wasSaved,
     id,
     body,
     urlImage,
@@ -30,9 +35,6 @@ export default function Publication({
     const allLikes = likes.length;
     const allComments = comments_container.length;
 
-    const [isLike, setIsLike] = useState(isWasInteracted(likes));
-    const [isComment, setIsComment] = useState(isWasCommented(comments_container));
-    const [isShared, setIsShared] = useState(isWasInteractedByID(shares));
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState(null);
 
@@ -44,10 +46,27 @@ export default function Publication({
 
     useEffect(() => {
         loadUserData();
-        loadFhoto();
+        loadFoto();
+        promiseSaved();
     }, []);
 
-    const loadFhoto = async () => {
+    const showToastsSaveSuccess = () => {
+        Toast.success('Publicación guardada exitosamente');
+    }
+
+    const showToastsSaveDeleted = () => {
+        Toast.success('Publicación eliminada exitosamente');
+    }
+
+    const showToastsSaveFailed = () => {
+        Toast.error('Error en el servidor, vuélvalo a intentar mas tarde');
+    }
+
+    const promiseSaved = async () => {
+        setIsSaved(await wasSaved);
+    }
+
+    const loadFoto = async () => {
         setImageURL(await fetchImage(urlImage));
     }
 
@@ -60,7 +79,6 @@ export default function Publication({
                 setAvatarURL(await fetchImage(docSnap.data().avatar));
                 setNickname(await docSnap.data().name);
                 setUsername(await docSnap.data().username);
-                setIsSaved(await isWasSaved(id));
             } else {
                 console.error("Sin conexión");
             }
@@ -79,18 +97,18 @@ export default function Publication({
 
     const setLike = async () => {
         if (isLike) {
-            setIsLike(false);
+            isLike = false;
             const res = await deleteLike(id);
             if (!res) {
                 Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
-                setIsLike(true);
+                isLike = true;
             }
         } else {
-            setIsLike(true);
+            isLike = true;
             const res = await likePublish(id);
             if (!res) {
                 Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
-                setIsLike(false);
+                isLike = false;
             }
         }
     }
@@ -112,11 +130,7 @@ export default function Publication({
     }
 
     const setShared = async () => {
-        if (isShared) {
-            // Show My Reply
-        } else {
-            props.navigation.navigate({ name: 'ReplyPublishScreen', params: { id: id, userIdSend: userId }, merge: true });
-        }
+        props.navigation.navigate({ name: 'ReplyPublishScreen', params: { id: id, userIdSend: userId }, merge: true });
     }
 
     const setSaved = async () => {
@@ -124,19 +138,19 @@ export default function Publication({
             setIsSaved(false);
             const res = await deleteSavePublish(id);
             if (res) {
-                console.log("publicación eliminada exitosamente");
+                showToastsSaveDeleted();
             } else {
                 setIsSaved(true);
-                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+                showToastsSaveFailed();
             }
         } else {
             setIsSaved(true);
             const res = await savePublish(id);
             if (res) {
-                console.log("publicación guardada exitosamente");
+                showToastsSaveSuccess();
             } else {
                 setIsSaved(false);
-                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+                showToastsSaveFailed();
             }
         }
     }

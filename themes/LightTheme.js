@@ -1,4 +1,4 @@
-const LigtTheme = {
+const LightTheme = {
     name: 'light',
     dark: false,
     colors: {
@@ -31,4 +31,4 @@ const LigtTheme = {
     }
 };
 
-export default LigtTheme;
+export default LightTheme;

@@ -4,6 +4,8 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useTheme } from '@react-navigation/native';
 import Publication from './components/Publish';
 import { localUserLogin } from '../utils/localstorage';
+import { isWasInteracted, isWasInteractedByID, isWasCommented, isWasSaved } from '../utils/interations';
+import Container from 'toastify-react-native';
 
 import { database } from '../utils/database';
 import { collection, where, query, onSnapshot } from 'firebase/firestore';
@@ -64,67 +66,70 @@ export default function Trending(props) {
     }
 
     return (
-        <ScrollView style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15 }}>
-            <View style={{ padding: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
-                <TextInput style={{ color: colors.text }} placeholder='Buscar en la red...' placeholderTextColor={colors.holderText} onChangeText={(text) => setSearchText(text)} autoCorrect={false} editable={loading ? false : true} />
-            </View>
-
-            {loading ?
-                <View style={{
-                    alignItems: 'center',
-                    backgroundColor: colors.quartet_dark,
-                    borderRadius: 10,
-                    marginVertical: 10,
-                    padding: 10,
-                    width: "100%",
-                    shadowColor: 'black',
-                    shadowOpacity: 0.55,
-                    shadowRadius: 4,
-                    elevation: 5,
-                    shadowOffset: {
-                        width: 10,
-                        height: 10
-                    }
-                }}>
-                    <Text>Buscando</Text>
+        <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15 }}>
+            <Container position="bottom" animationStyle="zoomInOut" positionValue="100" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
+            <ScrollView>
+                <View style={{ padding: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                    <TextInput style={{ color: colors.text }} placeholder='Buscar en la red...' placeholderTextColor={colors.holderText} onChangeText={(text) => setSearchText(text)} autoCorrect={false} editable={loading ? false : true} />
                 </View>
-                :
-                <TouchableOpacity onPress={startSearch} style={{
-                    alignItems: 'center',
-                    backgroundColor: colors.quartet,
-                    borderRadius: 10,
-                    marginVertical: 10,
-                    padding: 10,
-                    width: "100%",
-                    shadowColor: 'black',
-                    shadowOpacity: 0.55,
-                    shadowRadius: 4,
-                    elevation: 5,
-                    shadowOffset: {
-                        width: 10,
-                        height: 10
-                    }
-                }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.text }}>Buscar</Text>
-                </TouchableOpacity>
-            }
 
-            {loading ?
-                <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
-                    <ActivityIndicator color={colors.loading} style={{ marginBottom: 10 }} size={60} />
-                    <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Buscando publicación</Text>
-                </View>
-                :
-                publications.length <= 0 ?
-                    <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
-                        <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 80, marginBottom: 10 }} name='magnify-scan' />
-                        <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>Sin resultados</Text>
-                        <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Escribe en la barra superior y luego preciona en buscar</Text>
+                {loading ?
+                    <View style={{
+                        alignItems: 'center',
+                        backgroundColor: colors.quartet_dark,
+                        borderRadius: 10,
+                        marginVertical: 10,
+                        padding: 10,
+                        width: "100%",
+                        shadowColor: 'black',
+                        shadowOpacity: 0.55,
+                        shadowRadius: 4,
+                        elevation: 5,
+                        shadowOffset: {
+                            width: 10,
+                            height: 10
+                        }
+                    }}>
+                        <Text>Buscando</Text>
                     </View>
                     :
-                    publications.map(publication => <Publication key={publication.id} props={props} {...publication} />)
-            }
+                    <TouchableOpacity onPress={startSearch} style={{
+                        alignItems: 'center',
+                        backgroundColor: colors.quartet,
+                        borderRadius: 10,
+                        marginVertical: 10,
+                        padding: 10,
+                        width: "100%",
+                        shadowColor: 'black',
+                        shadowOpacity: 0.55,
+                        shadowRadius: 4,
+                        elevation: 5,
+                        shadowOffset: {
+                            width: 10,
+                            height: 10
+                        }
+                    }}>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.text }}>Buscar</Text>
+                    </TouchableOpacity>
+                }
 
-        </ScrollView>
+                {loading ?
+                    <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
+                        <ActivityIndicator color={colors.loading} style={{ marginBottom: 10 }} size={60} />
+                        <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Buscando publicación</Text>
+                    </View>
+                    :
+                    publications.length <= 0 ?
+                        <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
+                            <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 80, marginBottom: 10 }} name='magnify-scan' />
+                            <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>Sin resultados</Text>
+                            <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>Escribe en la barra superior y luego preciona en buscar</Text>
+                        </View>
+                        :
+                        publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
+                }
+
+            </ScrollView>
+        </View>
     );
 }

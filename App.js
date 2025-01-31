@@ -2,13 +2,14 @@ import 'react-native-gesture-handler';
 import { useState, useEffect } from 'react';
 import { useTheme } from '@react-navigation/native';
 
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native"
 import MyRoutes from './navigation/navigation';
 import { Appearance } from 'react-native';
 import { getSaveTheme } from './utils/localstorage';
 
 import DarkTheme from './themes/DarkTheme';
-import LigtTheme from './themes/LightTheme';
+import LightTheme from './themes/LightTheme';
 import DarkAlternativeTheme from './themes/DarkAlternativeTheme';
 import LightAlternativeTheme from './themes/LightAlternativeTheme';
 
@@ -48,7 +49,12 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer theme={isDark ? DarkTheme : LigtTheme}>
+    <NavigationContainer theme={isDark ? DarkTheme : LightTheme}>
+      <StatusBar
+        animated={true}
+        backgroundColor={isDark ? "#131317" : "#F3F4FF"}
+        barStyle={isDark ? "light-content" : "dark-content"}
+      />
       <MyStack />
     </NavigationContainer>
   );

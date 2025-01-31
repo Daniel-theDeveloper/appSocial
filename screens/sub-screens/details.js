@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasInteractedByID, sendNotification, likePublish } from '../../utils/interations';
+import { isWasInteracted, isWasSaved, isWasInteractedByID, sendNotification, likePublish, deleteLike, savePublish, deleteSavePublish } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
 import { useTheme } from '@react-navigation/native';
+import Container, { Toast } from 'toastify-react-native';
 // import { compareDesc } from "date-fns";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
@@ -16,7 +17,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 export default function Details(props) {
     const [publicationArray, setPublicationArray] = useState({
-        id: "",
+        id: props.route.params?.id,
         body: "",
         nickname: "",
         urlImage: null,
@@ -99,20 +100,43 @@ export default function Details(props) {
             setIsLike(isWasInteracted(getData.likes));
             setIsShared(isWasInteractedByID(getData.shares));
             setPublicationArray(getData);
+            promiseSaved();
         })
         return unsuscribe;
     }, []);
+
+    const showToastsSaveSuccess = () => {
+        Toast.success('Publicación guardada exitosamente');
+    }
+
+    const showToastsSaveDeleted = () => {
+        Toast.success('Publicación eliminada exitosamente');
+    }
+
+    const showToastsSaveFailed = () => {
+        Toast.error('Error en el servidor, vuélvalo a intentar mas tarde');
+    }
 
     function goBackAgain() {
         props.navigation.goBack()
     }
 
+    const promiseSaved = async () => {
+        const x = await isWasSaved(props.route.params?.id);
+        setIsSaved(x);
+    }
+
     const setLike = async () => {
         if (isLike) {
-            // Show a list like person
+            setIsLike(false);
+            const res = await deleteLike(publicationArray.id);
+            if (!res) {
+                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                setIsLike(true);
+            }
         } else {
             setIsLike(true);
-            const res = await likePublish(id);
+            const res = await likePublish(publicationArray.id);
             if (!res) {
                 Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
                 setIsLike(false);
@@ -161,125 +185,140 @@ export default function Details(props) {
 
     const saveThisPublish = async () => {
         if (isSaved) {
-            // Delete this publish
             setIsSaved(false);
+            const res = await deleteSavePublish(props.route.params?.id);
+            if (res) {
+                showToastsSaveDeleted();
+            } else {
+                setIsSaved(true);
+                showToastsSaveFailed();
+            }
         } else {
-            // Save this publish
             setIsSaved(true);
+            const res = await savePublish(props.route.params?.id);
+            if (res) {
+                showToastsSaveSuccess();
+            } else {
+                setIsSaved(false);
+                showToastsSaveFailed();
+            }
         }
     }
 
     return (
-        <ScrollView style={{backgroundColor: colors.background}} showsVerticalScrollIndicator={true}>
-            <View style={styles.container}>
-                <TouchableOpacity onPress={goBackAgain}>
-                    <View style={styles.back_block}>
-                        <MaterialCommunityIcons style={{fontSize: 49, color: colors.secondary}} name='chevron-left' />
-                        <Text style={{fontSize: 21, fontWeight: "bold", color: colors.secondary}}>Regresar</Text>
-                    </View>
-                </TouchableOpacity>
-                <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
-                    {/* Encabezado de la publicación */}
-                    <View style={styles.perfil_header}>
-                        <View style={styles.perfil_user}>
-                            <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-                            <View style={styles.perfil_usernames_container}>
-                                <Text style={{fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{props.route.params?.nickname} publicó</Text>
-                                <Text style={{fontSize: 15, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(publicationArray.date)}</Text>
+        <View style={{backgroundColor: colors.background}}>
+            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
+            <ScrollView showsVerticalScrollIndicator={true}>
+                <View style={styles.container}>
+                    <TouchableOpacity onPress={goBackAgain}>
+                        <View style={styles.back_block}>
+                            <MaterialCommunityIcons style={{fontSize: 49, color: colors.secondary}} name='chevron-left' />
+                            <Text style={{fontSize: 21, fontWeight: "bold", color: colors.secondary}}>Regresar</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
+                        {/* Encabezado de la publicación */}
+                        <View style={styles.perfil_header}>
+                            <View style={styles.perfil_user}>
+                                <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
+                                <View style={styles.perfil_usernames_container}>
+                                    <Text style={{fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{props.route.params?.nickname} publicó</Text>
+                                    <Text style={{fontSize: 15, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(publicationArray.date)}</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
 
-                    {/* Cuerpo de la publicación */}
-                    <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{publicationArray.body}</Text>
-                    {replyId != null || replyId != undefined ?
-                        <ReplyPublish  props={props} replyID={replyId} />
-                        :
-                        imageURL != null ?
-                            <Image style={styles.publication_image} source={{ uri: imageURL }} />
+                        {/* Cuerpo de la publicación */}
+                        <Text style={{fontSize: 17, marginBottom: 15, color: colors.text}}>{publicationArray.body}</Text>
+                        {replyId != null || replyId != undefined ?
+                            <ReplyPublish  props={props} replyID={replyId} />
                             :
-                            <View></View>
-                    }
-
-                    {/* Zona de estadisticas */}
-                    <View style={styles.statistics}>
-                        <View style={styles.statistics_block}>
-                            <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allComments}</Text>
-                            <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Comentarios</Text>
-                        </View>
-                        <Text style={{fontSize: 17, fontWeight: "bold", marginHorizontal: 15, color: colors.primary}}>|</Text>
-                        <View style={styles.statistics_block}>
-                            <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allLikes}</Text>
-                            <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Likes</Text>
-                        </View>
-                    </View>
-                    {/* Zona de interaccion */}
-                    <View style={styles.interact_container}>
-                        <TouchableOpacity onPress={setLike}>
-                            {isLike ?
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.like}} name='heart' />
+                            imageURL != null ?
+                                <Image style={styles.publication_image} source={{ uri: imageURL }} />
                                 :
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='heart-outline' />
-                            }
-                        </TouchableOpacity>
+                                <View></View>
+                        }
 
-                        <TouchableOpacity onPress={setShared}>
-                            {isShared ?
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.share}} name='repeat-variant' />
-                                :
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='repeat-variant' />
-                            }
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={saveThisPublish}>
-                            {isSaved ?
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.save}} name='book' />
-                                :
-                                <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='book-outline' />
-                            }
-                        </TouchableOpacity>
-
-
-                        <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='share-variant' />
-                        <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-down' />
-                    </View>
-                </View>
-
-                {/* Zona de comentarios */}
-                <Text style={{fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Comentarios</Text>
-
-                <View style={{backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
-                    <View style={styles.new_comment_header}>
-                        <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
-                        <View style={{backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5}}>
-                            <TextInput
-                                style={{fontSize: 15, color: colors.text}}
-                                placeholder='Escribe un comentario'
-                                placeholderTextColor={colors.holderText}
-                                multiline={true}
-                                onChangeText={(text) => setMyCommnent(text)}
-                                maxLength={500} />
-                        </View>
-                    </View>
-
-                    {loadingButton ?
-                        <View style={{flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark}}>
-                            <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                            <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicando</Text>
-                        </View>
-                        :
-                        <TouchableOpacity onPress={sendMyComment}>
-                            <View style={{padding: 10, borderRadius: 10, backgroundColor: colors.quartet}}>
-                                <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicar</Text>
+                        {/* Zona de estadisticas */}
+                        <View style={styles.statistics}>
+                            <View style={styles.statistics_block}>
+                                <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allComments}</Text>
+                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Comentarios</Text>
                             </View>
-                        </TouchableOpacity>
-                    }
-                </View>
+                            <Text style={{fontSize: 17, fontWeight: "bold", marginHorizontal: 15, color: colors.primary}}>|</Text>
+                            <View style={styles.statistics_block}>
+                                <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allLikes}</Text>
+                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Likes</Text>
+                            </View>
+                        </View>
+                        {/* Zona de interaccion */}
+                        <View style={styles.interact_container}>
+                            <TouchableOpacity onPress={setLike}>
+                                {isLike ?
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.like}} name='heart' />
+                                    :
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='heart-outline' />
+                                }
+                            </TouchableOpacity>
 
-                {publicationArray.comments_container.map((comment, key) => (<Comment key={key} props={props} publicationId={props.route.params?.id} {...comment} />))}
-                {/* {orderComments.map((comment, key) => (<Comment key={key} props={props} {...comment} />))} */}
-            </View>
-        </ScrollView>
+                            <TouchableOpacity onPress={setShared}>
+                                {isShared ?
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.share}} name='repeat-variant' />
+                                    :
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='repeat-variant' />
+                                }
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={saveThisPublish}>
+                                {isSaved ?
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.save}} name='book' />
+                                    :
+                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='book-outline' />
+                                }
+                            </TouchableOpacity>
+
+
+                            <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='share-variant' />
+                            <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-down' />
+                        </View>
+                    </View>
+
+                    {/* Zona de comentarios */}
+                    <Text style={{fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Comentarios</Text>
+
+                    <View style={{backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
+                        <View style={styles.new_comment_header}>
+                            <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
+                            <View style={{backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5}}>
+                                <TextInput
+                                    style={{fontSize: 15, color: colors.text}}
+                                    placeholder='Escribe un comentario'
+                                    placeholderTextColor={colors.holderText}
+                                    multiline={true}
+                                    onChangeText={(text) => setMyCommnent(text)}
+                                    maxLength={500} />
+                            </View>
+                        </View>
+
+                        {loadingButton ?
+                            <View style={{flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark}}>
+                                <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                                <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicando</Text>
+                            </View>
+                            :
+                            <TouchableOpacity onPress={sendMyComment}>
+                                <View style={{padding: 10, borderRadius: 10, backgroundColor: colors.quartet}}>
+                                    <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicar</Text>
+                                </View>
+                            </TouchableOpacity>
+                        }
+                    </View>
+
+                    {publicationArray.comments_container.map((comment, key) => (<Comment key={key} props={props} publicationId={publicationArray.id} {...comment} />))}
+                    {/* {orderComments.map((comment, key) => (<Comment key={key} props={props} {...comment} />))} */}
+                </View>
+            </ScrollView>
+        </View>
     )
 }
 

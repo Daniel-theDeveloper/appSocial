@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
 import { getLocalUser } from '../utils/localstorage';
@@ -47,11 +47,6 @@ export default function Loading(props) {
             alignItems: 'center',
             justifyContent: 'center',
         }}>
-            <StatusBar
-                animated={true}
-                backgroundColor={colors.background}
-                barStyle={"light-content"}
-            />
             <ActivityIndicator color={colors.primary} size={70} />
         </View>
     );
