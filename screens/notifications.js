@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Alert } from 'react-native';
 import Notification from './components/notification';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -9,11 +9,15 @@ import { database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { localUserLogin } from '../utils/localstorage';
 
+import '../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export default function Notifications(props) {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadAllNotifications();
@@ -31,10 +35,11 @@ export default function Notifications(props) {
                 setNotifications(
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
-                        body: doc.data().body,
+                        // body: doc.data().body,}
                         date: doc.data().date,
                         idUser: doc.data().idUser,
-                        readed: doc.data().readed,
+                        nickname: doc.data().nickname,
+                        read: doc.data().read,
                         optionalData: doc.data().optionalData,
                         type: doc.data().type
                     }))
@@ -43,24 +48,25 @@ export default function Notifications(props) {
             setLoading(false);
             return unsuscribe;
         } catch (error) {
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
             console.error(error);
         }
     }
 
     return (
         <View style={{flex: 1, flexGrow: 1, padding: 15, backgroundColor: colors.background}}>
-            <Text style={{fontSize: 30, fontWeight: "bold", color: colors.primary}}> Notificaciones </Text>
+            <Text style={{fontSize: 30, fontWeight: "bold", color: colors.primary}}> {t('notiTitle')} </Text>
             {loading ?
                 <View style={styles.empty_components}>
                     <ActivityIndicator color={colors.primary} size={80} style={styles.loading_spiner} />
-                    <Text style={{color: colors.primary, fontSize: 24, fontWeight: "bold"}}>Cargando notificaciones</Text>
+                    <Text style={{color: colors.primary, fontSize: 24, fontWeight: "bold"}}>{t('notiLoading')}</Text>
                 </View>
                 :
                 notifications.length == 0 ?
                     <View style={styles.empty_components}>
                         <MaterialCommunityIcons style={{color: colors.primary, fontSize: 80, marginBottom: 10}} name='bell-off-outline' />
-                        <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>No tienes nuevas notificaciones</Text>
-                        <Text style={{color: colors.primary, fontSize: 18, textAlign: "center"}}>Siga interactuando</Text>
+                        <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>{t('emptyNoti')}</Text>
+                        <Text style={{color: colors.primary, fontSize: 18, textAlign: "center"}}>{t('emptyNotiSlogan')}</Text>
                     </View>
                     :
                     <View>

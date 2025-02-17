@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
-import { globals } from '../../utils/globalVars';
-import { userId } from '../components/Publish';
 
 import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -44,7 +41,6 @@ export default function Comment_answer({
     }, [])
 
     function replyComment() {
-        globals.isPrincipalComment = false;
         replyComment_Array = {
             principalMessage: principalMessage,
             comment_answers: comment_answers,
@@ -55,7 +51,7 @@ export default function Comment_answer({
             user: user,
             userAvatar: avatarURL
         }
-        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId }, merge: true })
+        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId, isPrincipalComment: false }, merge: true })
     }
 
     const fetchImage = async (url) => {

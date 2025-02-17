@@ -43,6 +43,7 @@ export const saveMyAvatarURI = async (url) => {
     localUserLogin.avatar = saveURI;
 }
 
+// Guardar el tema seleccionado
 export const setSaveTheme = async (name) => {
     try {
         await AsyncStorage.setItem('theme', JSON.stringify(name));
@@ -51,6 +52,7 @@ export const setSaveTheme = async (name) => {
     }
 }
 
+// Obtener el tema seleccionado
 export const getSaveTheme = async () => {
     try {
         const themeName = await AsyncStorage.getItem('theme');
@@ -65,6 +67,33 @@ export const getSaveTheme = async () => {
         }
     } catch (error) {
         console.error("Error en la obtencion del tema: " + error);
+        return 'system';
+    }
+}
+// Guardar el idioma seleccionado
+export const setSaveLanguaje = async (name) => {
+    try {
+        await AsyncStorage.setItem('languaje', JSON.stringify(name));
+    } catch (error) {
+        console.error('Error en el guardado del idioma: ' + error);
+    }
+}
+
+// Obtener el idioma seleccionado
+export const getSaveLanguaje = async () => {
+    try {
+        const languajeName = await AsyncStorage.getItem('languaje');
+
+        if (languajeName !== null) {
+            const languajeCrude = languajeName.split('"');
+            const languaje = languajeCrude[1];
+
+            return languaje;
+        } else {
+            return 'es';
+        }
+    } catch (error) {
+        console.error("Error en la obtencion del idioma: " + error);
         return 'system';
     }
 }

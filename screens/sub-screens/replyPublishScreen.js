@@ -12,6 +12,9 @@ import EmojiSelector from 'react-native-emoji-selector';
 import { sendNotification } from '../../utils/interations';
 import { useTheme } from '@react-navigation/native';
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export default function ReplyPublishScreen(props) {
     const [newPublication, setNewPublication] = React.useState({
         body: '',
@@ -27,17 +30,18 @@ export default function ReplyPublishScreen(props) {
     const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     const showAlert = () =>
         Alert.alert(
-            'Salir de la publicación',
-            '¿Desea salirse de la publicación sin guardar ni publicar nada?',
+            t('exitNewPublishTitle'),
+            t('exitNewPublish'),
             [
                 {
-                    text: 'Continuar creando',
+                    text: t('continueCreating'),
                 },
                 {
-                    text: 'Salirse',
+                    text: t('exitButton'),
                     onPress: () => goBackAgain(),
                     style: 'cancel',
                 },
@@ -57,11 +61,11 @@ export default function ReplyPublishScreen(props) {
                 goBackAgain();
             } else {
                 setLoading_Button(false);
-                Alert.alert("publicación vacia", "Por favor escribe algo");
+                console.log("publicación vacía");
             }
         } catch (error) {
             setLoading_Button(false);
-            Alert.alert("Error del servidor", "Por favor, vuelve a intentarlo");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
             console.error(error);
         }
     }
@@ -89,11 +93,11 @@ export default function ReplyPublishScreen(props) {
         <View style={{ flex: 1, flexGrow: 1, paddingBottom: 50, paddingHorizontal: 20, backgroundColor: colors.background }}>
             <TouchableOpacity style={styles.back_button_block} onPress={showAlert}>
                 <MaterialCommunityIcons style={{fontSize: 45, color: colors.text}} name='chevron-left' />
-                <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>Salirse</Text>
+                <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>{t('exitButton')}</Text>
             </TouchableOpacity>
 
             <View style={{ padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15 }}>
-                <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>Responder</Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>{t('reply')}</Text>
 
                 <View style={styles.publish_buttons}>
                     <TouchableOpacity onPress={openEmojiModal}>
@@ -102,14 +106,14 @@ export default function ReplyPublishScreen(props) {
                     {loading_Button ?
                         <View style={{ flexDirection: "row", backgroundColor: colors.secondary_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10 }}>
                             <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                            <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>Publicando</Text>
+                            <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>{t('publishing')}</Text>
                         </View>
                         :
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontSize: 16, marginRight: 10, color: colors.primary }}>{newPublication.body.length} / 500</Text>
                             <TouchableOpacity onPress={sharePublish}>
                                 <View style={{ backgroundColor: colors.secondary, paddingHorizontal: 20, paddingVertical: 5, borderRadius: 10 }}>
-                                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>Publicar</Text>
+                                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>{t('publish')}</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -126,7 +130,7 @@ export default function ReplyPublishScreen(props) {
                     outlineWidth: 2,
                 }}>
                     <TextInput
-                        placeholder='Escribe tu respuesta'
+                        placeholder={t('createRespond')}
                         placeholderTextColor={colors.holderText}
                         onChangeText={(text) => setNewPublication({ ...newPublication, body: text })}
                         value={newPublication.body}

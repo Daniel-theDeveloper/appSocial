@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted, isWasCommented, isWasInteractedByID, fetchImage, savePublish, isWasSaved, deleteSavePublish, likePublish, deleteLike } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
-import { Toast } from 'toastify-react-native';
 
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
 import { useTheme } from '@react-navigation/native';
+
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 export let publicationData = {
     id: ""
@@ -43,24 +46,13 @@ export default function Publication({
     const [nickname, setNickname] = useState(null);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadUserData();
         loadFoto();
         promiseSaved();
     }, []);
-
-    const showToastsSaveSuccess = () => {
-        Toast.success('Publicación guardada exitosamente');
-    }
-
-    const showToastsSaveDeleted = () => {
-        Toast.success('Publicación eliminada exitosamente');
-    }
-
-    const showToastsSaveFailed = () => {
-        Toast.error('Error en el servidor, vuélvalo a intentar mas tarde');
-    }
 
     const promiseSaved = async () => {
         setIsSaved(await wasSaved);
@@ -100,14 +92,14 @@ export default function Publication({
             isLike = false;
             const res = await deleteLike(id);
             if (!res) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
                 isLike = true;
             }
         } else {
             isLike = true;
             const res = await likePublish(id);
             if (!res) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
                 isLike = false;
             }
         }
@@ -138,19 +130,19 @@ export default function Publication({
             setIsSaved(false);
             const res = await deleteSavePublish(id);
             if (res) {
-                showToastsSaveDeleted();
+                Alert.alert(t('deletePublish'));
             } else {
                 setIsSaved(true);
-                showToastsSaveFailed();
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
             }
         } else {
             setIsSaved(true);
             const res = await savePublish(id);
             if (res) {
-                showToastsSaveSuccess();
+                Alert.alert(t('savePublish'));
             } else {
                 setIsSaved(false);
-                showToastsSaveFailed();
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
             }
         }
     }
@@ -253,7 +245,7 @@ export default function Publication({
                             <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='book-outline' />
                         }
                     </TouchableOpacity>
-                    <MaterialCommunityIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='share-variant' />
+                    <SimpleLineIcons style={{fontSize: 22, color: colors.primary_dark_alternative}} name='options-vertical' />
                 </View>
             </View>
         </View>

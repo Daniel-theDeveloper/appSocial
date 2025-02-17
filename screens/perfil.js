@@ -8,13 +8,15 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { convertDateLarge } from "../utils/convertDate";
 import { userData } from "./sub-screens/configPerfil";
 import UserList from "./components/userList";
-import Container from 'toastify-react-native';
 
 import { collection, onSnapshot, query, where, orderBy, doc, getDoc } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../utils/database';
 import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess, isWasInteracted, isWasCommented, isWasSaved } from "../utils/interations";
 import { localUserLogin } from "../utils/localstorage";
+
+import '../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function Perfil(props) {
     const [userArray, setUserArray] = useState({
@@ -46,6 +48,7 @@ export default function Perfil(props) {
     const [optionsPerfil, setOptionsPerfil] = useState(false);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         getUserData();
@@ -154,7 +157,7 @@ export default function Perfil(props) {
         } catch (error) {
             setLoading(false);
             console.error(error);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde")
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -165,7 +168,7 @@ export default function Perfil(props) {
 
         if (res == false) {
             setIsFollowed(false);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -179,7 +182,7 @@ export default function Perfil(props) {
             setOptionsPerfil(false);
         } else {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -192,7 +195,7 @@ export default function Perfil(props) {
             setOptionsPerfil(false);
         } else {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -212,175 +215,172 @@ export default function Perfil(props) {
     }
 
     return (
-        <View style={{flex: 1, flexGrow: 1, backgroundColor: colors.background}}>
-            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
-            <ScrollView>
-                <TouchableOpacity style={styles.back_button} onPress={goBack}>
-                    <MaterialCommunityIcons style={styles.back_button_label} name='chevron-left' />
-                </TouchableOpacity>
-                {bannerURL != null ?
-                    <Image style={styles.image_header} source={{ uri: bannerURL }} />
-                    :
-                    <View style={{width: "100%", height: 200, backgroundColor: colors.background}}></View>
-                }
-                <Image style={styles.avatar} source={avatarURI != null ? { uri: avatarURI } : require('../assets/avatar-default.png')} />
+        <ScrollView style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background }}>
+            <TouchableOpacity style={styles.back_button} onPress={goBack}>
+                <MaterialCommunityIcons style={styles.back_button_label} name='chevron-left' />
+            </TouchableOpacity>
+            {bannerURL != null ?
+                <Image style={styles.image_header} source={{ uri: bannerURL }} />
+                :
+                <View style={{ width: "100%", height: 200, backgroundColor: colors.background }}></View>
+            }
+            <Image style={styles.avatar} source={avatarURI != null ? { uri: avatarURI } : require('../assets/avatar-default.png')} />
 
-                <View style={{backgroundColor: colors.primary_dark, borderRadius: 10, margin: 10, paddingVertical: 10, paddingHorizontal: 20}}>
-                    <View style={styles.interaction_block}>
-                        {myPerfil ?
-                            <TouchableOpacity onPress={goConfigMyPerfil}>
-                                <View style={{flexDirection: "row", padding: 8, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}}>
-                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 24, marginRight: 10}} name='pencil' />
-                                    <Text style={{color: colors.primary, fontSize: 16, fontWeight: "bold"}}>Configurar</Text>
-                                </View>
-                            </TouchableOpacity>
-                            :
-                            isFollowed ?
-                                <View style={styles.followed}>
-                                    <MaterialCommunityIcons style={{color: colors.tertiary, fontSize: 24, marginRight: 10}} name='account-multiple-check' />
-                                    <Text style={{color: colors.tertiary, fontSize: 16, fontWeight: "bold"}}>Siguiendo</Text>
-                                </View>
-                                :
-                                <TouchableOpacity onPress={startFollow}>
-                                    <View style={{flexDirection: "row", padding: 8, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}}>
-                                        <MaterialCommunityIcons style={{color: colors.primary, fontSize: 24, marginRight: 10}} name='account-multiple-plus-outline' />
-                                        <Text style={{color: colors.primary, fontSize: 16, fontWeight: "bold"}}>Seguir</Text>
-                                    </View>
-                                </TouchableOpacity>
-                        }
-
-                        {isFollowed || isFollowedYou ?
-                            <TouchableOpacity onPress={openOptionsList}>
-                                <MaterialCommunityIcons style={{color: colors.primary, fontSize: 30, marginLeft: 18}} name='dots-horizontal' />
-                            </TouchableOpacity>
-                            :
-                            <View></View>
-                        }
-                    </View>
-
-                    <Text style={{color: colors.secondary, fontSize: 24, fontWeight: "bold", marginTop: 10, marginBottom: 5}}>{userArray.name}</Text>
-                    {isFollowedYou ?
-                        <View style={styles.nickname_footer}>
-                            <Text style={{color: colors.tertiary, fontSize: 16, fontWeight: "bold"}}>@{userArray.username}</Text>
-                            <MaterialCommunityIcons style={{color: colors.tertiary, fontSize: 24, marginLeft: 10}} name='account-star-outline' />
-                            <Text style={{color: colors.tertiary, fontSize: 18, fontWeight: "bold"}}>Te esta siguiendo</Text>
-                        </View>
+            <View style={{ backgroundColor: colors.primary_dark, borderRadius: 10, margin: 10, paddingVertical: 10, paddingHorizontal: 20 }}>
+                <View style={styles.interaction_block}>
+                    {myPerfil ?
+                        <TouchableOpacity onPress={goConfigMyPerfil}>
+                            <View style={{ flexDirection: "row", padding: 8, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2 }}>
+                                <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 24, marginRight: 10 }} name='pencil' />
+                                <Text style={{ color: colors.primary, fontSize: 16, fontWeight: "bold" }}>{t('config')}</Text>
+                            </View>
+                        </TouchableOpacity>
                         :
-                        <Text style={{color: colors.primary, fontSize: 16, fontWeight: "bold"}}>@{userArray.username}</Text>
+                        isFollowed ?
+                            <View style={styles.followed}>
+                                <MaterialCommunityIcons style={{ color: colors.tertiary, fontSize: 24, marginRight: 10 }} name='account-multiple-check' />
+                                <Text style={{ color: colors.tertiary, fontSize: 16, fontWeight: "bold" }}>{t('following')}</Text>
+                            </View>
+                            :
+                            <TouchableOpacity onPress={startFollow}>
+                                <View style={{ flexDirection: "row", padding: 8, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2 }}>
+                                    <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 24, marginRight: 10 }} name='account-multiple-plus-outline' />
+                                    <Text style={{ color: colors.primary, fontSize: 16, fontWeight: "bold" }}>{t('follow')}</Text>
+                                </View>
+                            </TouchableOpacity>
                     }
 
-                    <Text style={{color: colors.text, fontSize: 15, textAlign: "justify", marginTop: 10}}>{userArray.details}</Text>
-
-                    <View style={styles.follows_block}>
-                        <TouchableOpacity onPress={openFollowersList}>
-                            <View style={styles.follows_part}>
-                                <Text style={{color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5}}>{followsCount}</Text>
-                                <Text style={{color: colors.secondary, fontSize: 15, fontWeight: "bold"}}>Seguidores</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <View style={{backgroundColor: colors.secondary, height: 26, width: 2.5}} />
-                        <TouchableOpacity onPress={openFollowingList}>
-                            <View style={styles.follows_part}>
-                                <Text style={{color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5}}>{followingsCount}</Text>
-                                <Text style={{color: colors.secondary, fontSize: 15, fontWeight: "bold"}}>Siguiendo</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.basicInfo}>
-                    <View style={styles.basicInfo_block}>
-                        <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 20, marginRight: 5}} name='map-marker-outline' />
-                        <Text style={{color: colors.secondary, fontSize: 14}}>{userArray.city}</Text>
-                        <Text style={{color: colors.secondary, fontSize: 14}}>, </Text>
-                        <Text style={{color: colors.secondary, fontSize: 14}}>{userArray.country}</Text>
-                    </View>
-                    <View style={styles.basicInfo_block}>
-                        <MaterialCommunityIcons style={{color: colors.secondary, fontSize: 20, marginRight: 5}} name='calendar-account-outline' />
-                        <Text style={{color: colors.secondary, fontSize: 14}}>Usuario desde {convertDateLarge(userArray.wasCreated)}</Text>
-                    </View>
-                </View>
-
-                {loading ?
-                    <View style={styles.empty_components}>
-                        <ActivityIndicator color={colors.primary} size={80} style={styles.loading_spiner} />
-                        <Text style={{color: colors.primary, fontSize: 24, fontWeight: "bold"}}>Cargando publicaciones</Text>
-                    </View>
-                    :
-                    publications.length == 0 ?
-                        <View style={styles.empty_components}>
-                            <MaterialCommunityIcons style={{color: colors.primary, fontSize: 80, marginBottom: 10}} name='book-open-page-variant-outline' />
-                            <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>No ha hecho ninguna publicación</Text>
-                        </View>
-                        :
-                        <View style={{marginHorizontal: 15}}>
-                            {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
-                        </View>
-                }
-
-                <Modal style={{
-                    alignItems: "center",
-                    padding: 20,
-                    maxHeight: 700,
-                    borderTopRightRadius: 40,
-                    borderTopLeftRadius: 40,
-                    backgroundColor: colors.primary_dark
-                }} position={"bottom"} isOpen={followersList} onClosed={openFollowersList} coverScreen={true}>
-                    <View style={{height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary}}></View>
-                    <Text style={{color: colors.primary, fontSize: 18, fontWeight: "bold", marginVertical: 15, fontSize: 16, fontWeight: 'bold'}}>Seguidores</Text>
-
-                    <ScrollView>
-                        {userArray.followers.map((follower, key) => (<UserList key={key} props={props} idUser={follower} list_owner={userArray.username} followType={0} />))}
-                    </ScrollView>
-                </Modal>
-
-                <Modal style={{
-                    alignItems: "center",
-                    padding: 20,
-                    maxHeight: 700,
-                    borderTopRightRadius: 40,
-                    borderTopLeftRadius: 40,
-                    backgroundColor: colors.primary_dark
-                }} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList} coverScreen={true}>
-                    <View style={{height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary}}></View>
-                    <Text style={{color: colors.primary, fontSize: 18, fontWeight: "bold", marginVertical: 15, fontSize: 16, fontWeight: 'bold' }}>Siguiendo</Text>
-
-                    <ScrollView>
-                        {userArray.following.map((following, key) => (<UserList key={key} props={props} idUser={following} list_owner={userArray.username} followType={1} />))}
-                    </ScrollView>
-                </Modal>
-
-                <Modal style={{
-                    paddingTop: 20,
-                    paddingHorizontal: 10,
-                    maxHeight: 175,
-                    borderTopRightRadius: 20,
-                    borderTopLeftRadius: 20,
-                    backgroundColor: colors.background
-                }} position={"bottom"} isOpen={optionsPerfil} onClosed={openOptionsList} coverScreen={true}>
-                    {isFollowed ?
-                        <TouchableOpacity style={styles.modalButton} onPress={stopFollow}>
-                            <MaterialCommunityIcons style={{fontSize: 30, color: colors.primary, marginRight: 15}} name='account-minus-outline' />
-                            <Text style={{fontSize: 17, color: colors.primary, fontWeight: "bold"}}>Dejar de seguir</Text>
+                    {isFollowed || isFollowedYou ?
+                        <TouchableOpacity onPress={openOptionsList}>
+                            <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 30, marginLeft: 18 }} name='dots-horizontal' />
                         </TouchableOpacity>
                         :
                         <View></View>
                     }
-                    {isFollowedYou ?
-                        <TouchableOpacity style={styles.modalButton} onPress={deleteFollower}>
-                            <MaterialCommunityIcons style={{fontSize: 30, color: colors.primary, marginRight: 15}} name='account-minus-outline' />
-                            <Text style={{fontSize: 17, color: colors.primary, fontWeight: "bold"}}>Eliminar seguidor</Text>
-                        </TouchableOpacity>
-                        :
-                        <View></View>
-                    }
-                    <TouchableOpacity style={styles.modalButton} onPress={openOptionsList}>
-                        <MaterialCommunityIcons style={{fontSize: 30, color: colors.primary, marginRight: 15}} name='window-close' />
-                        <Text style={{fontSize: 17, color: colors.primary, fontWeight: "bold"}}>Cerrar</Text>
+                </View>
+
+                <Text style={{ color: colors.secondary, fontSize: 24, fontWeight: "bold", marginTop: 10, marginBottom: 5 }}>{userArray.name}</Text>
+                {isFollowedYou ?
+                    <View style={styles.nickname_footer}>
+                        <Text style={{ color: colors.tertiary, fontSize: 16, fontWeight: "bold" }}>@{userArray.username}</Text>
+                        <MaterialCommunityIcons style={{ color: colors.tertiary, fontSize: 24, marginLeft: 10 }} name='account-star-outline' />
+                        <Text style={{ color: colors.tertiary, fontSize: 18, fontWeight: "bold" }}>{t('followingYou')}</Text>
+                    </View>
+                    :
+                    <Text style={{ color: colors.primary, fontSize: 16, fontWeight: "bold" }}>@{userArray.username}</Text>
+                }
+
+                <Text style={{ color: colors.text, fontSize: 15, textAlign: "justify", marginTop: 10 }}>{userArray.details}</Text>
+
+                <View style={styles.follows_block}>
+                    <TouchableOpacity onPress={openFollowersList}>
+                        <View style={styles.follows_part}>
+                            <Text style={{ color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5 }}>{followsCount}</Text>
+                            <Text style={{ color: colors.secondary, fontSize: 15, fontWeight: "bold" }}>{t('followers')}</Text>
+                        </View>
                     </TouchableOpacity>
-                </Modal>
-            </ScrollView>
-        </View>
+                    <View style={{ backgroundColor: colors.secondary, height: 26, width: 2.5 }} />
+                    <TouchableOpacity onPress={openFollowingList}>
+                        <View style={styles.follows_part}>
+                            <Text style={{ color: colors.text, fontSize: 19, fontWeight: "bold", marginRight: 5 }}>{followingsCount}</Text>
+                            <Text style={{ color: colors.secondary, fontSize: 15, fontWeight: "bold" }}>{t('following')}</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <View style={styles.basicInfo}>
+                <View style={styles.basicInfo_block}>
+                    <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20, marginRight: 5 }} name='map-marker-outline' />
+                    <Text style={{ color: colors.secondary, fontSize: 14 }}>{userArray.city}</Text>
+                    <Text style={{ color: colors.secondary, fontSize: 14 }}>, </Text>
+                    <Text style={{ color: colors.secondary, fontSize: 14 }}>{userArray.country}</Text>
+                </View>
+                <View style={styles.basicInfo_block}>
+                    <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20, marginRight: 5 }} name='calendar-account-outline' />
+                    <Text style={{ color: colors.secondary, fontSize: 14 }}>{t('createdDate')}{convertDateLarge(userArray.wasCreated)}</Text>
+                </View>
+            </View>
+
+            {loading ?
+                <View style={styles.empty_components}>
+                    <ActivityIndicator color={colors.primary} size={80} style={styles.loading_spiner} />
+                    <Text style={{ color: colors.primary, fontSize: 24, fontWeight: "bold" }}>{t('loading')}</Text>
+                </View>
+                :
+                publications.length == 0 ?
+                    <View style={styles.empty_components}>
+                        <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 80, marginBottom: 10 }} name='book-open-page-variant-outline' />
+                        <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>{t('noPublish')}</Text>
+                    </View>
+                    :
+                    <View style={{ marginHorizontal: 15 }}>
+                        {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                    </View>
+            }
+
+            <Modal style={{
+                alignItems: "center",
+                padding: 20,
+                maxHeight: 700,
+                borderTopRightRadius: 40,
+                borderTopLeftRadius: 40,
+                backgroundColor: colors.primary_dark
+            }} position={"bottom"} isOpen={followersList} onClosed={openFollowersList} coverScreen={true}>
+                <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary }}></View>
+                <Text style={{ color: colors.primary, fontSize: 18, fontWeight: "bold", marginVertical: 15, fontSize: 16, fontWeight: 'bold' }}>{t('followers')}</Text>
+
+                <ScrollView>
+                    {userArray.followers.map((follower, key) => (<UserList key={key} props={props} idUser={follower} list_owner={userArray.username} followType={0} />))}
+                </ScrollView>
+            </Modal>
+
+            <Modal style={{
+                alignItems: "center",
+                padding: 20,
+                maxHeight: 700,
+                borderTopRightRadius: 40,
+                borderTopLeftRadius: 40,
+                backgroundColor: colors.primary_dark
+            }} position={"bottom"} isOpen={followingsList} onClosed={openFollowingList} coverScreen={true}>
+                <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary }}></View>
+                <Text style={{ color: colors.primary, fontSize: 18, fontWeight: "bold", marginVertical: 15, fontSize: 16, fontWeight: 'bold' }}>{t('following')}</Text>
+
+                <ScrollView>
+                    {userArray.following.map((following, key) => (<UserList key={key} props={props} idUser={following} list_owner={userArray.username} followType={1} />))}
+                </ScrollView>
+            </Modal>
+
+            <Modal style={{
+                paddingTop: 20,
+                paddingHorizontal: 10,
+                maxHeight: 175,
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+                backgroundColor: colors.background
+            }} position={"bottom"} isOpen={optionsPerfil} onClosed={openOptionsList} coverScreen={true}>
+                {isFollowed ?
+                    <TouchableOpacity style={styles.modalButton} onPress={stopFollow}>
+                        <MaterialCommunityIcons style={{ fontSize: 30, color: colors.primary, marginRight: 15 }} name='account-minus-outline' />
+                        <Text style={{ fontSize: 17, color: colors.primary, fontWeight: "bold" }}>{t('stopFollow')}</Text>
+                    </TouchableOpacity>
+                    :
+                    <View></View>
+                }
+                {isFollowedYou ?
+                    <TouchableOpacity style={styles.modalButton} onPress={deleteFollower}>
+                        <MaterialCommunityIcons style={{ fontSize: 30, color: colors.primary, marginRight: 15 }} name='account-minus-outline' />
+                        <Text style={{ fontSize: 17, color: colors.primary, fontWeight: "bold" }}>{t('deleteFollower')}</Text>
+                    </TouchableOpacity>
+                    :
+                    <View></View>
+                }
+                <TouchableOpacity style={styles.modalButton} onPress={openOptionsList}>
+                    <MaterialCommunityIcons style={{ fontSize: 30, color: colors.primary, marginRight: 15 }} name='window-close' />
+                    <Text style={{ fontSize: 17, color: colors.primary, fontWeight: "bold" }}>{t('close')}</Text>
+                </TouchableOpacity>
+            </Modal>
+        </ScrollView>
     )
 }
 const styles = StyleSheet.create({

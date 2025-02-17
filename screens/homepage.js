@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native';
 
 import { auth, database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import RadioGroup from 'react-native-radio-buttons-group';
-import Container from 'toastify-react-native';
 
 import { new_publication_params } from './sub-screens/new_publication';
 
@@ -12,61 +11,95 @@ import * as ImagePicker from 'expo-image-picker';
 
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { localUserLogin, erase_all, getSaveTheme, setSaveTheme } from '../utils/localstorage';
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import { localUserLogin, erase_all, getSaveTheme, setSaveTheme, getSaveLanguaje, setSaveLanguaje } from '../utils/localstorage';
 import Modal from 'react-native-modalbox';
 import { signOut } from 'firebase/auth';
 import { useTheme } from '@react-navigation/native';
 import { isWasInteracted, isWasCommented, isWasInteractedByID, isWasSaved } from '../utils/interations';
 
+import '../i18n/i18n';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
+
 export default function Homepage(props) {
     const [publications, setPublications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [myAvatar, setMyAvatar] = useState(null);
+    // const [myAvatar, setMyAvatar] = useState(null);
 
     const [modalOptions, setModalOptions] = useState(false);
+    const [configLanguaje, setConfigLanguaje] = useState(false);
     const [configTheme, setConfigTheme] = useState(false);
+
     const [selectedTheme, setSelectedTheme] = useState('system');
+    const [selectedLanguaje, setSelectedLanguaje] = useState('system');
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
+
+    const platform = Platform.OS;
 
     const radioButtons = useMemo(() => ([
         {
             id: 1,
-            label: 'Claro',
+            label: t('optionLight'),
             value: 'light',
             color: colors.primary
         },
         {
             id: 2,
-            label: 'Oscuro',
+            label: t('optionDark'),
             value: 'dark',
             color: colors.primary
         },
         {
             id: 3,
-            label: 'Configuración del sistema',
+            label: t('optionSystem'),
             value: 'system',
             color: colors.primary
         }
     ]), []);
 
+    const radioButtonsLanguaje = useMemo(() => ([
+        {
+            id: 1,
+            label: t('optionSystem'),
+            value: 'system',
+            color: colors.primary
+        },
+        {
+            id: 2,
+            label: t('optionEnglish'),
+            value: 'english',
+            color: colors.primary
+        },
+        {
+            id: 3,
+            label: t('optionSpanish'),
+            value: 'spanish',
+            color: colors.primary
+        }
+    ]), []);
+
     useEffect(() => {
-        setMyAvatar(localUserLogin.avatar);
+        // setMyAvatar(localUserLogin.avatar);
         loadAllFollowersPublish();
         getSelectedTheme();
+        getSelectedLanguaje();
+        setLoading(false);
     }, []);
 
     const alertLogOut = () =>
         Alert.alert(
-            'Salirse de la plataforma',
-            '¿Desea cerrar su sesión?',
+            t('logoutTitle'),
+            t('logout'),
             [
                 {
-                    text: 'No',
+                    text: t('no'),
                     style: 'cancel',
                 },
                 {
-                    text: 'Si',
+                    text: t('yes'),
                     onPress: () => log_out()
                 },
             ],
@@ -88,6 +121,14 @@ export default function Homepage(props) {
         }
     }
 
+    function openModalLanguaje() {
+        if (configLanguaje) {
+            setConfigLanguaje(false);
+        } else {
+            setConfigLanguaje(true);
+        }
+    }
+
     const getSelectedTheme = async () => {
         const theme = await getSaveTheme();
 
@@ -100,6 +141,18 @@ export default function Homepage(props) {
         }
     }
 
+    const getSelectedLanguaje = async () => {
+        const languaje = await getSaveLanguaje();
+
+        if (languaje == 'system') {
+            setSelectedLanguaje(1);
+        } else if (languaje == 'english') {
+            setSelectedLanguaje(2);
+        } else if (languaje == 'spanish') {
+            setSelectedLanguaje(3);
+        }
+    }
+
     const setNewTheme = async (e) => {
         setSelectedTheme(e);
         if (e === 1) {
@@ -109,7 +162,21 @@ export default function Homepage(props) {
         } else if (e === 3) {
             await setSaveTheme('system');
         }
-        // Restart
+        Alert.alert(t('restart'));
+    }
+
+    const setNewLanguaje = async (e) => {
+        setSelectedLanguaje(e);
+        if (e === 1) {
+            await setSaveLanguaje('system');
+        } else if (e === 2) {
+            await setSaveLanguaje('english');
+            i18n.changeLanguage('en');
+        } else if (e === 3) {
+            await setSaveLanguaje('spanish');
+            i18n.changeLanguage('es');
+        }
+        Alert.alert(t('restart'));
     }
 
     const takePhoto = async () => {
@@ -154,14 +221,13 @@ export default function Homepage(props) {
                 }))
             )
         })
-        setLoading(false);
         return unsuscribe;
     }
 
     const log_out = async () => {
         signOut(auth).catch(error => console.error(error));
         await erase_all();
-        // Restart
+        props.navigation.replace('Login');
     }
 
     function goNewPublish() {
@@ -172,7 +238,7 @@ export default function Homepage(props) {
 
             props.navigation.navigate('NewPublication');
         } else {
-            Alert.alert("Sin conexión a internet", "Por favor, reinicie la aplicación");
+            Alert.alert(t('internetErrorTitle'), t('internetError'));
         }
     }
 
@@ -188,16 +254,15 @@ export default function Homepage(props) {
             if (docSnap.exists()) {
                 props.navigation.navigate({ name: 'Saves', params: { saves: docSnap.data().saves }, merge: true });
             } else {
-                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
             }
         } catch (error) {
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
     return (
         <View style={{ backgroundColor: colors.background }}>
-            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
             <View style={{
                 flexDirection: "column",
                 backgroundColor: colors.primary_dark,
@@ -209,9 +274,9 @@ export default function Homepage(props) {
                     <TouchableOpacity onPress={openModalOptions}>
                         <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='dots-grid' />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 19, fontWeight: "bold", color: colors.text }}>Pagina principal</Text>
+                    <Text style={{ fontSize: 19, fontWeight: "bold", color: colors.text }}>{t('homepage')}</Text>
                     <TouchableOpacity onPress={goMyPerfil}>
-                        <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='account-box-outline' />
+                        <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='account-circle-outline' />
                     </TouchableOpacity>
                 </View>
 
@@ -225,7 +290,7 @@ export default function Homepage(props) {
                             outlineStyle: "solid",
                             outlineWidth: 4,
                         }}>
-                            <Text style={{ fontSize: 16, padding: 2, color: colors.text }}>Publica lo que estas pensando</Text>
+                            <Text style={{ fontSize: 16, padding: 2, color: colors.text }}>{t('whatsThink')}</Text>
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={takePhoto}>
@@ -363,12 +428,13 @@ export default function Homepage(props) {
                         :
                         <View style={loadingStyle.publications_colections}>
                             {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                            <View style={{ height: 160 }}></View>
                         </View>
                     }
                 </View>
                 <Modal style={{
                     padding: 20,
-                    maxHeight: 160,
+                    maxHeight: 210,
                     maxWidth: 330,
                     borderRadius: 20,
                     backgroundColor: colors.primary_dark,
@@ -376,15 +442,19 @@ export default function Homepage(props) {
                 }} position={"center"} isOpen={modalOptions} onClosed={openModalOptions} coverScreen={true}>
                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalConfig}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='theme-light-dark' />
-                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar tema</Text>
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('buttonChangeTheme')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goSaves}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='book-search-outline' />
-                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Guardados</Text>
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('saves')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={alertLogOut}>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalLanguaje}>
+                        <MaterialIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='language' />
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('buttonChangeLanguage')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={platform === 'web'? log_out : alertLogOut}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='logout' />
-                        <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>Cerrar sesión</Text>
+                        <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>{t('exit')}</Text>
                     </TouchableOpacity>
                 </Modal>
 
@@ -399,13 +469,33 @@ export default function Homepage(props) {
                 }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
                     <View style={{ alignItems: 'center', width: '100%' }}>
                         <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 10 }}></View>
-                        <Text style={{ color: colors.text, textAlign: 'center', marginBottom: 20, fontSize: 16, fontWeight: 'bold' }}>¡Al elegir una opción, se reiniciara la aplicación!</Text>
                     </View>
                     <RadioGroup
                         containerStyle={{ alignItems: 'flex-start' }}
                         radioButtons={radioButtons}
                         onPress={setNewTheme}
                         selectedId={selectedTheme}
+                        labelStyle={{ color: colors.text }}
+                    />
+                </Modal>
+
+                <Modal style={{
+                    paddingTop: 20,
+                    paddingHorizontal: 10,
+                    maxHeight: 175,
+                    borderTopRightRadius: 20,
+                    borderTopLeftRadius: 20,
+                    backgroundColor: colors.background,
+                    alignItems: 'flex-start'
+                }} position={"bottom"} isOpen={configLanguaje} onClosed={openModalLanguaje} coverScreen={true}>
+                    <View style={{ alignItems: 'center', width: '100%' }}>
+                        <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
+                    </View>
+                    <RadioGroup
+                        containerStyle={{ alignItems: 'flex-start' }}
+                        radioButtons={radioButtonsLanguaje}
+                        onPress={setNewLanguaje}
+                        selectedId={selectedLanguaje}
                         labelStyle={{ color: colors.text }}
                     />
                 </Modal>

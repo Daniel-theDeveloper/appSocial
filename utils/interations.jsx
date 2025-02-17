@@ -269,7 +269,7 @@ export const fetchImage = async (url) => {
 
 export const getNotifications = async (idUser) => {
     let notificationArray = [];
-    let no_readed_count = 0;
+    let no_read_count = 0;
     try {
         const QuerySnapshot = await getDocs(collection(database, "users/" + idUser + "/notifications"));
         QuerySnapshot.forEach(async (doc) => {
@@ -278,9 +278,9 @@ export const getNotifications = async (idUser) => {
         if (notificationArray != undefined) {
             if (notificationArray.length > 0) {
                 for (let x = 0; x < notificationArray.length; x++) {
-                    if (!notificationArray[x].readed) {
-                        no_readed_count++;
-                        console.log(notificationArray[x].body);
+                    if (!notificationArray[x].read) {
+                        no_read_count++;
+                        console.log(notificationArray[x]); // Borrar esto
                     }
                 }
             } else {
@@ -298,25 +298,22 @@ export const getNotifications = async (idUser) => {
 export const sendNotification = async (type, idUserToSend, origin, messageToSend) => {
     let message = "";
     let optionalData = null;
+
     switch (type) {
         case 'message':
-            message = localUserLogin.nickname + ' te ha enviado un mensaje: "' + messageToSend + '".';
-            optionalData = { channel: origin };
+            optionalData = { channel: origin, message: messageToSend };
             break;
         case 'follow':
-            message = localUserLogin.nickname + " te ha empezado a seguir.";
+            optionalData = null;
             break;
         case 'comment':
-            message = localUserLogin.nickname + " ha comentado en tu publicación.";
-            optionalData = { publish: origin };
+            optionalData = { publish: origin, message: messageToSend };
             break;
         case 'reply_c':
-            message = localUserLogin.nickname + ' ha respondido tu comentario: "' + messageToSend + '".';
-            optionalData = { publish: origin };
+            optionalData = { publish: origin, message: messageToSend };
             break;
         case 'reply_p':
-            message = localUserLogin.nickname + ' ha replicado tu publicación: "' + messageToSend + '".';
-            optionalData = { publish: origin };
+            optionalData = { publish: origin, message: messageToSend };
             break;
         default:
             console.error("Se estableció como: " + type);
@@ -325,8 +322,9 @@ export const sendNotification = async (type, idUserToSend, origin, messageToSend
     const new_notification = {
         body: message,
         idUser: localUserLogin.id,
+        nickname: localUserLogin.nickname,
         optionalData: optionalData,
-        readed: false,
+        read: false,
         type: type,
         date: new Date()
     }

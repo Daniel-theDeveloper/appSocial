@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { database } from '../utils/database';
 import { new_publication_params } from './sub-screens/new_publication';
 import { useTheme } from '@react-navigation/native';
-import Container, { Toast } from 'toastify-react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -13,6 +12,9 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { localUserLogin } from '../utils/localstorage';
 import { isWasInteracted, isWasInteractedByID, isWasCommented, isWasSaved } from '../utils/interations';
 
+import '../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export default function CreatePost(props) {
     const [publications, setPublications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,14 +22,11 @@ export default function CreatePost(props) {
     const [orderStatus, setOrderStatus] = useState('desc');
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadMyPublish();
     }, []);
-
-    const showToastsErrorServer = () => {
-        Toast.error('Error en el servidor, vuélvalo a intentar mas tarde');
-    }
 
     function loadMyPublish() {
         setLoading(true);
@@ -57,7 +56,7 @@ export default function CreatePost(props) {
             setIsEmpty(true);
             setLoading(false);
             console.error(error);
-            showToastsErrorServer();
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -106,82 +105,77 @@ export default function CreatePost(props) {
     }
 
     return (
-        <View style={{ flex: 1, flexGrow: 1, padding: 20, backgroundColor: colors.background }}>
-            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
-            <ScrollView>
-                <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10, color: colors.primary }}>Tus publicaciones</Text>
+        <ScrollView style={{ flex: 1, flexGrow: 1, padding: 20, backgroundColor: colors.background }}>
+            <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10, color: colors.primary }}>{t('yourContent')}</Text>
 
-                <View style={styles.header_row}>
-                    <TouchableOpacity style={styles.new_publication_zone} onPress={goNewPublish}>
-                        <View style={{ padding: 10, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 4, }}>
-                            <Text style={{ fontSize: 17, padding: 2, color: colors.text }}>Publica lo que estas pensando</Text>
+            <View style={styles.header_row}>
+                <TouchableOpacity style={styles.new_publication_zone} onPress={goNewPublish}>
+                    <View style={{ padding: 10, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 4, }}>
+                        <Text style={{ fontSize: 17, padding: 2, color: colors.text }}>{t('whatsThink')}</Text>
+                    </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={takePhoto}>
+                    <View style={{ backgroundColor: colors.primary, padding: 11, borderRadius: 15 }}>
+                        <MaterialCommunityIcons style={{ fontSize: 30, color: colors.background }} name='camera' />
+                    </View>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.config_block}>
+                <Text style={{ color: colors.secondary, fontSize: 18, fontWeight: "bold" }}>{t('sortByButton')}</Text>
+                {isDescending ?
+                    <TouchableOpacity onPress={setOrder}>
+                        <View style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            padding: 6,
+                            borderWidth: 2.5,
+                            borderRadius: 10,
+                            borderColor: colors.secondary,
+                            outlineStyle: "solid",
+                            outlineWidth: 4,
+                            marginLeft: 10
+                        }}>
+                            <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20 }} name='order-bool-descending' />
+                            <Text style={{ color: colors.text, fontSize: 15, marginLeft: 10 }}>{t('sortByRecent')}</Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={takePhoto}>
-                        <View style={{ backgroundColor: colors.primary, padding: 11, borderRadius: 15 }}>
-                            <MaterialCommunityIcons style={{ fontSize: 30, color: colors.background }} name='camera' />
+                    :
+                    <TouchableOpacity onPress={setOrder}>
+                        <View style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            padding: 6,
+                            borderWidth: 2.5,
+                            borderRadius: 10,
+                            borderColor: colors.secondary,
+                            outlineStyle: "solid",
+                            outlineWidth: 4,
+                            marginLeft: 10
+                        }}>
+                            <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20 }} name='order-bool-ascending' />
+                            <Text style={{ color: colors.text, fontSize: 15, marginLeft: 10 }}>{t('sortByOld')}</Text>
                         </View>
                     </TouchableOpacity>
-                </View>
+                }
+            </View>
 
-                <View style={styles.config_block}>
-                    <Text style={{ color: colors.secondary, fontSize: 18, fontWeight: "bold" }}>Ordenar por:</Text>
-                    {isDescending ?
-                        <TouchableOpacity onPress={setOrder}>
-                            <View style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                padding: 6,
-                                borderWidth: 2.5,
-                                borderRadius: 10,
-                                borderColor: colors.secondary,
-                                outlineStyle: "solid",
-                                outlineWidth: 4,
-                                marginLeft: 10
-                            }}>
-                                <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20 }} name='order-bool-descending' />
-                                <Text style={{ color: colors.text, fontSize: 15, marginLeft: 10 }}>Mas recientes</Text>
-                            </View>
-                        </TouchableOpacity>
-                        :
-                        <TouchableOpacity onPress={setOrder}>
-                            <View style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                padding: 6,
-                                borderWidth: 2.5,
-                                borderRadius: 10,
-                                borderColor: colors.secondary,
-                                outlineStyle: "solid",
-                                outlineWidth: 4,
-                                marginLeft: 10
-                            }}>
-                                <MaterialCommunityIcons style={{ color: colors.secondary, fontSize: 20 }} name='order-bool-ascending' />
-                                <Text style={{ color: colors.text, fontSize: 15, marginLeft: 10 }}>Mas antiguos</Text>
-                            </View>
-                        </TouchableOpacity>
-                    }
+            {loading ?
+                <View style={styles.empty_components}>
+                    <ActivityIndicator color={colors.primary} size={80} style={styles.loading_spiner} />
+                    <Text style={{ color: colors.primary, fontSize: 24, fontWeight: "bold" }}>{t('loading')}</Text>
                 </View>
-
-                {loading ?
+                :
+                publications.length == 0 ?
                     <View style={styles.empty_components}>
-                        <ActivityIndicator color={colors.primary} size={80} style={styles.loading_spiner} />
-                        <Text style={{color: colors.primary, fontSize: 24, fontWeight: "bold"}}>Cargando publicaciones</Text>
+                        <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 80, marginBottom: 10 }} name='book-open-page-variant-outline' />
+                        <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>{t('newUserMessage')}</Text>
+                        <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center", }}>{t('newUserSubtitle')}</Text>
                     </View>
                     :
-                    publications.length == 0 ?
-                        <View style={styles.empty_components}>
-                            <MaterialCommunityIcons style={{color: colors.primary, fontSize: 80, marginBottom: 10}} name='book-open-page-variant-outline' />
-                            <Text style={{color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8}}>Todas tus futuras publicaciones apareceran aqui</Text>
-                            <Text style={{color: colors.primary, fontSize: 18, textAlign: "center",}}>Comience creando su primer publicación</Text>
-                        </View>
-                        :
-                        publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
-                }
-
-
-            </ScrollView>
-        </View>
+                    publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
+            }
+        </ScrollView>
     );
 }
 

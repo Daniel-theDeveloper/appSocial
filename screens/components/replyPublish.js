@@ -6,7 +6,7 @@ import { convertDate } from '../../utils/convertDate';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 

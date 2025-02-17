@@ -5,12 +5,14 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { comment_Array } from '../components/Comment';
 import { replyComment_Array } from '../components/Comment_answer';
 import { localUserLogin } from '../../utils/localstorage';
-import { globals } from '../../utils/globalVars';
 
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { database } from '../../utils/database';
 import { sendNotification } from '../../utils/interations';
 import { useTheme } from '@react-navigation/native';
+
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function ReplyScreen(props) {
     const [myComment, setMyComment] = useState("");
@@ -21,6 +23,7 @@ export default function ReplyScreen(props) {
     const [myAvatarURL] = useState(localUserLogin.avatar);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     function goBackAgain() {
         props.navigation.goBack();
@@ -32,7 +35,7 @@ export default function ReplyScreen(props) {
             let myReplyComment = "";
 
             setLoadingButton(true);
-            if (globals.isPrincipalComment) {
+            if (props.route.params?.isPrincipalComment) {
                 commentAnswerArray = {
                     body: myComment,
                     date: new Date(),
@@ -57,7 +60,7 @@ export default function ReplyScreen(props) {
                 if (docSnap.exists()) {
                     let commentsSnapshot = docSnap.data().comments_container
                     
-                    if (globals.isPrincipalComment) {
+                    if (props.route.params?.isPrincipalComment) {
                         for (let i = 0; i < commentsSnapshot.length; i++) {
                             if (commentsSnapshot[i].message === comment_Array.message) {
                                 if (commentsSnapshot[i].comment_answers) {
@@ -98,16 +101,16 @@ export default function ReplyScreen(props) {
             <TouchableOpacity onPress={goBackAgain}>
                 <View style={styles.back_block}>
                     <MaterialCommunityIcons style={{fontSize: 50, color: colors.secondary}} name='chevron-left' />
-                    <Text style={{fontSize: 22, fontWeight: "bold", color: colors.secondary}}>Regresar</Text>
+                    <Text style={{fontSize: 22, fontWeight: "bold", color: colors.secondary}}>{t('return')}</Text>
                 </View>
             </TouchableOpacity>
-            {globals.isPrincipalComment ?
+            {props.route.params?.isPrincipalComment ?
                 <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20}}>
                     {/* header */}
                     <View style={styles.perfil_header}>
                         <Image style={styles.avatar} source={imageURL != null ? { uri: imageURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
-                            <Text style={{fontSize: 18, fontWeight: "bold", color: colors.secondary}}>@{comment_Array.user} comentó</Text>
+                            <Text style={{fontSize: 18, fontWeight: "bold", color: colors.secondary}}>@{comment_Array.user}{t('commentedLabel')}</Text>
                             <Text style={{fontSize: 14, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(comment_Array.date)}</Text>
                         </View>
                     </View>
@@ -119,12 +122,12 @@ export default function ReplyScreen(props) {
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
                             <Text style={{fontSize: 16, fontWeight: "bold", color: colors.primary}}>2</Text>
-                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>Respuestas</Text>
+                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>{t('responses')}</Text>
                         </View>
                         <Text style={{fontSize: 18, fontWeight: "bold", marginHorizontal: 15, color: colors.primary}}>|</Text>
                         <View style={styles.statistics_block}>
                             <Text style={{fontSize: 16, fontWeight: "bold", color: colors.primary}}>{comment_Array.likesCount}</Text>
-                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>Likes</Text>
+                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>{t('likes')}</Text>
                         </View>
                     </View>
                 </View>
@@ -134,7 +137,7 @@ export default function ReplyScreen(props) {
                     <View style={styles.perfil_header}>
                         <Image style={styles.avatar} source={replyImageURL != null ? { uri: replyImageURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
-                            <Text style={{fontSize: 18, fontWeight: "bold", color: colors.secondary}}>{replyComment_Array.user} respondio</Text>
+                            <Text style={{fontSize: 18, fontWeight: "bold", color: colors.secondary}}>{replyComment_Array.user}{t('replied')}</Text>
                             <Text style={{fontSize: 14, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(replyComment_Array.date)}</Text>
                         </View>
                     </View>
@@ -146,16 +149,16 @@ export default function ReplyScreen(props) {
                     <View style={styles.statistics}>
                         <View style={styles.statistics_block}>
                             <Text style={{fontSize: 16, fontWeight: "bold", color: colors.primary}}>{replyComment_Array.likesCount}</Text>
-                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>Likes</Text>
+                            <Text style={{fontSize: 16, marginLeft: 5, color: colors.primary}}>{t('likes')}</Text>
                         </View>
                     </View>
                 </View>
             }
 
             {comment_Array.isPrincipalComment ?
-                <Text style={{fontSize: 20, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Responder</Text>
+                <Text style={{fontSize: 20, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>{t('reply')}</Text>
                 :
-                <Text style={{fontSize: 20, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Responder a {replyComment_Array.user}</Text>
+                <Text style={{fontSize: 20, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>{t('reeplyto')}{replyComment_Array.user}</Text>
             }
 
             <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20}}>
@@ -174,7 +177,7 @@ export default function ReplyScreen(props) {
                 }}>
                     <TextInput
                         style={{fontSize: 17, color: colors.text}}
-                        placeholder='Escribe un comentario'
+                        placeholder={t('createComment')}
                         placeholderTextColor={colors.holderText}
                         multiline={true}
                         autoFocus={true}
@@ -187,12 +190,12 @@ export default function ReplyScreen(props) {
                     {loadingButton ?
                         <View style={{flexDirection: "row", padding: 10, borderRadius: 10, backgroundColor: colors.secondary_dark}}>
                             <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                            <Text style={{fontSize: 16, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicando</Text>
+                            <Text style={{fontSize: 16, fontWeight: "bold", textAlign: "center", color: colors.text}}>{t('publishing')}</Text>
                         </View>
                         :
                         <TouchableOpacity onPress={sendMyComment}>
                             <View style={{padding: 10, borderRadius: 10, backgroundColor: colors.secondary}}>
-                                <Text style={{fontSize: 16, marginHorizontal: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicar</Text>
+                                <Text style={{fontSize: 16, marginHorizontal: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>{t('publish')}</Text>
                             </View>
                         </TouchableOpacity>
                     }

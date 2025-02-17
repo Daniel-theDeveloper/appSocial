@@ -10,6 +10,9 @@ import { database } from '../../utils/database';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTheme } from '@react-navigation/native';
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export let userData = {
     id: "",
     avatar: null,
@@ -33,6 +36,7 @@ export default function ConfigPerfil(props) {
     const [loading, setLoading] = useState(false);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     function goBackAgain() {
         props.navigation.goBack()
@@ -94,11 +98,11 @@ export default function ConfigPerfil(props) {
                 props.navigation.navigate('Perfil');
             } catch (error) {
                 setLoading(false);
-                Alert.alert("Error en el servidor", "Por favor, Vuélvalo a intentar mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
                 console.error(error);
             }
         } else {
-            Alert.alert("Datos vacíos", "Por favor, llene todos los campos requeridos");
+            Alert.alert(t('errorNoDataTitle'), t('errorNoData'));
         }
     }
 
@@ -118,7 +122,7 @@ export default function ConfigPerfil(props) {
                 setAvatarURI(image.assets[0].uri);
             }
         } else {
-            Alert.alert("Permisos denegados", "Por favor, sin el permiso de la galeria, no puedes cambiar la foto de perfil");
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
@@ -138,21 +142,21 @@ export default function ConfigPerfil(props) {
                 setBannerURL(image.assets[0].uri);
             }
         } else {
-            Alert.alert("Permisos denegados", "Por favor, sin el permiso de la galeria, no puedes cambiar el banner");
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
     const SaveAlert = () =>
         Alert.alert(
-            '¿Guardar configuracion?',
-            '¿Desea guardar los cambios?',
+            t('saveConfigTitle'),
+            t('saveConfig'),
             [
                 {
-                    text: 'No',
+                    text: t('No'),
                     style: 'cancel',
                 },
                 {
-                    text: 'Si',
+                    text: t('yes'),
                     onPress: () => saveConfig()
                 }
             ],
@@ -160,15 +164,15 @@ export default function ConfigPerfil(props) {
 
     const NotSaveAlert = () =>
         Alert.alert(
-            'Salir de la configuracion',
-            '¿Desea salirse de la configuracion sin guardar ningun cambio?',
+            t('exitConfigTitle'),
+            t('exitConfig'),
             [
                 {
-                    text: 'No',
+                    text: t('No'),
                     style: 'cancel',
                 },
                 {
-                    text: 'Si',
+                    text: t('yes'),
                     onPress: () => goBackAgain()
                 }
             ],
@@ -178,7 +182,7 @@ export default function ConfigPerfil(props) {
         <ScrollView style={{ flex: 1, flexGrow: 1, padding: 10, backgroundColor: colors.background }}>
             <TouchableOpacity style={styles.header} onPress={NotSaveAlert}>
                 <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='chevron-left' />
-                <Text style={{ fontSize: 25, fontWeight: 'bold', color: colors.text, textAlign: 'center' }}>Configuracion del perfil</Text>
+                <Text style={{ fontSize: 25, fontWeight: 'bold', color: colors.text, textAlign: 'center' }}>{t('profileConfig')}</Text>
             </TouchableOpacity>
             <View style={{
                 backgroundColor: colors.primary_dark,
@@ -220,7 +224,7 @@ export default function ConfigPerfil(props) {
                             }
                         }}>
                             <MaterialCommunityIcons style={{ fontSize: 30, color: colors.text, marginRight: 10 }} name='account-box-multiple-outline' />
-                            <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar foto de tu perfil</Text>
+                            <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('changeProfile')}</Text>
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={UploadBanner}>
@@ -243,7 +247,7 @@ export default function ConfigPerfil(props) {
                             }
                         }}>
                             <MaterialCommunityIcons style={{ fontSize: 30, color: colors.text, marginRight: 10 }} name='image-edit-outline' />
-                            <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>Cambiar foto del banner de tu perfil</Text>
+                            <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('changeBanner')}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -264,7 +268,7 @@ export default function ConfigPerfil(props) {
                 shadowRadius: 4,
                 elevation: 5
             }}>
-                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>Apodo:</Text>
+                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>{t('nickname')}</Text>
                 <View style={{
                     padding: 18,
                     backgroundColor: colors.background,
@@ -280,7 +284,7 @@ export default function ConfigPerfil(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Mi nuevo apodo' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.name} onChangeText={(text) => setNickname(text)} autoCorrect={false} maxLength={25} />
+                    <TextInput placeholder={t('nicknamePlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.name} onChangeText={(text) => setNickname(text)} autoCorrect={false} maxLength={25} />
                 </View>
             </View>
 
@@ -299,7 +303,7 @@ export default function ConfigPerfil(props) {
                 shadowRadius: 4,
                 elevation: 5
             }}>
-                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>Pais:</Text>
+                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>{t('country')}</Text>
                 <View style={{
                     padding: 18,
                     backgroundColor: colors.background,
@@ -315,12 +319,12 @@ export default function ConfigPerfil(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Mi nuevo pais' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.country} onChangeText={(text) => setCountry(text)} autoCorrect={false} maxLength={25} />
+                    <TextInput placeholder={t('countryPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.country} onChangeText={(text) => setCountry(text)} autoCorrect={false} maxLength={25} />
                 </View>
 
                 <View style={styles.separator}></View>
 
-                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>Ciudad (opcional):</Text>
+                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>{t('city')}</Text>
                 <View style={{
                     padding: 18,
                     backgroundColor: colors.background,
@@ -336,7 +340,7 @@ export default function ConfigPerfil(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Mi nueva ciudad' placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.city} onChangeText={(text) => setCity(text)} autoCorrect={false} maxLength={25} />
+                    <TextInput placeholder={t('cityPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 18, fontWeight: 'bold', color: colors.secondary }} defaultValue={userData.city} onChangeText={(text) => setCity(text)} autoCorrect={false} maxLength={25} />
                 </View>
             </View>
 
@@ -355,10 +359,10 @@ export default function ConfigPerfil(props) {
                 shadowRadius: 4,
                 elevation: 5
             }}>
-                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>Descripcion de tu perfil:</Text>
+                <Text style={{ marginBottom: 10, fontSize: 20, fontWeight: 'bold', color: colors.text }}>{t('countAbout')}</Text>
                 <View style={{ padding: 10, borderColor: colors.primary, borderWidth: 1.5, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2, }}>
                     <TextInput
-                        placeholder='Redacta una descripcion sobre tu perfil'
+                        placeholder={t('aboutPlaceHolder')}
                         placeholderTextColor={colors.holderText}
                         defaultValue={userData.details}
                         onChangeText={(text) => setDescription(text)}
@@ -397,11 +401,11 @@ export default function ConfigPerfil(props) {
                         width: '100%'
                     }}>
                         <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>Cargando</Text>
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>{t('loading')}</Text>
                     </View>
                     :
                     <TouchableOpacity style={{backgroundColor: colors.quartet, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%'}} onPress={SaveAlert}>
-                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>Guardar cambios</Text>
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>{t('saveConfigButton')}</Text>
                     </TouchableOpacity>
                 }
                 <View style={styles.separator}></View>
@@ -416,11 +420,11 @@ export default function ConfigPerfil(props) {
                         paddingVertical: 10,
                         width: '100%'
                     }}>
-                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>Salir</Text>
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>{t('exitButton')}</Text>
                     </View>
                     :
                     <TouchableOpacity style={{backgroundColor: colors.quartet, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%'}} onPress={NotSaveAlert}>
-                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>Salir</Text>
+                        <Text style={{color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>{t('exitButton')}</Text>
                     </TouchableOpacity>
                 }
             </View>

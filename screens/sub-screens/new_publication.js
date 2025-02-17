@@ -12,6 +12,9 @@ import Modal from 'react-native-modalbox';
 import EmojiSelector from 'react-native-emoji-selector';
 import { useTheme } from '@react-navigation/native';
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export let new_publication_params = {
     isFhoto: false,
     photoURI: null,
@@ -38,6 +41,7 @@ export default function New_publication(props) {
     const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (new_publication_params.isFhoto) {
@@ -70,7 +74,7 @@ export default function New_publication(props) {
                 setIsUploadImage(true);
             }
         } else {
-            Alert.alert("Permisos denegados", "Por favor, active el permiso de la galeria");
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
@@ -96,7 +100,7 @@ export default function New_publication(props) {
             }
 
         } else {
-            Alert.alert("Permisos denegados", "Sin permisos de la camara, no puedes tomar fotos en la aplicación");
+            Alert.alert(t('deniedPermissionsTitle'), t('photoDenied'));
         }
     }
 
@@ -112,14 +116,14 @@ export default function New_publication(props) {
 
     const showAlert = () =>
         Alert.alert(
-            'Salir de la publicación',
-            '¿Desea salirse de la publicación sin guardar ni publicar nada?',
+            t('exitNewPublishTitle'),
+            t('exitNewPublish'),
             [
                 {
-                    text: 'Continuar creando',
+                    text: t('continueCreating'),
                 },
                 {
-                    text: 'Salirse',
+                    text: t('exitButton'),
                     onPress: () => goBackAgain(),
                     style: 'cancel',
                 },
@@ -128,14 +132,14 @@ export default function New_publication(props) {
 
     const alertRemoveImage = () =>
         Alert.alert(
-            '¿Eliminar imagen?',
-            '¿Desea eliminar su imagen?',
+            t('deleteImageTitle'),
+            t('deleteImage'),
             [
                 {
-                    text: 'No',
+                    text: t('no'),
                 },
                 {
-                    text: 'Si',
+                    text: t('yes'),
                     onPress: () => removeImage(),
                     style: 'cancel',
                 },
@@ -167,11 +171,11 @@ export default function New_publication(props) {
                 goBackAgain();
             } else {
                 setLoading_Button(false);
-                Alert.alert("publicación vacia", "Por favor escribe algo");
+                Alert.alert(t('emptyPublishTitle'), t('emptyPublish'));
             }
         } catch (error) {
             setLoading_Button(false);
-            Alert.alert("Error del servidor", "Por favor, vuelve a intentarlo");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
             console.error(error);
         }
     }
@@ -188,11 +192,11 @@ export default function New_publication(props) {
         <View style={{ flex: 1, flexGrow: 1, paddingBottom: 50, paddingHorizontal: 20, backgroundColor: colors.background }} showsVerticalScrollIndicator={true}>
             <TouchableOpacity style={styles.back_button_block} onPress={showAlert}>
                 <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='chevron-left' />
-                <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>Salirse</Text>
+                <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>{t('exitButton')}</Text>
             </TouchableOpacity>
             <View style={{ padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15 }}>
                 <View style={styles.header}>
-                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>Nueva publicación</Text>
+                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>{t('newPublish')}</Text>
                 </View>
 
                 <View style={styles.publish_buttons}>
@@ -221,12 +225,12 @@ export default function New_publication(props) {
                         {loading_Button ?
                             <View style={{flexDirection: "row", backgroundColor: colors.quartet_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10}}>
                                 <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                                <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>Publicando</Text>
+                                <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>{t('publishing')}</Text>
                             </View>
                             :
                             <TouchableOpacity onPress={sharePublish}>
                                 <View style={{backgroundColor: colors.quartet, paddingHorizontal: 20, paddingVertical: 5, borderRadius: 10}}>
-                                    <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>Publicar</Text>
+                                    <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>{t('publish')}</Text>
                                 </View>
                             </TouchableOpacity>
                         }
@@ -263,16 +267,15 @@ export default function New_publication(props) {
                         <View>
                             <View style={styles.multimedia_block}>
                                 <MaterialCommunityIcons style={{fontSize: 18, color: colors.tertiary, marginTop: 10, marginRight: 10}} name='file-image' />
-                                <Text style={{fontSize: 18, fontWeight: "bold", color: colors.tertiary, marginTop: 10}}>Imagen cargada</Text>
+                                <Text style={{fontSize: 18, fontWeight: "bold", color: colors.tertiary, marginTop: 10}}>{t('imageLoaded')}</Text>
                             </View>
                             <Image style={styles.publication_image} source={{ uri: userImage }} />
                         </View>
                         :
                         <View style={styles.multimedia_block}>
                             <MaterialCommunityIcons style={{fontSize: 18, color: colors.primary, marginTop: 10, marginRight: 10}} name='file-image-remove-outline' />
-                            <Text style={{fontSize: 18, color: colors.primary, marginTop: 10}}>Ninguna imagen seleccionada</Text>
+                            <Text style={{fontSize: 18, color: colors.primary, marginTop: 10}}>{t('noImageLoaded')}</Text>
                         </View>
-
                     }
                 </View>
             </View>

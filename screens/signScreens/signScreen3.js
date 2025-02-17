@@ -9,6 +9,9 @@ import { database } from '../../utils/database';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
 export default function SignScreen3(props) {
@@ -19,6 +22,8 @@ export default function SignScreen3(props) {
     const [loading, setLoading] = useState(false);
 
     const { colors } = useTheme();
+
+    const { t } = useTranslation();
 
     const UploadBanner = async () => {
         const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -36,7 +41,7 @@ export default function SignScreen3(props) {
                 setBannerURL(image.assets[0].uri);
             }
         } else {
-            Alert.alert("Permisos denegados", "Por favor, sin el permiso de la galeria, no puedes cambiar el banner");
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
@@ -56,7 +61,7 @@ export default function SignScreen3(props) {
                 setAvatarURI(image.assets[0].uri);
             }
         } else {
-            Alert.alert("Permisos denegados", "Por favor, sin el permiso de la galeria, no puedes cambiar la foto de perfil");
+            Alert.alert(t('deniedPermissionsTitle'), t('photoDenied'));
         }
     }
 
@@ -112,7 +117,7 @@ export default function SignScreen3(props) {
             props.navigation.replace('WelcomeScreen');
         } catch (error) {
             setLoading(false);
-            Alert.alert("Error en el servidor", "Por favor, Vuélvalo a intentar en la configuracion del perfil");
+            Alert.alert(t('serverErrorTitle'), t('changePhotoError'));
             console.error(error);
             props.navigation.replace('WelcomeScreen');
         }
@@ -125,7 +130,7 @@ export default function SignScreen3(props) {
             padding: 10,
             backgroundColor: colors.background
         }}>
-            <Text style={{ fontSize: 23, marginBottom: 20, fontWeight: 'bold', color: colors.text, textAlign: 'center' }}>Su cuenta se ha creado, solo unos ultimos detalles</Text>
+            <Text style={{ fontSize: 23, marginBottom: 20, fontWeight: 'bold', color: colors.text, textAlign: 'center' }}>{t('lastStepTitle')}</Text>
 
             <View style={{
                 backgroundColor: colors.primary_dark,
@@ -172,7 +177,7 @@ export default function SignScreen3(props) {
                             }
                         }}>
                             <MaterialCommunityIcons style={{ fontSize: 23, color: colors.text, marginRight: 6 }} name='account-box-multiple-outline' />
-                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: 'bold' }}>Subir foto de tu perfil</Text>
+                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: 'bold' }}>{t('submitPhoto')}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -196,7 +201,7 @@ export default function SignScreen3(props) {
                             }
                         }}>
                             <MaterialCommunityIcons style={{ fontSize: 23, color: colors.text, marginRight: 6 }} name='image-edit-outline' />
-                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: 'bold' }}>Subir foto del banner de tu nuevo perfil</Text>
+                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: 'bold' }}>{t('submitBanner')}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -212,7 +217,7 @@ export default function SignScreen3(props) {
                         outlineWidth: 2,
                     }}>
                         <TextInput
-                            placeholder='Redacta una descripcion para tu nuevo perfil'
+                            placeholder={t('addDesc')}
                             placeholderTextColor={colors.holderText}
                             onChangeText={(text) => setDescription(text)}
                             style={{
@@ -228,7 +233,7 @@ export default function SignScreen3(props) {
                     </View>
 
                     <TouchableOpacity style={{ marginBottom: 20, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={goBackAgain}>
-                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Saltar este paso</Text>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{t('skip')}</Text>
                     </TouchableOpacity>
 
                     {loading ?
@@ -243,11 +248,11 @@ export default function SignScreen3(props) {
                             width: '100%'
                         }}>
                             <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Cargando</Text>
+                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{t('loading')}</Text>
                         </View>
                         :
                         <TouchableOpacity style={{ marginBottom: 20, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={trySingUp}>
-                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Continuar</Text>
+                            <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{t('nextButton')}</Text>
                         </TouchableOpacity>
                     }
                 </View>

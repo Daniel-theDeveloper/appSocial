@@ -12,6 +12,9 @@ import { GiftedChat, Send, InputToolbar, Composer, Bubble, Day } from 'react-nat
 import { convertUniversalDate } from '../../utils/convertDate';
 import { sendNotification } from '../../utils/interations';
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export let params = {
     channelId: "",
     userId: "",
@@ -23,6 +26,7 @@ export default function MyChat(props) {
     const [messages, setMessages] = useState([]);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     var renderSend = function (props) {
         return (
@@ -40,7 +44,7 @@ export default function MyChat(props) {
 
     var renderComposer = function (props) {
         return (
-            React.createElement(Composer, Object.assign({}, props, { textInputAutoFocus: true, placeholder: "Escribe tu mensaje", placeholderTextColor: colors.primary, textInputStyle: { color: colors.text, backgroundColor: colors.background, borderRadius: 20, padding: 12 } }))
+            React.createElement(Composer, Object.assign({}, props, { textInputAutoFocus: true, placeholder: t('newMessage'), placeholderTextColor: colors.primary, textInputStyle: { color: colors.text, backgroundColor: colors.background, borderRadius: 20, padding: 12 } }))
         );
     };
 

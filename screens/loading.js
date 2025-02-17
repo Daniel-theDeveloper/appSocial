@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Image } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
 import { getLocalUser } from '../utils/localstorage';
@@ -47,6 +47,7 @@ export default function Loading(props) {
             alignItems: 'center',
             justifyContent: 'center',
         }}>
+            <Image style={{ height: 150, width: 150, marginBottom: 40 }} source={require('../assets/icon.png')} />
             <ActivityIndicator color={colors.primary} size={70} />
         </View>
     );

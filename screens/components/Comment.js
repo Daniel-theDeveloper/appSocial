@@ -4,13 +4,11 @@ import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Comment_answer from './Comment_answer';
 import { localUserLogin } from '../../utils/localstorage';
-import { publicationData } from '../components/Publish';
 import { isWasInteracted } from '../../utils/interations';
 
 import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
-import { globals } from '../../utils/globalVars';
 import { useTheme } from '@react-navigation/native';
 
 export let comment_Array = [];
@@ -54,8 +52,7 @@ export default function Comment({
             user: user,
             userAvatar: avatarURL
         }
-        globals.isPrincipalComment = true;
-        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId }, merge: true });
+        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId, isPrincipalComment: true }, merge: true });
     }
 
     function show() {
@@ -335,19 +332,23 @@ export default function Comment({
 
 const styles = StyleSheet.create({
     comment_avatar: {
-        height: 42,
-        width: 42,
-        margin: 6,
+        height: 44,
+        width: 44,
         borderRadius: 100
     },
     comment_view: {
         flexDirection: "row"
     },
     comment_left: {
-        width: "15%"
+        width: "15%",
+        marginTop: 5,
+        display: "flex",
+        justifyContent: "top",
+        alignItems: "center",
     },
     comment_right: {
-        width: "85%"
+        width: "85%",
+        marginLeft: 10
     },
     comment_header: {
         flexDirection: "row"

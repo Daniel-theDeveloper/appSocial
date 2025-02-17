@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import { isWasInteracted, isWasSaved, isWasInteractedByID, sendNotification, likePublish, deleteLike, savePublish, deleteSavePublish } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
 import { useTheme } from '@react-navigation/native';
-import Container, { Toast } from 'toastify-react-native';
 // import { compareDesc } from "date-fns";
 
 import { doc, updateDoc, arrayUnion, collection, onSnapshot, query } from 'firebase/firestore'
@@ -14,6 +13,9 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function Details(props) {
     const [publicationArray, setPublicationArray] = useState({
@@ -45,7 +47,9 @@ export default function Details(props) {
     const [myComment, setMyCommnent] = useState("");
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
+    // Función con fallos cuando el usuario crea un nuevo comentario:
     // const orderComments = publicationArray.comments_container.sort(function(a, b) {
     //     return compareDesc(a.date, b.date);
     // })
@@ -85,37 +89,31 @@ export default function Details(props) {
                 }
             });
 
-            if (getData.urlImage != null) {
-                fetchImage(getData.urlImage);
+            if (getData.length != 0) {
+                if (getData.urlImage != null) {
+                    fetchImage(getData.urlImage);
+                }
+    
+                if (props.route.params?.avatar != null) {
+                    setAvatarURL(props.route.params?.avatar);
+                }
+    
+                setMyAvatar(localUserLogin.avatar);
+                setReplyId(getData.replyId);
+                setAllLikes(getData.likes.length);
+                setAllComments(getData.comments_container.length);
+                setIsLike(isWasInteracted(getData.likes));
+                setIsShared(isWasInteractedByID(getData.shares));
+                setPublicationArray(getData);
+                promiseSaved();
+            } else {
+                props.navigation.goBack();
+                Alert.alert(t('noPublishFound'));
             }
 
-            if (props.route.params?.avatar != null) {
-                setAvatarURL(props.route.params?.avatar);
-            }
-
-            setMyAvatar(localUserLogin.avatar);
-            setReplyId(getData.replyId);
-            setAllLikes(getData.likes.length);
-            setAllComments(getData.comments_container.length);
-            setIsLike(isWasInteracted(getData.likes));
-            setIsShared(isWasInteractedByID(getData.shares));
-            setPublicationArray(getData);
-            promiseSaved();
         })
         return unsuscribe;
     }, []);
-
-    const showToastsSaveSuccess = () => {
-        Toast.success('Publicación guardada exitosamente');
-    }
-
-    const showToastsSaveDeleted = () => {
-        Toast.success('Publicación eliminada exitosamente');
-    }
-
-    const showToastsSaveFailed = () => {
-        Toast.error('Error en el servidor, vuélvalo a intentar mas tarde');
-    }
 
     function goBackAgain() {
         props.navigation.goBack()
@@ -131,14 +129,14 @@ export default function Details(props) {
             setIsLike(false);
             const res = await deleteLike(publicationArray.id);
             if (!res) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                Alert.alert(t('errorTitle'), t('error'));
                 setIsLike(true);
             }
         } else {
             setIsLike(true);
             const res = await likePublish(publicationArray.id);
             if (!res) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo mas tarde");
+                Alert.alert(t('errorTitle'), t('error'));
                 setIsLike(false);
             }
         }
@@ -174,7 +172,7 @@ export default function Details(props) {
                 setMyCommnent("");
                 setLoadingButton(false);
             } catch (error) {
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
                 console.error(error);
                 setLoadingButton(false);
             }
@@ -188,32 +186,31 @@ export default function Details(props) {
             setIsSaved(false);
             const res = await deleteSavePublish(props.route.params?.id);
             if (res) {
-                showToastsSaveDeleted();
+                Alert.alert(t('deletePublish'));
             } else {
                 setIsSaved(true);
-                showToastsSaveFailed();
+                Alert.alert(t('errorTitle'), t('error'));
             }
         } else {
             setIsSaved(true);
             const res = await savePublish(props.route.params?.id);
             if (res) {
-                showToastsSaveSuccess();
+                Alert.alert(t('savePublish'));
             } else {
                 setIsSaved(false);
-                showToastsSaveFailed();
+                Alert.alert(t('errorTitle'), t('error'));
             }
         }
     }
 
     return (
         <View style={{backgroundColor: colors.background}}>
-            <Container position="top" animationStyle="zoomInOut" style={{ backgroundColor: colors.quartet_dark }} textStyle={{ color: "#fff", fontSize: 13, fontWeight: "bold" }} />
             <ScrollView showsVerticalScrollIndicator={true}>
                 <View style={styles.container}>
                     <TouchableOpacity onPress={goBackAgain}>
                         <View style={styles.back_block}>
                             <MaterialCommunityIcons style={{fontSize: 49, color: colors.secondary}} name='chevron-left' />
-                            <Text style={{fontSize: 21, fontWeight: "bold", color: colors.secondary}}>Regresar</Text>
+                            <Text style={{fontSize: 21, fontWeight: "bold", color: colors.secondary}}>{t('return')}</Text>
                         </View>
                     </TouchableOpacity>
                     <View style={{backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
@@ -222,7 +219,7 @@ export default function Details(props) {
                             <View style={styles.perfil_user}>
                                 <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                                 <View style={styles.perfil_usernames_container}>
-                                    <Text style={{fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{props.route.params?.nickname} publicó</Text>
+                                    <Text style={{fontSize: 17, fontWeight: "bold", color: colors.secondary}}>{props.route.params?.nickname}{t('publishedLabel')}</Text>
                                     <Text style={{fontSize: 15, fontWeight: "bold", color: colors.secondary_dark}}>{convertDate(publicationArray.date)}</Text>
                                 </View>
                             </View>
@@ -239,19 +236,19 @@ export default function Details(props) {
                                 <View></View>
                         }
 
-                        {/* Zona de estadisticas */}
+                        {/* Zona de estadísticas */}
                         <View style={styles.statistics}>
                             <View style={styles.statistics_block}>
                                 <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allComments}</Text>
-                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Comentarios</Text>
+                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>{t('comments')}</Text>
                             </View>
                             <Text style={{fontSize: 17, fontWeight: "bold", marginHorizontal: 15, color: colors.primary}}>|</Text>
                             <View style={styles.statistics_block}>
                                 <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>{allLikes}</Text>
-                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>Likes</Text>
+                                <Text style={{fontSize: 15, marginLeft: 5, color: colors.primary}}>{t('likes')}</Text>
                             </View>
                         </View>
-                        {/* Zona de interaccion */}
+                        {/* Zona de interacción */}
                         <View style={styles.interact_container}>
                             <TouchableOpacity onPress={setLike}>
                                 {isLike ?
@@ -284,7 +281,7 @@ export default function Details(props) {
                     </View>
 
                     {/* Zona de comentarios */}
-                    <Text style={{fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>Comentarios</Text>
+                    <Text style={{fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary}}>{t('comments')}</Text>
 
                     <View style={{backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
                         <View style={styles.new_comment_header}>
@@ -292,7 +289,7 @@ export default function Details(props) {
                             <View style={{backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5}}>
                                 <TextInput
                                     style={{fontSize: 15, color: colors.text}}
-                                    placeholder='Escribe un comentario'
+                                    placeholder={t('createComment')}
                                     placeholderTextColor={colors.holderText}
                                     multiline={true}
                                     onChangeText={(text) => setMyCommnent(text)}
@@ -303,12 +300,12 @@ export default function Details(props) {
                         {loadingButton ?
                             <View style={{flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark}}>
                                 <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                                <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicando</Text>
+                                <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>{t('sending')}</Text>
                             </View>
                             :
                             <TouchableOpacity onPress={sendMyComment}>
                                 <View style={{padding: 10, borderRadius: 10, backgroundColor: colors.quartet}}>
-                                    <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>Publicar</Text>
+                                    <Text style={{fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text}}>{t('sendComment')}</Text>
                                 </View>
                             </TouchableOpacity>
                         }

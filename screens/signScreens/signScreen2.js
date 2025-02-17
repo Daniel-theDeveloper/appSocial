@@ -8,6 +8,9 @@ import { getDocs, collection } from 'firebase/firestore';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import SignUp, { params } from '../../utils/signUp';
 
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
+
 export default function Sign_up_part2(props) {
     const [username, setUsername] = useState("");
     const [surname, setSurname] = useState("");
@@ -19,6 +22,8 @@ export default function Sign_up_part2(props) {
     const [loading, setLoading] = useState(false);
 
     const { colors } = useTheme();
+
+    const { t } = useTranslation();
 
     function exitBack() {
         props.navigation.goBack()
@@ -75,7 +80,7 @@ export default function Sign_up_part2(props) {
                                 }
                             } else {
                                 setLoading(false);
-                                Alert.alert("Error en el servidor", "Ha ocurrido un error, Vuélvalo a intentar mas tarde");
+                                Alert.alert(t('serverErrorTitle'), t('serverError'));
                                 props.navigation.navigate('Login');
                             }
                         })
@@ -122,11 +127,11 @@ export default function Sign_up_part2(props) {
                     <TouchableOpacity onPress={exitBack}>
                         <MaterialCommunityIcons style={{ fontSize: 35, fontWeight: 'bold', color: colors.text }} name='close' />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text }}>Cree una cuenta nueva</Text>
+                    <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text }}>{t('signTitle')}</Text>
                     <View></View>
                 </View>
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Ingrese su nombre unico de usuario:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('usernameLabel')}</Text>
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
@@ -144,15 +149,15 @@ export default function Sign_up_part2(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Puede ser su nombre + apellido + distinguido' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setUsername(text)} autoCorrect={false} />
+                    <TextInput placeholder={t('userPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setUsername(text)} autoCorrect={false} />
                 </View>
                 {error ?
-                    <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold', marginLeft: 12, marginTop: 5 }}>Este nombre ya existe, intente cambiar el distinguido</Text>
+                    <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold', marginLeft: 12, marginTop: 5 }}>{t('usernameError')}</Text>
                     :
                     <View></View>
                 }
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Ingrese su apodo:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('nicknameLabel')}</Text>
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
@@ -170,10 +175,10 @@ export default function Sign_up_part2(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder='Como te gustarian que te llamen?' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
+                    <TextInput placeholder={t('nicknamePlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
                 </View>
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Ingrese contraseña:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('passwordLabel')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{
                         flexDirection: 'row',
@@ -207,17 +212,17 @@ export default function Sign_up_part2(props) {
                 {password.length >= 6 ?
                     <View style={styles.password_message_block}>
                         <MaterialCommunityIcons style={{ color: colors.tertiary, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7 }} name='shield-check' />
-                        <Text style={{ color: colors.tertiary, fontSize: 14, fontWeight: 'bold' }}>La contraseña tiene 6 caracteres</Text>
+                        <Text style={{ color: colors.tertiary, fontSize: 14, fontWeight: 'bold' }}>{t('passwordLengthError')}</Text>
                     </View>
                     :
                     <View style={styles.password_message_block}>
                         <MaterialCommunityIcons style={{ color: colors.text_error, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7 }} name='shield-alert-outline' />
-                        <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold' }}>La contraseña debe tener 6 caracteres</Text>
+                        <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold' }}>{t('passwordLength')}</Text>
                     </View>
                 }
 
 
-                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>Vuelva a escribir su contraseña:</Text>
+                <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('repeatPassword')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{
                         flexDirection: 'row',
@@ -236,7 +241,7 @@ export default function Sign_up_part2(props) {
                         shadowRadius: 4,
                         elevation: 5
                     }}>
-                        <TextInput placeholder='Confirmar contraseña' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
+                        <TextInput placeholder={t('repeatPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
                     </View>
                     {hidePassword ?
                         <TouchableOpacity onPress={setPasswordStatus}>
@@ -251,25 +256,25 @@ export default function Sign_up_part2(props) {
                 {password == passwordConfirm && password.length > 0 ?
                     <View style={styles.password_message_block}>
                         <MaterialCommunityIcons style={{ color: colors.tertiary, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7 }} name='shield-check' />
-                        <Text style={{ color: colors.tertiary, fontSize: 14, fontWeight: 'bold' }}>Las contraseñas coinciden</Text>
+                        <Text style={{ color: colors.tertiary, fontSize: 14, fontWeight: 'bold' }}>{t('passwordOk')}</Text>
                     </View>
                     :
                     <View style={styles.password_message_block}>
                         <MaterialCommunityIcons style={{ color: colors.text_error, fontSize: 24, fontWeight: 'bold', marginHorizontal: 7 }} name='shield-alert-outline' />
-                        <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold' }}>Las contraseñas no coinciden</Text>
+                        <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold' }}>{t('passwordNo')}</Text>
                     </View>
                 }
 
-                <Text style={{ marginTop: 20, color: colors.text, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Al crear la cuenta nueva, aceptas los terminos y condiciones de Social App, ademas de las normas de comunidad de esta red social.</Text>
+                <Text style={{ marginTop: 20, color: colors.text, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>{t('conditions')}</Text>
 
                 {loading ?
                     <View style={{ marginVertical: 15, flexDirection: 'row', justifyContent: 'center', alignContent: 'center', backgroundColor: colors.secondary_dark, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }}>
                         <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Cargando</Text>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{t('loading')}</Text>
                     </View>
                     :
                     <TouchableOpacity style={{ marginVertical: 15, backgroundColor: colors.secondary, borderRadius: 30, width: 100, paddingVertical: 10, width: '100%' }} onPress={trySingUp}>
-                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>Crear la cuenta</Text>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{t('createButton')}</Text>
                     </TouchableOpacity>
                 }
             </View>
