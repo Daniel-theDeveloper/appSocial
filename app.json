@@ -36,9 +36,12 @@
       "expo-image-picker"
     ],
     "extra": {
-      "eas": {
-        "projectId": "9c2811c7-7f6e-4d67-9287-74a116431ed2"
-      }
+      "API_KEY": "AIzaSyCxfqwV3jf-JC_8DeDOQdUGm2H2uuMG0Tg",
+      "AUTH_DOMAIN": "social-database-1ca38.firebaseapp.com",
+      "PROJECT_ID": "social-database-1ca38",
+      "STORAGE_BUCKET": "social-database-1ca38.appspot.com",
+      "MESSAGING_SENDER_ID": "690285034741",
+      "APP_ID": "1:690285034741:web:24f3d6834ce18b3c3219bc"
     }
   }
 }

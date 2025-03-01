@@ -131,7 +131,8 @@ export default function Sign_up_part1(props) {
 
                 <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('emailLabel')}</Text>
                 <View style={{
-                    padding: 14,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
@@ -158,7 +159,8 @@ export default function Sign_up_part1(props) {
 
                 <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('countryLabel')}:</Text>
                 <View style={{
-                    padding: 14,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
@@ -177,7 +179,8 @@ export default function Sign_up_part1(props) {
 
                 <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('cityLabel')}</Text>
                 <View style={{
-                    padding: 14,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',

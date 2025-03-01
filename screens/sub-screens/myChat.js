@@ -15,6 +15,8 @@ import { sendNotification } from '../../utils/interations';
 import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
 
+// import Chat from '../components/chatComponent';
+
 export let params = {
     channelId: "",
     userId: "",

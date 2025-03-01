@@ -6,7 +6,7 @@ import i18n from 'i18next';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native"
 import MyRoutes from './navigation/navigation';
-import { Appearance, I18nManager } from 'react-native';
+import { Appearance, I18nManager, Platform } from 'react-native';
 import { getSaveTheme, getSaveLanguaje } from './utils/localstorage';
 
 import DarkTheme from './themes/DarkTheme';
@@ -20,6 +20,8 @@ export default function App() {
   const [isDark, setIsDark] = useState(false);
 
   const { colors } = useTheme();
+
+  const platform = Platform.OS;
 
   useEffect(() => {
     loadTheme();
@@ -71,7 +73,7 @@ export default function App() {
   }
 
   function getLanguajeBySystem() {
-    const languajeCrude = I18nManager.getConstants().localeIdentifier;
+    const languajeCrude = platform === 'web'? "es_test" : I18nManager.getConstants().localeIdentifier;
     const languaje = languajeCrude.split('_')[0];
 
     if (languaje == 'es') {

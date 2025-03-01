@@ -1,11 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 
 import { auth, database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import RadioGroup from 'react-native-radio-buttons-group';
-
-import { new_publication_params } from './sub-screens/new_publication';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -83,10 +81,9 @@ export default function Homepage(props) {
 
     useEffect(() => {
         // setMyAvatar(localUserLogin.avatar);
-        loadAllFollowersPublish();
         getSelectedTheme();
         getSelectedLanguaje();
-        setLoading(false);
+        loadAllPublish();
     }, []);
 
     const alertLogOut = () =>
@@ -184,44 +181,46 @@ export default function Homepage(props) {
 
         if (granted) {
             const image = await ImagePicker.launchCameraAsync({
-                allowsEditing: true,
-                allowsMultipleSelection: false,
+                allowsMultipleSelection: true,
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 aspect: [4, 3],
-                quality: 1
+                quality: 0.8,
+                selectionLimit: 10
             });
             if (!image.canceled) {
-                new_publication_params.isFhoto = true;
-                new_publication_params.photoURI = image.assets[0].uri;
-                new_publication_params.photoName = image.assets[0].width;
-                new_publication_params.photoType = image.assets[0].mimeType;
-
-                props.navigation.navigate('NewPublication');
+                props.navigation.navigate({ name: 'NewPublication', params: { photo: image }, merge: true });
             }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
-    async function loadAllFollowersPublish() {
-        const collectionRef = collection(database, 'publications');
-        const q = query(collectionRef, orderBy('date', 'desc'));
+    function loadAllPublish() {
+        try {
+            const collectionRef = collection(database, 'publications');
+            const q = query(collectionRef, orderBy('date', 'desc'));
 
-        const unsuscribe = onSnapshot(q, QuerySnapshot => {
-            setPublications(
-                QuerySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    body: doc.data().body,
-                    urlImage: doc.data().urlImage,
-                    replyID: doc.data().replyID,
-                    userId: doc.data().userId,
-                    comments: doc.data().comments,
-                    comments_container: doc.data().comments_container,
-                    date: doc.data().date,
-                    likes: doc.data().likes,
-                    shares: doc.data().shares
-                }))
-            )
-        })
-        return unsuscribe;
+            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+                setPublications(
+                    QuerySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        body: doc.data().body,
+                        urlImages: doc.data().urlImages,
+                        replyID: doc.data().replyID,
+                        userId: doc.data().userId,
+                        // comments_container: await searchMyComment(doc.id),
+                        date: doc.data().date,
+                        likes: doc.data().likes,
+                        shares: doc.data().shares
+                    }))
+                )
+            });
+            setLoading(false);
+            return unsuscribe;
+        } catch (error) {
+            console.error(error);
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
+        }
     }
 
     const log_out = async () => {
@@ -232,10 +231,6 @@ export default function Homepage(props) {
 
     function goNewPublish() {
         if (localUserLogin.id != undefined) {
-            new_publication_params.isFhoto = false;
-            new_publication_params.photoURI = null;
-            new_publication_params.photoName = null;
-
             props.navigation.navigate('NewPublication');
         } else {
             Alert.alert(t('internetErrorTitle'), t('internetError'));
@@ -427,7 +422,8 @@ export default function Homepage(props) {
                         </View>
                         :
                         <View style={loadingStyle.publications_colections}>
-                            {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                            {/* publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />) */}
+                            {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
                             <View style={{ height: 160 }}></View>
                         </View>
                     }
@@ -452,7 +448,7 @@ export default function Homepage(props) {
                         <MaterialIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='language' />
                         <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('buttonChangeLanguage')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={platform === 'web'? log_out : alertLogOut}>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={platform === 'web' ? log_out : alertLogOut}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='logout' />
                         <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>{t('exit')}</Text>
                     </TouchableOpacity>

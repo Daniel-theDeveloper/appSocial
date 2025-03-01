@@ -209,7 +209,8 @@ export default function SignScreen3(props) {
                     <View style={{
                         marginHorizontal: 5,
                         marginVertical: 20,
-                        padding: 10,
+                        paddingLeft: 10,
+                        paddingRight: 10,
                         borderColor: colors.primary,
                         borderWidth: 1.5,
                         borderRadius: 10,

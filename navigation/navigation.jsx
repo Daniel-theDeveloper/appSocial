@@ -48,7 +48,7 @@ export default function MyRoutes() {
                 <Stack.Screen name="MyChat" component={MyChat} />
                 <Stack.Screen name="Perfil" component={Perfil} initialParams={{ userId: "", userIdSend: "" }}/>
                 <Stack.Screen name="ConfigPerfil" component={ConfigPerfil} />
-                <Stack.Screen name="ReplyScreen" component={ReplyScreen} initialParams={{ id: "" }} />
+                <Stack.Screen name="ReplyScreen" component={ReplyScreen} initialParams={{ id: "", userIdSend: "", nameUserSend: "", principalID: "", isPrincipalComment: false, comment_Array: [] }} />
                 <Stack.Screen name="NewPublication" component={New_publication} />
             </Stack.Navigator>
         );

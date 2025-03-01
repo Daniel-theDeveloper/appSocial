@@ -185,10 +185,10 @@ export default function Login(props) {
                     <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', textAlign: 'center' }}>{t('welcome')}</Text>
                     <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center' }}>{t('slogan')}</Text>
 
-                    <View style={{ padding: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                    <View style={{ paddingLeft: 14, paddingRight: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
                         <TextInput placeholder={t('placeholderEmail')} placeholderTextColor={colors.holderText} style={{ fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setEmail(text)} keyboardType='email-address' autoCorrect={false} editable={loginButtomVisible ? true : false} />
                     </View>
-                    <View style={{ padding: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                    <View style={{ paddingLeft: 14, paddingRight: 14, marginTop: 20, backgroundColor: colors.background, borderRadius: 20, width: '100%', height: 45, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
                         <TextInput placeholder={t('placeholderPassword')} placeholderTextColor={colors.holderText} style={{ fontWeight: 'bold', color: colors.inputText }} onChangeText={(text) => setPassword(text)} secureTextEntry={true} autoCorrect={false} editable={loginButtomVisible ? true : false} />
                     </View>
 

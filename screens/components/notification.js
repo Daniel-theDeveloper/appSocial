@@ -112,7 +112,7 @@ export default function Notification({
                 message = nickname + t('typeReply_c') + optionalData.message + '".';
                 break;
             case 'reply_c':
-                message = nickname + t('typeReply_p') + optionalData.message + '".';
+                message = nickname + t('typeReply_c') + optionalData.message + '".';
                 break;
             case 'reply_p':
                 message = nickname + t('typeReply_p') + optionalData.message + '".';

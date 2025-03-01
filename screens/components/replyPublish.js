@@ -18,7 +18,7 @@ export default function ReplyPublish({ props, replyID }) {
         username: "",
         date: "",
         body: "",
-        urlImage: null
+        urlImages: null
     });
     const [isReplyDelete, setReplyDelete] = useState(false);
     const [replyImage, setReplyImage] = useState(null);
@@ -43,7 +43,7 @@ export default function ReplyPublish({ props, replyID }) {
                     date: docSnap.data().date,
                     body: docSnap.data().body
                 });
-                await fetchImageReply(docSnap.data().urlImage);
+                await fetchImageReply(docSnap.data().urlImages);
                 await loadUserReplyData(docSnap.data().userId);
             } else {
                 setReplyDelete(true);

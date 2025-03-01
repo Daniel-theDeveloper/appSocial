@@ -55,9 +55,9 @@ export default function Perfil(props) {
         getPublishData();
     }, [])
 
-    const fetchImage = async (urlImage, isAvatar) => {
+    const fetchImage = async (urlImages, isAvatar) => {
         const storage = getStorage();
-        const imageRef = ref(storage, urlImage);
+        const imageRef = ref(storage, urlImages);
         const url = await getDownloadURL(imageRef);
 
         if (isAvatar) {
@@ -141,11 +141,10 @@ export default function Perfil(props) {
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
                         body: doc.data().body,
-                        urlImage: doc.data().urlImage,
-                        userId: doc.data().userId,
-                        comments: doc.data().comments,
-                        comments_container: doc.data().comments_container,
+                        urlImages: doc.data().urlImages,
                         replyID: doc.data().replyID,
+                        userId: doc.data().userId,
+                        // comments_container: await searchMyComment(doc.id),
                         date: doc.data().date,
                         likes: doc.data().likes,
                         shares: doc.data().shares
@@ -315,7 +314,8 @@ export default function Perfil(props) {
                     </View>
                     :
                     <View style={{ marginHorizontal: 15 }}>
-                        {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                        {/* {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)} */}
+                        {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
                     </View>
             }
 

@@ -36,11 +36,11 @@ export default function Trending(props) {
                 QuerySnapshot.docs.map(doc => ({
                     id: doc.id,
                     body: doc.data().body,
-                    urlImage: doc.data().urlImage,
+                    urlImages: doc.data().urlImages,
                     replyID: doc.data().replyID,
                     userId: doc.data().userId,
-                    comments: doc.data().comments,
-                    comments_container: doc.data().comments_container,
+                    // comments: doc.data().comments,
+                    // comments_container: doc.data().comments_container,
                     date: doc.data().date,
                     likes: doc.data().likes,
                     shares: doc.data().shares
@@ -70,9 +70,9 @@ export default function Trending(props) {
     }
 
     return (
-        <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15 }}>
+        <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, paddingLeft: 15, paddingRight: 15 }}>
             <ScrollView>
-                <View style={{ padding: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                <View style={{ paddingLeft: 16, paddingRight: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
                     <TextInput style={{ color: colors.text }} placeholder={t('searchPlaceHolder')} placeholderTextColor={colors.holderText} onChangeText={(text) => setSearchText(text)} autoCorrect={false} editable={loading ? false : true} />
                 </View>
 
@@ -129,7 +129,7 @@ export default function Trending(props) {
                             <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>{t('notFoundHelp')}</Text>
                         </View>
                         :
-                        publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
+                        publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
                 }
 
             </ScrollView>

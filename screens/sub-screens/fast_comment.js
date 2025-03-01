@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { publication_selected } from '../components/Publish';
 import { localUserLogin } from '../../utils/localstorage';
-import { publicationData } from '../components/Publish';
 import { sendNotification } from '../../utils/interations';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Modal from 'react-native-modalbox';
-import EmojiSelector from 'react-native-emoji-selector';
+// import Modal from 'react-native-modalbox';
+// import EmojiSelector from 'react-native-emoji-selector';
 
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { database } from '../../utils/database';
 import { useTheme } from '@react-navigation/native';
 
@@ -18,35 +16,41 @@ import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
 
 export default function FastComment(props) {
-    const [avatarURL] = useState(publication_selected.avatar);
+    const [avatarURL] = useState(props.route.params?.publish.avatar);
     const [myAvatarURL] = useState(localUserLogin.avatar);
 
     const [myComment, setMyComment] = useState("");
     const [loadingButton, setLoadingButton] = useState(false);
-    const [emojiModal, setEmojiModal] = useState(false);
+    // const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
+
+    const publicationData = props.route.params?.publish;
 
     const sendMyComment = async () => {
         if (myComment !== "") {
             setLoadingButton(true);
             const commentArray = {
-                comment_answers: [],
+                // comment_answers: [],
                 date: new Date(),
                 dislikes: [],
                 likes: [],
+                mediaURL: null,
                 message: myComment,
-                user: localUserLogin.username
+                user: localUserLogin.id
             }
             try {
-                const docRef = doc(database, 'publications', publicationData.id);
-                await updateDoc(docRef, {
-                    comments_container: arrayUnion(commentArray)
-                });
-                if (publicationData.userId !== localUserLogin.id) {
-                    await sendNotification('comment', publication_selected.userId, publicationData.id, myComment);
-                }
+                // const docRef = doc(database, 'publications', publicationData.id);
+                // await updateDoc(docRef, {
+                //     comments_container: arrayUnion(commentArray)
+                // });
+                // if (publicationData.userId !== localUserLogin.id) {
+                //     await sendNotification('comment', publicationData.userId, publicationData.id, myComment);
+                // }
+                const url = "publications/" + publicationData.id + "/comments";
+                const res = await addDoc(collection(database, url), commentArray);
+
                 setLoadingButton(false);
                 props.navigation.goBack();
             } catch (error) {
@@ -55,7 +59,7 @@ export default function FastComment(props) {
                 setLoadingButton(false);
             }
         } else {
-            console.log("Escribe algo")
+            Alert.alert(t('emptyPublishTitle'), t('emptyPublish'));
         }
     }
 
@@ -63,13 +67,13 @@ export default function FastComment(props) {
         props.navigation.goBack();
     }
 
-    function openEmojiModal() {
-        if (emojiModal) {
-            setEmojiModal(false);
-        } else {
-            setEmojiModal(true);
-        }
-    }
+    // function openEmojiModal() {
+    //     if (emojiModal) {
+    //         setEmojiModal(false);
+    //     } else {
+    //         setEmojiModal(true);
+    //     }
+    // }
 
     return (
         <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, paddingBottom: 40, paddingHorizontal: 12 }}>
@@ -84,18 +88,18 @@ export default function FastComment(props) {
                 <View style={styles.perfil_header}>
                     <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                     <View style={styles.perfil_usernames_container}>
-                        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.secondary }}>{publication_selected.user}{t('commentedLabel')}</Text>
-                        <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publication_selected.date)}</Text>
+                        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.secondary }}>{publicationData.user}{t('commentedLabel')}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publicationData.date)}</Text>
                     </View>
                 </View>
 
                 {/* body */}
-                <Text style={{ fontSize: 18, marginBottom: 15, color: colors.text }}>{publication_selected.body}</Text>
+                <Text style={{ fontSize: 18, marginBottom: 15, color: colors.text }}>{publicationData.body}</Text>
 
                 {/* footer */}
                 <View style={styles.statistics}>
                     <View style={styles.statistics_block}>
-                        <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{publication_selected.likes}</Text>
+                        <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{publicationData.likes}</Text>
                         <Text style={{ fontSize: 16, marginLeft: 5, color: colors.primary }}>{t('likes')}</Text>
                     </View>
                 </View>
@@ -118,7 +122,7 @@ export default function FastComment(props) {
                     padding: 5
                 }}>
                     <TextInput
-                        style={{fontSize: 17, color: colors.text}}
+                        style={{ fontSize: 17, color: colors.text }}
                         placeholder={t('createComment')}
                         placeholderTextColor={colors.holderText}
                         multiline={true}
@@ -129,11 +133,11 @@ export default function FastComment(props) {
                 </View>
 
                 <View style={styles.reply_row2}>
-                    <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 16, marginLeft: 5, color: colors.primary }}>{myComment.length} / 200</Text>
-                        <TouchableOpacity onPress={openEmojiModal}>
+                        {/* <TouchableOpacity onPress={openEmojiModal}>
                             <MaterialCommunityIcons style={{ marginLeft: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name='emoticon-happy-outline' />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                     {loadingButton ?
                         <View style={{ flexDirection: "row", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark }}>
@@ -150,10 +154,10 @@ export default function FastComment(props) {
                 </View>
             </View>
 
-            <Modal style={{ alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark }} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
+            {/* <Modal style={{ alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark }} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
                 <View style={{ height: 3, width: 50, borderRadius: 5, marginBottom: 30, backgroundColor: colors.primary }}></View>
                 <EmojiSelector columns={8} onEmojiSelected={emoji => setMyComment( myComment + emoji )} />
-            </Modal>
+            </Modal> */}
         </View>
     )
 }

@@ -7,8 +7,8 @@ import { collection, addDoc, doc, getDocs, updateDoc, arrayUnion } from 'firebas
 import { localUserLogin } from '../../utils/localstorage';
 import ReplyPublish from '../components/replyPublish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Modal from 'react-native-modalbox';
-import EmojiSelector from 'react-native-emoji-selector';
+// import Modal from 'react-native-modalbox';
+// import EmojiSelector from 'react-native-emoji-selector';
 import { sendNotification } from '../../utils/interations';
 import { useTheme } from '@react-navigation/native';
 
@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 export default function ReplyPublishScreen(props) {
     const [newPublication, setNewPublication] = React.useState({
         body: '',
-        urlImage: null,
+        urlImages: null,
         comments_container: [],
         replyID: props.route.params?.id,
         date: new Date(),
@@ -27,7 +27,7 @@ export default function ReplyPublishScreen(props) {
         userId: localUserLogin.id
     });
     const [loading_Button, setLoading_Button] = useState(false);
-    const [emojiModal, setEmojiModal] = useState(false);
+    // const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
@@ -77,13 +77,13 @@ export default function ReplyPublishScreen(props) {
         });
     }
 
-    function openEmojiModal() {
-        if (emojiModal) {
-            setEmojiModal(false);
-        } else {
-            setEmojiModal(true);
-        }
-    }
+    // function openEmojiModal() {
+    //     if (emojiModal) {
+    //         setEmojiModal(false);
+    //     } else {
+    //         setEmojiModal(true);
+    //     }
+    // }
 
     function goBackAgain() {
         props.navigation.goBack();
@@ -100,9 +100,9 @@ export default function ReplyPublishScreen(props) {
                 <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>{t('reply')}</Text>
 
                 <View style={styles.publish_buttons}>
-                    <TouchableOpacity onPress={openEmojiModal}>
+                    {/* <TouchableOpacity onPress={openEmojiModal}>
                         <MaterialCommunityIcons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name='emoticon-happy' />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     {loading_Button ?
                         <View style={{ flexDirection: "row", backgroundColor: colors.secondary_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10 }}>
                             <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
@@ -146,10 +146,10 @@ export default function ReplyPublishScreen(props) {
                     <ReplyPublish props={props} replyID={props.route.params?.id} />
                 </View>
             </View>
-            <Modal style={{alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark}} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
+            {/* <Modal style={{alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark}} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
                 <View style={{height: 3, width: 50, borderRadius: 5, marginBottom: 30, backgroundColor: colors.primary}}></View>
                 <EmojiSelector columns={8} onEmojiSelected={emoji => setNewPublication({ ...newPublication, body: newPublication.body + emoji })} />
-            </Modal>
+            </Modal> */}
         </View>
     );
 }

@@ -38,7 +38,7 @@ export default function Saves(props) {
                     saves.push({
                         id: docSnap.id,
                         body: docSnap.data().body,
-                        urlImage: docSnap.data().urlImage,
+                        urlImages: docSnap.data().urlImages,
                         replyID: docSnap.data().replyID,
                         userId: docSnap.data().userId,
                         comments: docSnap.data().comments,

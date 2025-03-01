@@ -135,7 +135,8 @@ export default function Sign_up_part2(props) {
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    padding: 14,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
@@ -161,7 +162,8 @@ export default function Sign_up_part2(props) {
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    padding: 14,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
@@ -183,7 +185,8 @@ export default function Sign_up_part2(props) {
                     <View style={{
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        padding: 14,
+                        paddingLeft: 14,
+                        paddingRight: 14,
                         backgroundColor: colors.background,
                         borderRadius: 20,
                         width: '90%',
@@ -227,7 +230,8 @@ export default function Sign_up_part2(props) {
                     <View style={{
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        padding: 14,
+                        paddingLeft: 14,
+                        paddingRight: 14,
                         backgroundColor: colors.background,
                         borderRadius: 20,
                         width: '90%',

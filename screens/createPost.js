@@ -39,7 +39,7 @@ export default function CreatePost(props) {
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
                         body: doc.data().body,
-                        urlImage: doc.data().urlImage,
+                        urlImages: doc.data().urlImages,
                         replyID: doc.data().replyID,
                         userId: doc.data().userId,
                         comments: doc.data().comments,
@@ -65,31 +65,26 @@ export default function CreatePost(props) {
 
         if (granted) {
             const image = await ImagePicker.launchCameraAsync({
-                allowsEditing: true,
-                allowsMultipleSelection: false,
+                allowsMultipleSelection: true,
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 aspect: [4, 3],
-                quality: 1
+                quality: 0.8,
+                selectionLimit: 10
             });
-            if (image.canceled) {
-                // Nothing
-            } else {
-                new_publication_params.isFhoto = true;
-                new_publication_params.photoURI = image.assets[0].uri;
-                new_publication_params.photoName = image.assets[0].width;
-                new_publication_params.photoType = image.assets[0].mimeType;
-
-                props.navigation.navigate('NewPublication');
+            if (!image.canceled) {
+                props.navigation.navigate({ name: 'NewPublication', params: { photo: image }, merge: true });
             }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
         }
     }
 
     function goNewPublish() {
-        new_publication_params.isFhoto = false;
-        new_publication_params.photoURI = null;
-        new_publication_params.photoName = null;
-
-        props.navigation.navigate('NewPublication')
+        if (localUserLogin.id != undefined) {
+            props.navigation.navigate('NewPublication');
+        } else {
+            Alert.alert(t('internetErrorTitle'), t('internetError'));
+        }
     }
 
     function setOrder() {
@@ -173,7 +168,7 @@ export default function CreatePost(props) {
                         <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center", }}>{t('newUserSubtitle')}</Text>
                     </View>
                     :
-                    publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
+                    publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)
             }
         </ScrollView>
     );

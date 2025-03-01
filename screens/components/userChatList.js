@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import { doc, getDoc, collection, addDoc, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 

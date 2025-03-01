@@ -5,58 +5,83 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from './database';
 
 export function isWasInteracted(array) {
-    let key = false;
-
-    array.find(function (res) {
-        if (res == localUserLogin.username) {
-            key = true;
-        }
-    });
-    return key;
-}
-
-export function isWasInteractedByID(array) {
-    let key = false;
-
-    array.find(function (res) {
-        if (res == localUserLogin.id) {
-            key = true;
-        }
-    });
-    return key;
-}
-
-export function isWasCommented(comments_array) {
-    if (comments_array.length != 0) {
+    if (array != undefined) {
         let key = false;
-
-        comments_array.find(function (res) {
-            if (res.user === localUserLogin.username) {
+    
+        array.find(function (res) {
+            if (res == localUserLogin.username || res === localUserLogin.id) {
                 key = true;
             }
         });
-
         return key;
     } else {
-        return false
+        return false;
+    }
+}
+
+export function isWasInteractedByID(array) {
+    if (array != undefined) {
+        let key = false;
+    
+        array.find(function (res) {
+            if (res == localUserLogin.id) {
+                key = true;
+            }
+        });
+        return key;
+    } else {
+        return false;
+    }
+}
+
+export function isWasCommented(comments_array) {
+    if (comments_array != undefined) {
+        if (comments_array.length != 0) {
+            let key = false;
+    
+            // comments_array.find(function (res) {
+            //     if (res.user === localUserLogin.username || res.user === localUserLogin.id) {
+            //         key = true;
+            //     }
+            // });
+            comments_array.find(function (res) {
+                if (res != undefined) {
+                    if (res.data().user === localUserLogin.username || res.data().user === localUserLogin.id) {
+                        key = true;
+                    }
+                } else {
+                    key = false;
+                }
+            });
+    
+            return key;
+        } else {
+            return false
+        }
+    } else {
+        return false;
     }
 }
 
 export const isWasSaved = async (publishId) => {
-    let key = false;
-
-    const docRef = doc(database, "users", localUserLogin.id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-        docSnap.data().saves.find(function (res) {
-            if (res === publishId) {
-                key = true;
-            }
-        })
+    if (publishId != undefined) {
+        let key = false;
+    
+        const docRef = doc(database, "users", localUserLogin.id);
+        const docSnap = await getDoc(docRef);
+    
+        if (docSnap.exists()) {
+            docSnap.data().saves.find(function (res) {
+                if (res === publishId) {
+                    key = true;
+                }
+            })
+        }
+    
+        return key;
+    } else {
+        return false;
     }
-
-    return key;
 }
 
 export const likePublish = async (publishId) => {
@@ -256,13 +281,18 @@ export async function deleteFollowerProcess(UserID, myUserID) {
 }
 
 export const fetchImage = async (url) => {
-    if (url != null) {
-        const storage = getStorage();
-        const imageRef = ref(storage, url);
-        const getUrl = await getDownloadURL(imageRef);
-
-        return getUrl;
-    } else {
+    try {
+        if (url != null) {
+            const storage = getStorage();
+            const imageRef = ref(storage, url);
+            const getUrl = await getDownloadURL(imageRef);
+    
+            return getUrl;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error(error);
         return null;
     }
 }
@@ -280,7 +310,6 @@ export const getNotifications = async (idUser) => {
                 for (let x = 0; x < notificationArray.length; x++) {
                     if (!notificationArray[x].read) {
                         no_read_count++;
-                        console.log(notificationArray[x]); // Borrar esto
                     }
                 }
             } else {

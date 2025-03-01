@@ -4,55 +4,61 @@ import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Comment_answer from './Comment_answer';
 import { localUserLogin } from '../../utils/localstorage';
-import { isWasInteracted } from '../../utils/interations';
+import { isWasInteracted, fetchImage } from '../../utils/interations';
 
-import { doc, updateDoc, getDoc, getDocs, collection } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, getDoc, collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { database } from '../../utils/database';
 import { useTheme } from '@react-navigation/native';
 
-export let comment_Array = [];
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function Comment({
     publicationId,
-    comment_answers,
+    id,
+    // comment_answers,
     date,
     dislikes,
     likes,
+    mediaURL,
     message,
     user,
     props
 }) {
     const [isLike, setIsLike] = useState((isWasInteracted(likes)));
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
-    const [showAnswers, setShowAnswers] = React.useState(false);
+    const [showAnswers, setShowAnswers] = useState(false);
     const [avatarURL, setAvatarURL] = useState(null);
     const [userId, setUserId] = useState(null);
-    const [username, setUsername] = useState(null);
     const [nickname, setNickname] = useState(null);
 
-    const allAnswers = comment_answers.length
+    const [comment_answers, set_comment_answers] = useState([]);
+
+    // const allAnswers = comment_answers.length
     const likesCount = likes.length
     const dislikesCount = dislikes.length
     const likesTotal = likesCount - dislikesCount;
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadUserData();
+        loadCommentsAnswers();
     }, [])
 
     function replyComment() {
         comment_Array = {
-            comment_answers: comment_answers,
+            // comment_answers: comment_answers,
             date: date,
             likes: likes,
             dislikes: dislikes,
             message: message,
+            mediaURL: mediaURL,
             user: user,
             userAvatar: avatarURL
         }
-        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId, isPrincipalComment: true }, merge: true });
+        props.navigation.navigate({ name: 'ReplyScreen', params: { id: publicationId, userIdSend: userId, nameUserSend: nickname, principalID: id, isPrincipalComment: true, comment_Array: comment_Array }, merge: true });
     }
 
     function show() {
@@ -63,33 +69,45 @@ export default function Comment({
         }
     }
 
-    const fetchImage = async (url) => {
-        if (url != null) {
-            const storage = getStorage();
-            const imageRef = ref(storage, url);
-            const getUrl = await getDownloadURL(imageRef);
-            
-            setAvatarURL(getUrl);
+    const loadUserData = async () => {
+        try {
+            const docRef = doc(database, 'users', user);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setUserId(user);
+                setAvatarURL(await fetchImage(docSnap.data().avatar));
+                setNickname(docSnap.data().name);
+            } else {
+                setNickname("BANNED");
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 
-    const loadUserData = async () => {
-        let userData = [];
+    function loadCommentsAnswers() {
         try {
-            const QuerySnapshot = await getDocs(collection(database, "users"));
-            QuerySnapshot.forEach((doc) => {
-                userData.push({id: doc.id, data: doc.data()});
+            const url = 'publications/' + publicationId + '/comments/' + id + "/comment_answers";
+            const collectionRef = collection(database, url);
+            const q = query(collectionRef, orderBy('date', 'desc'));
+
+            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+                set_comment_answers(
+                    QuerySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        body: doc.data().body,
+                        date: doc.data().date,
+                        dislikes: doc.data().dislikes,
+                        likes: doc.data().likes,
+                        mediaURL: doc.data().mediaURL,
+                        user: doc.data().user
+                    }))
+                )
             });
-            userData.find(function (res) {
-                if (res.data.username === user) {
-                    setUserId(res.id);
-                    fetchImage(res.data.avatar);
-                    setUsername(res.data.username);
-                    setNickname(res.data.name);
-                }
-            })
+            return unsuscribe;
         } catch (error) {
-            console.error(error);
+            console.log(error);
         }
     }
 
@@ -98,32 +116,37 @@ export default function Comment({
     }
 
     const setLikeComment = async () => {
-        if (isDislike != true) {
-            if (isLike != true) {
+        if (!isDislike) {
+            if (!isLike) {
                 setIsLike(true);
                 try {
-                    const docRef = doc(database, "publications", publicationId)
+                    // const docRef = doc(database, "publications", publicationId)
+                    const url = "publications/" + publicationId + "/comments";
+                    const docRef = doc(database, url, id);
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
-                        let commentsSnapshot = docSnap.data().comments_container
+                        // let commentsSnapshot = docSnap.data().comments_container
+                        let likesContainer = docSnap.data().likes;
 
-                        for (let i = 0; i < commentsSnapshot.length; i++) {
-                            if (commentsSnapshot[i].message === message) {
-                                if (commentsSnapshot[i].likes) {
-                                    commentsSnapshot[i].likes.push(localUserLogin.username);
-                                    break;
-                                }
-                            }
-                        }
-                        await updateDoc(docRef, { comments_container: commentsSnapshot });
+                        // for (let i = 0; i < commentsSnapshot.length; i++) {
+                        //     if (commentsSnapshot[i].message === message) {
+                        //         if (commentsSnapshot[i].likes) {
+                        //             commentsSnapshot[i].likes.push(localUserLogin.username);
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+                        likesContainer.push(localUserLogin.id);
+                        // await updateDoc(docRef, { comments_container: commentsSnapshot });
+                        await updateDoc(docRef, { likes: likesContainer });
                     } else {
                         setIsLike(false);
-                        Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                        Alert.alert(t('errorTitle'), t('error'));
                         console.error("Datos inexistente")
                     }
                 } catch (error) {
-                    Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                    Alert.alert(t('errorTitle'), t('error'));
                     setIsLike(false);
                     console.error(error);
                 }
@@ -132,70 +155,92 @@ export default function Comment({
             setIsDislike(false)
             setIsLike(true);
             try {
-                const docRef = doc(database, "publications", publicationId)
+                // const docRef = doc(database, "publications", publicationId)
+                const url = "publications/" + publicationId + "/comments";
+                const docRef = doc(database, url, id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    let commentsSnapshot = docSnap.data().comments_container
+                    // let commentsSnapshot = docSnap.data().comments_container
+                    let likesContainer = docSnap.data().likes;
+                    let dislikesContainer = docSnap.data().dislikes;
 
-                    for (let i = 0; i < commentsSnapshot.length; i++) {
-                        if (commentsSnapshot[i].message === message) {
-                            if (commentsSnapshot[i].dislikes) {
-                                for (let y = 0; y < commentsSnapshot[i].dislikes.length; y++) {
-                                    if (commentsSnapshot[i].dislikes[y] === localUserLogin.username) {
-                                        commentsSnapshot[i].dislikes.splice(y, 1);
-                                        break;
-                                    }
-                                }
-                                commentsSnapshot[i].likes.push(localUserLogin.username);
-                                break;
-                            }
+                    // for (let i = 0; i < commentsSnapshot.length; i++) {
+                    //     if (commentsSnapshot[i].message === message) {
+                    //         if (commentsSnapshot[i].dislikes) {
+                    //             for (let y = 0; y < commentsSnapshot[i].dislikes.length; y++) {
+                    //                 if (commentsSnapshot[i].dislikes[y] === localUserLogin.username) {
+                    //                     commentsSnapshot[i].dislikes.splice(y, 1);
+                    //                     break;
+                    //                 }
+                    //             }
+                    //             commentsSnapshot[i].likes.push(localUserLogin.username);
+                    //             break;
+                    //         }
+                    //     }
+                    // }
+
+                    // Eliminando el dislike
+                    for (let i = 0; i < dislikesContainer.length; i++) {
+                        if (dislikesContainer[i] === localUserLogin.id) {
+                            dislikesContainer.splice(i, 1);
+                            break;
                         }
                     }
-                    await updateDoc(docRef, { comments_container: commentsSnapshot });
+                    likesContainer.push(localUserLogin.id);
+
+                    // await updateDoc(docRef, { comments_container: commentsSnapshot });
+                    await updateDoc(docRef, { likes: likesContainer, dislikes: dislikesContainer });
                 } else {
-                    setIsDislike(true)
-                    setIsLike(false)
-                    Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
-                    console.error("Datos inexistente")
+                    setIsDislike(true);
+                    setIsLike(false);
+                    Alert.alert(t('errorTitle'), t('error'));
+                    console.error("Datos inexistente");
                 }
             } catch (error) {
-                setIsDislike(true)
-                setIsLike(false)
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                setIsDislike(true);
+                setIsLike(false);
+                Alert.alert(t('errorTitle'), t('error'));
                 console.error(error);
             }
         }
     }
 
-    const setDisikeComment = async () => {
-        if (isLike != true) {
-            if (isDislike != true) {
+    const setDislikeComment = async () => {
+        if (!isLike) {
+            if (!isDislike) {
                 setIsDislike(true)
                 try {
-                    const docRef = doc(database, "publications", publicationId)
+                    // const docRef = doc(database, "publications", publicationId)
+                    const url = "publications/" + publicationId + "/comments";
+                    const docRef = doc(database, url, id);
                     const docSnap = await getDoc(docRef);
 
                     if (docSnap.exists()) {
-                        let commentsSnapshot = docSnap.data().comments_container
+                        // let commentsSnapshot = docSnap.data().comments_container
+                        let dislikesContainer = docSnap.data().dislikes;
 
-                        for (let i = 0; i < commentsSnapshot.length; i++) {
-                            if (commentsSnapshot[i].message === message) {
-                                if (commentsSnapshot[i].dislikes) {
-                                    commentsSnapshot[i].dislikes.push(localUserLogin.username);
-                                    break;
-                                }
-                            }
-                        }
-                        await updateDoc(docRef, { comments_container: commentsSnapshot });
+                        // for (let i = 0; i < commentsSnapshot.length; i++) {
+                        //     if (commentsSnapshot[i].message === message) {
+                        //         if (commentsSnapshot[i].dislikes) {
+                        //             commentsSnapshot[i].dislikes.push(localUserLogin.username);
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+
+                        dislikesContainer.push(localUserLogin.id);
+
+                        // await updateDoc(docRef, { comments_container: commentsSnapshot });
+                        await updateDoc(docRef, { dislikes: dislikesContainer });
                     } else {
                         setIsDislike(false)
-                        Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                        Alert.alert(t('errorTitle'), t('error'));
                         console.error("Datos inexistente")
                     }
                 } catch (error) {
                     setIsDislike(false)
-                    Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                    Alert.alert(t('errorTitle'), t('error'));
                     console.error(error);
                 }
             }
@@ -203,44 +248,59 @@ export default function Comment({
             setIsLike(false)
             setIsDislike(true)
             try {
-                const docRef = doc(database, "publications", publicationId)
+                // const docRef = doc(database, "publications", publicationId)
+                const url = "publications/" + publicationId + "/comments";
+                const docRef = doc(database, url, id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    let commentsSnapshot = docSnap.data().comments_container
+                    // let commentsSnapshot = docSnap.data().comments_container
+                    let likesContainer = docSnap.data().likes;
+                    let dislikesContainer = docSnap.data().dislikes;
 
-                    for (let i = 0; i < commentsSnapshot.length; i++) {
-                        if (commentsSnapshot[i].message === message) {
-                            if (commentsSnapshot[i].likes) {
-                                for (let y = 0; y < commentsSnapshot[i].likes.length; y++) {
-                                    if (commentsSnapshot[i].likes[y] === localUserLogin.username) {
-                                        commentsSnapshot[i].likes.splice(y, 1);
-                                        break;
-                                    }
-                                }
-                                commentsSnapshot[i].dislikes.push(localUserLogin.username);
-                                break;
-                            }
+                    // for (let i = 0; i < commentsSnapshot.length; i++) {
+                    //     if (commentsSnapshot[i].message === message) {
+                    //         if (commentsSnapshot[i].likes) {
+                    //             for (let y = 0; y < commentsSnapshot[i].likes.length; y++) {
+                    //                 if (commentsSnapshot[i].likes[y] === localUserLogin.username) {
+                    //                     commentsSnapshot[i].likes.splice(y, 1);
+                    //                     break;
+                    //                 }
+                    //             }
+                    //             commentsSnapshot[i].dislikes.push(localUserLogin.username);
+                    //             break;
+                    //         }
+                    //     }
+                    // }
+
+                    for (let i = 0; i < likesContainer.length; i++) {
+                        if (likesContainer[i] === localUserLogin.id) {
+                            likesContainer.splice(i, 1);
+                            break;
                         }
                     }
-                    await updateDoc(docRef, { comments_container: commentsSnapshot });
+
+                    dislikesContainer.push(localUserLogin.id);
+
+                    // await updateDoc(docRef, { comments_container: commentsSnapshot });
+                    await updateDoc(docRef, { likes: likesContainer, dislikes: dislikesContainer });
                 } else {
                     setIsDislike(false)
                     setIsLike(true)
-                    Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                    Alert.alert(t('errorTitle'), t('error'));
                     console.error("Datos inexistente")
                 }
             } catch (error) {
                 setIsDislike(false)
                 setIsLike(true)
-                Alert.alert("Algo salio mal", "Por favor, vuelve a intentarlo")
+                Alert.alert(t('errorTitle'), t('error'));
                 console.error(error);
             }
         }
     }
 
     return (
-        <View style={{backgroundColor: colors.primary_dark, padding: 12, flexDirection: "column", borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5}}>
+        <View style={{ backgroundColor: colors.primary_dark, padding: 12, flexDirection: "column", borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
             {/* Comentario principal */}
             <View style={styles.comment_view}>
 
@@ -251,39 +311,39 @@ export default function Comment({
                 <View style={styles.comment_right}>
 
                     <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
-                        {user == localUserLogin.username ?
-                            <Text style={{fontWeight: "bold", fontSize: 16, color: colors.tertiary}}>{nickname}</Text>
+                        {user == localUserLogin.id ?
+                            <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.tertiary }}>{nickname}</Text>
                             :
-                            <Text style={{fontWeight: "bold", fontSize: 16, color: colors.secondary}}>{nickname}</Text>
+                            <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.secondary }}>{nickname}</Text>
                         }
-                        <Text style={{fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary}}>-</Text>
-                        <Text style={{fontSize: 16, color: colors.secondary}}>{convertDate(date)}</Text>
+                        <Text style={{ fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary }}>-</Text>
+                        <Text style={{ fontSize: 16, color: colors.secondary }}>{convertDate(date)}</Text>
                     </TouchableOpacity>
 
                     <View>
-                        <Text style={{fontSize: 15, marginVertical: 8, color: colors.text}}>{message}</Text>
+                        <Text style={{ fontSize: 15, marginVertical: 8, color: colors.text }}>{message}</Text>
                     </View>
 
                     <View style={styles.comment_footer}>
                         <View style={styles.comment_likes_block}>
                             {/* like comment */}
                             {isLike ?
-                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.like_comment}} name='thumb-up' />
+                                <MaterialCommunityIcons style={{ fontSize: 19, color: colors.like_comment }} name='thumb-up' />
                                 :
                                 <TouchableOpacity onPress={setLikeComment}>
-                                    <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-up' />
+                                    <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-up' />
                                 </TouchableOpacity>
                             }
 
                             {/* counter */}
-                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{likesTotal}</Text>
+                            <Text style={{ fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary }}>{likesTotal}</Text>
 
                             {/* dislike comment */}
                             {isDislike ?
-                                <MaterialCommunityIcons style={{fontSize: 19, color: colors.dislike_comment}} name='thumb-down' />
+                                <MaterialCommunityIcons style={{ fontSize: 19, color: colors.dislike_comment }} name='thumb-down' />
                                 :
-                                <TouchableOpacity onPress={setDisikeComment}>
-                                    <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='thumb-down' />
+                                <TouchableOpacity onPress={setDislikeComment}>
+                                    <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-down' />
                                 </TouchableOpacity>
                             }
 
@@ -292,15 +352,15 @@ export default function Comment({
 
                         </View>
                         <View style={styles.comment_responces_block}>
-                            <MaterialCommunityIcons style={{fontSize: 19, color: colors.primary_dark_alternative}} name='message-processing' />
-                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{allAnswers}</Text>
+                            <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='message-processing' />
+                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{comment_answers.length}</Text>
                         </View>
                         <TouchableOpacity onPress={replyComment}>
-                            <Text style={{color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10}}>Responder</Text>
+                            <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10 }}>Responder</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {allAnswers > 0 ?
+                    {comment_answers.length > 0 ?
                         <TouchableOpacity onPress={show}>
                             {showAnswers ?
                                 <View style={styles.comment_show_responces}>
@@ -322,7 +382,7 @@ export default function Comment({
             </View>
             {/* Area de respuestas */}
             {showAnswers ?
-                comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} publicationId={publicationId} {...comment} />))
+                comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} principalID={id} publicationId={publicationId} {...comment} />))
                 :
                 <View></View>
             }

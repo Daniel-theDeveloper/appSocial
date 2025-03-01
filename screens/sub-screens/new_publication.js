@@ -1,31 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { database } from '../../utils/database';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { localUserLogin } from '../../utils/localstorage';
 import { getStorage, ref, uploadBytes } from "firebase/storage"
 
 import * as ImagePicker from 'expo-image-picker';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Modal from 'react-native-modalbox';
-import EmojiSelector from 'react-native-emoji-selector';
+// import Modal from 'react-native-modalbox';
+// import EmojiSelector from 'react-native-emoji-selector';
 import { useTheme } from '@react-navigation/native';
 
 import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
 
-export let new_publication_params = {
-    isFhoto: false,
-    photoURI: null,
-    photoName: null,
-    photoType: 'pnj'
-}
-
 export default function New_publication(props) {
-    const [newPublication, setNewPublication] = React.useState({
+    const [newPublication, setNewPublication] = useState({
         body: '',
-        urlImage: null,
+        urlImages: null,
         comments_container: [],
         replyID: null,
         date: new Date(),
@@ -33,43 +26,55 @@ export default function New_publication(props) {
         shares: [],
         userId: localUserLogin.id
     })
-    const [userImage, setUserImage] = useState(null);
-    const [userImageName, setUserImageName] = useState("publish");
-    const [userImageType, setUserImageType] = useState("pnj");
+    const [userImage, setUserImage] = useState([]);
+    const [userImageName, setUserImageName] = useState([]);
     const [isUploadImage, setIsUploadImage] = useState(false);
     const [loading_Button, setLoading_Button] = useState(false);
-    const [emojiModal, setEmojiModal] = useState(false);
+    // const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
 
     useEffect(() => {
-        if (new_publication_params.isFhoto) {
-            setUserImage(new_publication_params.photoURI);
-            setUserImageName(new_publication_params.photoName);
-            setUserImageType(new_publication_params.photoType);
+        if (props.route.params?.photo != undefined || props.route.params?.photo != null) {
+            let loadedImages = [];
+            let loadedImagesName = [];
+            const image = props.route.params?.photo;
 
+            for (let x = 0; x < image.assets.length; x++) {
+                loadedImages.push(image.assets[x].uri);
+                loadedImagesName.push(image.assets[x].fileName);
+            }
+
+            setUserImage(loadedImages);
+            setUserImageName(loadedImagesName);
             setIsUploadImage(true);
         }
     }, []);
 
     const UploadImage = async () => {
         const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        let loadedImages = [];
+        let loadedImagesName = [];
 
         if (granted) {
             const image = await ImagePicker.launchImageLibraryAsync({
-                allowsEditing: true,
-                allowsMultipleSelection: false,
-                quality: 1,
+                allowsMultipleSelection: true,
+                quality: 0.8,
                 aspect: [4, 3],
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                selectionLimit: 10
             });
             if (image.canceled) {
                 // Nothing
             } else {
-                setUserImage(image.assets[0].uri);
-                setUserImageName(image.assets[0].width);
-                setUserImageType(getFormatImage(image.assets[0].mimeType))
+                for (let x = 0; x < image.assets.length; x++) {
+                    loadedImages.push(image.assets[x].uri);
+                    loadedImagesName.push(image.assets[x].fileName);
+                }
+
+                setUserImage(loadedImages);
+                setUserImageName(loadedImagesName);
 
                 setIsUploadImage(true);
             }
@@ -80,22 +85,26 @@ export default function New_publication(props) {
 
     const pickPhoto = async () => {
         const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+        let loadedImages = userImage;
+        let loadedImagesName = userImageName;
 
         if (granted) {
             const image = await ImagePicker.launchCameraAsync({
-                allowsEditing: true,
-                allowsMultipleSelection: false,
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 aspect: [4, 3],
-                quality: 1
+                quality: 0.8,
+                selectionLimit: 10
             });
             if (image.canceled) {
                 // Nothing
             } else {
-                setUserImage(image.assets[0].uri);
-                setUserImageName(image.assets[0].width);
-                setUserImageType(getFormatImage(image.assets[0].mimeType))
+                for (let x = 0; x < image.assets.length; x++) {
+                    loadedImages.push(image.assets[x].uri);
+                    loadedImagesName.push(image.assets[x].fileName);
+                }
 
+                setUserImage(loadedImages);
+                setUserImageName(loadedImagesName);
                 setIsUploadImage(true);
             }
 
@@ -104,13 +113,9 @@ export default function New_publication(props) {
         }
     }
 
-    function getFormatImage(mimeType) {
-        const array = mimeType.split('/');
-        return array[1];
-    }
-
     function removeImage() {
-        setUserImage(null);
+        setUserImage([]);
+        setUserImageName([]);
         setIsUploadImage(false);
     }
 
@@ -153,20 +158,32 @@ export default function New_publication(props) {
     const sharePublish = async () => {
         setLoading_Button(true);
         try {
-            if (userImage != null) {
-                const url = localUserLogin.username + "/publicationImages/" + userImageName + "." + userImageType;
-
-                const response = await fetch(userImage);
-                const blob = await response.blob();
-                const storage = getStorage();
-                const storageRef = ref(storage, url);
-
-                const snapshot = await uploadBytes(storageRef, blob);
-
-                newPublication.urlImage = snapshot.ref.fullPath;
-            }
             if (newPublication.body != '') {
-                await addDoc(collection(database, 'publications'), newPublication);
+                // Proceso de publicación
+                const res = await addDoc(collection(database, 'publications'), newPublication);
+                const id_new = res._key.path.segments[1];
+
+                // Proceso de publicación de las imágenes
+                if (userImage.length != 0) {
+                    let urlList = [];
+                    for (let i = 0; i < userImage.length; i++) {
+                        const url = localUserLogin.username + "/publicationImages/" + id_new + "/" + userImageName[i];
+
+                        const response = await fetch(userImage[i]);
+                        const blob = await response.blob();
+                        const storage = getStorage();
+                        const storageRef = ref(storage, url);
+
+                        const snapshot = await uploadBytes(storageRef, blob);
+                        urlList.push(snapshot.ref.fullPath);
+                    }
+                    const docRef = doc(database, 'publications', id_new);
+                    await updateDoc(docRef, {
+                        urlImages: urlList
+                    });
+                    // newPublication.urlImages = snapshot.ref.fullPath;
+                }
+
                 setLoading_Button(false);
                 goBackAgain();
             } else {
@@ -180,16 +197,36 @@ export default function New_publication(props) {
         }
     }
 
-    function openEmojiModal() {
-        if (emojiModal) {
-            setEmojiModal(false);
-        } else {
-            setEmojiModal(true);
-        }
-    }
+    // No actualiza el array useImages:
+    // function deleteSelectedImage(x) {
+    //     setIsUploadImage(false);
+    //     let newImages = userImage;
+    //     let newImagesName = userImageName;
+
+    //     setUserImage([]);
+    //     setUserImageName([]);
+
+    //     newImages.splice(x, 1);
+    //     newImagesName.splice(x, 1);
+
+    //     setUserImage(newImages);
+    //     setUserImageName(newImagesName);
+
+    //     if (userImage.length > 0) {
+    //         setIsUploadImage(true);
+    //     }
+    // }
+
+    // function openEmojiModal() {
+    //     if (emojiModal) {
+    //         setEmojiModal(false);
+    //     } else {
+    //         setEmojiModal(true);
+    //     }
+    // }
 
     return (
-        <View style={{ flex: 1, flexGrow: 1, paddingBottom: 50, paddingHorizontal: 20, backgroundColor: colors.background }} showsVerticalScrollIndicator={true}>
+        <ScrollView style={{ flex: 1, flexGrow: 1, paddingBottom: 50, paddingHorizontal: 20, backgroundColor: colors.background }} showsVerticalScrollIndicator={true}>
             <TouchableOpacity style={styles.back_button_block} onPress={showAlert}>
                 <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='chevron-left' />
                 <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>{t('exitButton')}</Text>
@@ -202,35 +239,35 @@ export default function New_publication(props) {
                 <View style={styles.publish_buttons}>
                     <View style={styles.publish_add_buttons}>
                         <TouchableOpacity onPress={pickPhoto}>
-                            <MaterialCommunityIcons style={{marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold"}} name='camera-plus-outline' />
+                            <MaterialCommunityIcons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name='camera-plus-outline' />
                         </TouchableOpacity>
 
                         {isUploadImage ?
                             <TouchableOpacity onPress={alertRemoveImage}>
-                                <MaterialCommunityIcons style={{marginRight: 15, color: colors.tertiary, fontSize: 26, fontWeight: "bold"}} name='file-image-remove' />
+                                <MaterialCommunityIcons style={{ marginRight: 15, color: colors.tertiary, fontSize: 26, fontWeight: "bold" }} name='file-image-remove' />
                             </TouchableOpacity>
                             :
                             <TouchableOpacity onPress={UploadImage}>
-                                <MaterialCommunityIcons style={{marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold"}} name='file-image-plus-outline' />
+                                <MaterialCommunityIcons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name='file-image-plus-outline' />
                             </TouchableOpacity>
                         }
 
-                        <TouchableOpacity onPress={openEmojiModal}>
+                        {/* <TouchableOpacity onPress={openEmojiModal}>
                             <MaterialCommunityIcons style={{marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold"}} name='emoticon-happy' />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
 
                     <View style={styles.publich_block}>
-                        <Text style={{fontSize: 16, marginRight: 10, color: colors.primary}}>{newPublication.body.length} / 500</Text>
+                        <Text style={{ fontSize: 16, marginRight: 10, color: colors.primary }}>{newPublication.body.length} / 500</Text>
                         {loading_Button ?
-                            <View style={{flexDirection: "row", backgroundColor: colors.quartet_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10}}>
+                            <View style={{ flexDirection: "row", backgroundColor: colors.quartet_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10 }}>
                                 <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                                <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>{t('publishing')}</Text>
+                                <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>{t('publishing')}</Text>
                             </View>
                             :
                             <TouchableOpacity onPress={sharePublish}>
-                                <View style={{backgroundColor: colors.quartet, paddingHorizontal: 20, paddingVertical: 5, borderRadius: 10}}>
-                                    <Text style={{color: colors.text, fontSize: 18, fontWeight: "bold"}}>{t('publish')}</Text>
+                                <View style={{ backgroundColor: colors.quartet, paddingHorizontal: 20, paddingVertical: 5, borderRadius: 10 }}>
+                                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: "bold" }}>{t('publish')}</Text>
                                 </View>
                             </TouchableOpacity>
                         }
@@ -238,7 +275,7 @@ export default function New_publication(props) {
 
                 </View>
 
-                <View style={{width: "100%", height: 2, backgroundColor: colors.secondary, marginBottom: 10}}></View>
+                <View style={{ width: "100%", height: 2, backgroundColor: colors.secondary, marginBottom: 10 }}></View>
 
                 <View style={{
                     padding: 10,
@@ -266,24 +303,31 @@ export default function New_publication(props) {
                     {isUploadImage ?
                         <View>
                             <View style={styles.multimedia_block}>
-                                <MaterialCommunityIcons style={{fontSize: 18, color: colors.tertiary, marginTop: 10, marginRight: 10}} name='file-image' />
-                                <Text style={{fontSize: 18, fontWeight: "bold", color: colors.tertiary, marginTop: 10}}>{t('imageLoaded')}</Text>
+                                <MaterialCommunityIcons style={{ fontSize: 18, color: colors.tertiary, marginTop: 10, marginRight: 10 }} name='file-image' />
+                                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.tertiary, marginTop: 10 }}>{userImage.length + '/10 ' + t('imageLoaded')}</Text>
                             </View>
-                            <Image style={styles.publication_image} source={{ uri: userImage }} />
+                            {userImage.map((key, x) => (
+                                <View key={key}>
+                                    <Image style={styles.publication_image} source={{ uri: userImage[x] }} />
+                                    {/* <TouchableOpacity onPress={() => deleteSelectedImage(x)} style={{ position: 'absolute', right: 0, margin: 10, padding: 5, borderRadius: 20, opacity: 0.8, backgroundColor: "black" }}>
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: "white" }} name='close-thick'></MaterialCommunityIcons>
+                                    </TouchableOpacity> */}
+                                </View>
+                            ))}
                         </View>
                         :
                         <View style={styles.multimedia_block}>
-                            <MaterialCommunityIcons style={{fontSize: 18, color: colors.primary, marginTop: 10, marginRight: 10}} name='file-image-remove-outline' />
-                            <Text style={{fontSize: 18, color: colors.primary, marginTop: 10}}>{t('noImageLoaded')}</Text>
+                            <MaterialCommunityIcons style={{ fontSize: 18, color: colors.primary, marginTop: 10, marginRight: 10 }} name='file-image-remove-outline' />
+                            <Text style={{ fontSize: 18, color: colors.primary, marginTop: 10 }}>{t('noImageLoaded')}</Text>
                         </View>
                     }
                 </View>
             </View>
-            <Modal style={{ alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark }} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
+            {/* <Modal style={{ alignItems: "center", padding: 20, height: 500, borderTopRightRadius: 40, borderTopLeftRadius: 40, backgroundColor: colors.primary_dark }} position={"bottom"} isOpen={emojiModal} onClosed={openEmojiModal}>
                 <View style={{ height: 3, width: 50, borderRadius: 5, marginBottom: 30, backgroundColor: colors.primary }}></View>
                 <EmojiSelector columns={8} onEmojiSelected={emoji => setNewPublication({ ...newPublication, body: newPublication.body + emoji })} />
-            </Modal>
-        </View>
+            </Modal> */}
+        </ScrollView>
     );
 }
 
@@ -320,7 +364,7 @@ const styles = StyleSheet.create({
         maxHeight: 400,
         width: "100%",
         marginBottom: 15,
-        borderRadius: 20
+        borderRadius: 10
     },
     publich_block: {
         flexDirection: "row",

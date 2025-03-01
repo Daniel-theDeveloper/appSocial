@@ -27,7 +27,8 @@ const LightTheme = {
         holderText: '#42799F',
         loading: '#00D1FF',
         like_comment: '#70BD00',
-        dislike_comment: '#FF1981'
+        dislike_comment: '#FF1981',
+        modalColor: 'white'
     }
 };
 

@@ -1,3 +1,16 @@
+diff --git a/node_modules/react-native-gifted-chat/lib/Day.js b/node_modules/react-native-gifted-chat/lib/Day.js
+index 7829a72..2c2a711 100644
+--- a/node_modules/react-native-gifted-chat/lib/Day.js
++++ b/node_modules/react-native-gifted-chat/lib/Day.js
+@@ -27,7 +27,7 @@ export default class Day extends PureComponent {
+           <View style={wrapperStyle}>
+             <Text style={[styles.text, textStyle]}>
+               {dayjs(currentMessage.createdAt)
+-                .locale(this.context.getLocale())
++                .locale(this.context.toLocaleString())
+                 .format(dateFormat)}
+             </Text>
+           </View>
 diff --git a/node_modules/react-native-gifted-chat/lib/MessageContainer.js b/node_modules/react-native-gifted-chat/lib/MessageContainer.js
 index 193772a..1121641 100644
 --- a/node_modules/react-native-gifted-chat/lib/MessageContainer.js
@@ -96,3 +109,16 @@ index 193772a..1121641 100644
      }
  }
  MessageContainer.defaultProps = {
+diff --git a/node_modules/react-native-gifted-chat/lib/Time.js b/node_modules/react-native-gifted-chat/lib/Time.js
+index 24b06cc..bf65b8a 100644
+--- a/node_modules/react-native-gifted-chat/lib/Time.js
++++ b/node_modules/react-native-gifted-chat/lib/Time.js
+@@ -48,7 +48,7 @@ export default class Time extends Component {
+                 timeTextStyle && timeTextStyle[position],
+             ]}>
+             {dayjs(currentMessage.createdAt)
+-                .locale(this.context.getLocale())
++                .locale(this.context.toLocaleString())
+                 .format(timeFormat)}
+           </Text>
+         </View>);

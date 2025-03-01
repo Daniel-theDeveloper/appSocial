@@ -27,7 +27,8 @@ const DarkTheme = {
         holderText: '#6D94AF',
         loading: '#FF007C',
         like_comment: '#C3E88D',
-        dislike_comment: '#FF7171'
+        dislike_comment: '#FF7171',
+        modalColor: 'black'
     }
 };
 
