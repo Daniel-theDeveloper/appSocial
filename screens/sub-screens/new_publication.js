@@ -1,54 +1,134 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { database } from '../../utils/database';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { localUserLogin } from '../../utils/localstorage';
-import { getStorage, ref, uploadBytes } from "firebase/storage"
+import { getStorage, ref, uploadBytes, deleteObject } from "firebase/storage";
+import Modal from 'react-native-modalbox';
+import RadioGroup from 'react-native-radio-buttons-group';
 
 import * as ImagePicker from 'expo-image-picker';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 // import Modal from 'react-native-modalbox';
 // import EmojiSelector from 'react-native-emoji-selector';
 import { useTheme } from '@react-navigation/native';
 
 import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
+import { fetchImage } from '../../utils/interations';
 
 export default function New_publication(props) {
     const [newPublication, setNewPublication] = useState({
         body: '',
-        urlImages: null,
-        comments_container: [],
+        urlImages: [],
         replyID: null,
         date: new Date(),
         likes: [],
         shares: [],
+        status: 3,
+        author: null,
         userId: localUserLogin.id
     })
     const [userImage, setUserImage] = useState([]);
     const [userImageName, setUserImageName] = useState([]);
     const [isUploadImage, setIsUploadImage] = useState(false);
     const [loading_Button, setLoading_Button] = useState(false);
+
+    const [statusModal, setStatusModal] = useState(false);
     // const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
 
+    const radioButtons = useMemo(() => ([
+        {
+            id: 1,
+            label: t('private'),
+            value: 1,
+            color: colors.primary
+        },
+        {
+            id: 2,
+            label: t('privateFollowers'),
+            value: 2,
+            color: colors.primary
+        },
+        {
+            id: 3,
+            label: t('public'),
+            value: 3,
+            color: colors.primary
+        }
+    ]), []);
+
+    const radioButtonsEditPublish = useMemo(() => ([
+        {
+            id: 1,
+            label: t('private'),
+            value: 1,
+            color: colors.primary
+        },
+        {
+            id: 2,
+            label: t('privateFollowers'),
+            value: 2,
+            color: colors.primary
+        },
+        {
+            id: 4,
+            label: t('public'),
+            value: 4,
+            color: colors.primary
+        }
+    ]), []);
+
     useEffect(() => {
-        if (props.route.params?.photo != undefined || props.route.params?.photo != null) {
-            let loadedImages = [];
-            let loadedImagesName = [];
-            const image = props.route.params?.photo;
-
-            for (let x = 0; x < image.assets.length; x++) {
-                loadedImages.push(image.assets[x].uri);
-                loadedImagesName.push(image.assets[x].fileName);
+        try {
+            const userRef = doc(database, 'users', localUserLogin.id);
+            setNewPublication({...newPublication, author: userRef});
+    
+            if (props.route.params?.isEdit) {
+                const oldPublish = props.route.params?.publishToEdit;
+    
+                if (oldPublish.urlImages != undefined) {
+                    if (oldPublish.urlImages.length > 0) {
+                        loadPhotos(oldPublish.urlImages);
+                    }
+                }
+    
+                setNewPublication({
+                    body: oldPublish.body,
+                    urlImages: oldPublish.urlImages,
+                    replyID: oldPublish.replyID,
+                    date: oldPublish.date,
+                    likes: [],
+                    shares: [],
+                    status: oldPublish.status == 3 ? 4 : oldPublish.status,
+                    author: oldPublish.author,
+                    userId: localUserLogin.id
+                });
+            } else {
+                if (props.route.params?.photo != undefined || props.route.params?.photo != null) {
+                    let loadedImages = [];
+                    let loadedImagesName = [];
+                    const image = props.route.params?.photo;
+    
+                    for (let x = 0; x < image.assets.length; x++) {
+                        loadedImages.push(image.assets[x].uri);
+                        loadedImagesName.push(image.assets[x].fileName);
+                    }
+    
+                    setUserImage(loadedImages);
+                    setUserImageName(loadedImagesName);
+                    setIsUploadImage(true);
+                }
             }
-
-            setUserImage(loadedImages);
-            setUserImageName(loadedImagesName);
-            setIsUploadImage(true);
+        } catch (error) {
+            console.error(error);
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
+            props.navigation.goBack();
         }
     }, []);
 
@@ -80,6 +160,27 @@ export default function New_publication(props) {
             }
         } else {
             Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
+        }
+    }
+
+    const loadPhotos = async (urlImages) => {
+        try {
+            let loadedImages = [];
+            let loadedImagesName = [];
+
+            for (let x = 0; x < urlImages.length; x++) {
+                loadedImages.push(await fetchImage(urlImages[x]));
+                const urlCrude = urlImages[x].split("/");
+                loadedImagesName.push(urlCrude[3]);
+            }
+
+            setUserImage(loadedImages);
+            setUserImageName(loadedImagesName);
+            setIsUploadImage(true);
+        } catch (error) {
+            console.error(error);
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
+            props.navigation.goBack();
         }
     }
 
@@ -158,30 +259,75 @@ export default function New_publication(props) {
     const sharePublish = async () => {
         setLoading_Button(true);
         try {
-            if (newPublication.body != '') {
-                // Proceso de publicación
-                const res = await addDoc(collection(database, 'publications'), newPublication);
-                const id_new = res._key.path.segments[1];
+            if (newPublication.body != '' && newPublication.author != null) {
+                if (!props.route.params?.isEdit) {
+                    // Proceso de publicación
+                    const res = await addDoc(collection(database, 'publications'), newPublication);
+                    const id_new = res._key.path.segments[1];
 
-                // Proceso de publicación de las imágenes
-                if (userImage.length != 0) {
-                    let urlList = [];
-                    for (let i = 0; i < userImage.length; i++) {
-                        const url = localUserLogin.username + "/publicationImages/" + id_new + "/" + userImageName[i];
+                    // Proceso de publicación de las imágenes
+                    if (userImage.length != 0) {
+                        let urlList = [];
+                        for (let i = 0; i < userImage.length; i++) {
+                            const url = localUserLogin.username + "/publicationImages/" + id_new + "/" + userImageName[i];
 
-                        const response = await fetch(userImage[i]);
-                        const blob = await response.blob();
-                        const storage = getStorage();
-                        const storageRef = ref(storage, url);
+                            const response = await fetch(userImage[i]);
+                            const blob = await response.blob();
+                            const storage = getStorage();
+                            const storageRef = ref(storage, url);
 
-                        const snapshot = await uploadBytes(storageRef, blob);
-                        urlList.push(snapshot.ref.fullPath);
+                            const snapshot = await uploadBytes(storageRef, blob);
+                            urlList.push(snapshot.ref.fullPath);
+                        }
+                        const docRef = doc(database, 'publications', id_new);
+                        await updateDoc(docRef, {
+                            urlImages: urlList
+                        });
+                        // newPublication.urlImages = snapshot.ref.fullPath;
                     }
-                    const docRef = doc(database, 'publications', id_new);
+                } else {
+                    // Proceso de edición
+                    const oldPublish = props.route.params?.publishToEdit;
+                    let urlList = [];
+
+                    // Verificando si la publicación tenia imágenes o no
+                    if (props.route.params?.publishToEdit.urlImages != null || props.route.params?.publishToEdit.urlImages != undefined) {
+
+                        // Verificando si se cambiaron las imágenes
+                        if (oldPublish.urlImages != userImageName) {
+                            // Eliminando las antiguas imágenes
+                            if (oldPublish.urlImages.length > 0) {
+                                for (let i = 0; i < oldPublish.urlImages.length; i++) {
+                                    const storage = getStorage();
+                                    const storageRef = ref(storage, oldPublish.urlImages[i]);
+                                    await deleteObject(storageRef);
+                                }
+                            }
+
+                            // Subiendo las nuevas imágenes
+                            if (userImage.length != 0) {
+                                for (let i = 0; i < userImage.length; i++) {
+                                    const url = localUserLogin.username + "/publicationImages/" + oldPublish.id + "/" + userImageName[i];
+
+                                    const response = await fetch(userImage[i]);
+                                    const blob = await response.blob();
+                                    const storage = getStorage();
+                                    const storageRef = ref(storage, url);
+
+                                    const snapshot = await uploadBytes(storageRef, blob);
+                                    urlList.push(snapshot.ref.fullPath);
+                                }
+                            }
+                        }
+                    }
+
+                    const docRef = doc(database, 'publications', oldPublish.id);
                     await updateDoc(docRef, {
-                        urlImages: urlList
+                        body: newPublication.body,
+                        urlImages: urlList,
+                        status: newPublication.status,
+                        wasEdit: true
                     });
-                    // newPublication.urlImages = snapshot.ref.fullPath;
                 }
 
                 setLoading_Button(false);
@@ -195,6 +341,18 @@ export default function New_publication(props) {
             Alert.alert(t('serverErrorTitle'), t('serverError'));
             console.error(error);
         }
+    }
+
+    function openStatusModal() {
+        if (statusModal) {
+            setStatusModal(false);
+        } else {
+            setStatusModal(true);
+        }
+    }
+
+    function setSelectStatus(e) {
+        setNewPublication({ ...newPublication, status: e });
     }
 
     // No actualiza el array useImages:
@@ -233,7 +391,7 @@ export default function New_publication(props) {
             </TouchableOpacity>
             <View style={{ padding: 10, backgroundColor: colors.primary_dark, borderRadius: 15 }}>
                 <View style={styles.header}>
-                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>{t('newPublish')}</Text>
+                    <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 8, color: colors.text }}>{props.route.params?.isEdit ? t('editPublish') : t('newPublish')}</Text>
                 </View>
 
                 <View style={styles.publish_buttons}>
@@ -255,6 +413,10 @@ export default function New_publication(props) {
                         {/* <TouchableOpacity onPress={openEmojiModal}>
                             <MaterialCommunityIcons style={{marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold"}} name='emoticon-happy' />
                         </TouchableOpacity> */}
+
+                        <TouchableOpacity onPress={openStatusModal}>
+                            <Ionicons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name={newPublication.status == 1 ? 'eye-off' : newPublication.status == 2 ? 'people' : newPublication.status == 3 || newPublication.status == 4 ? 'earth' : 'alert-sharp'} />
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.publich_block}>
@@ -286,7 +448,7 @@ export default function New_publication(props) {
                     outlineWidth: 2,
                 }}>
                     <TextInput
-                        placeholder='Escribe lo que piensas'
+                        placeholder={t('write')}
                         placeholderTextColor={colors.holderText}
                         onChangeText={(text) => setNewPublication({ ...newPublication, body: text })}
                         value={newPublication.body}
@@ -327,6 +489,37 @@ export default function New_publication(props) {
                 <View style={{ height: 3, width: 50, borderRadius: 5, marginBottom: 30, backgroundColor: colors.primary }}></View>
                 <EmojiSelector columns={8} onEmojiSelected={emoji => setNewPublication({ ...newPublication, body: newPublication.body + emoji })} />
             </Modal> */}
+
+            <Modal style={{
+                paddingTop: 20,
+                paddingHorizontal: 10,
+                maxHeight: 175,
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+                backgroundColor: colors.background,
+                alignItems: 'flex-start'
+            }} position={"bottom"} isOpen={statusModal} onClosed={openStatusModal} coverScreen={true}>
+                <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>{t('visibility')}</Text>
+                </View>
+                {props.route.params?.isEdit ?
+                    <RadioGroup
+                        containerStyle={{ alignItems: 'flex-start' }}
+                        radioButtons={radioButtonsEditPublish}
+                        onPress={setSelectStatus}
+                        selectedId={newPublication.status}
+                        labelStyle={{ color: colors.text, fontSize: 16 }}
+                    />
+                    :
+                    <RadioGroup
+                        containerStyle={{ alignItems: 'flex-start' }}
+                        radioButtons={radioButtons}
+                        onPress={setSelectStatus}
+                        selectedId={newPublication.status}
+                        labelStyle={{ color: colors.text, fontSize: 16 }}
+                    />
+                }
+            </Modal>
         </ScrollView>
     );
 }

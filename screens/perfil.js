@@ -134,7 +134,12 @@ export default function Perfil(props) {
         setLoading(true);
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, where("userId", "==", props.route.params?.userId), orderBy('date', 'desc'));
+            const data = localUserLogin.id == props.route.params?.userId ? [0, 1, 2, 3, 4] : [2, 3, 4];
+            const q = query(collectionRef,
+                where("userId", "==", props.route.params?.userId),
+                where("status", "in", data),
+                orderBy('date', 'desc')
+            );
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
@@ -143,11 +148,13 @@ export default function Perfil(props) {
                         body: doc.data().body,
                         urlImages: doc.data().urlImages,
                         replyID: doc.data().replyID,
-                        userId: doc.data().userId,
+                        status: doc.data().status,
+                        author: doc.data().author,
                         // comments_container: await searchMyComment(doc.id),
                         date: doc.data().date,
                         likes: doc.data().likes,
-                        shares: doc.data().shares
+                        shares: doc.data().shares,
+                        userId: doc.data().userId
                     }))
                 )
                 setLoading(false);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator, Alert, ImageBackground } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasSaved, isWasInteractedByID, sendNotification, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage } from '../../utils/interations';
+import { isWasInteracted, isWasSaved, isWasInteractedByID, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import Comment, { comment_Array } from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
@@ -12,6 +12,7 @@ import { doc, getDoc, collection, onSnapshot, query, orderBy, addDoc } from 'fir
 import { database } from '../../utils/database';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from 'react-native-vector-icons/Ionicons'
 import Modal from 'react-native-modalbox';
 
 import '../../i18n/i18n';
@@ -23,12 +24,16 @@ export default function Details(props) {
         body: "",
         urlImages: null,
         replyId: null,
-        comments_container: [],
+        status: null,
+        // comments_container: [],
         date: "",
         likes: [],
         shares: 0,
-        userId: ""
+        author: null
     });
+
+    const [isAvailable, setIsAvailable] = useState(true);
+
     const [CommentsArray, setCommentsArray] = useState([]);
     const [loadingButton, setLoadingButton] = useState((false));
 
@@ -117,37 +122,40 @@ export default function Details(props) {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                const publication = {
-                    id: props.route.params?.id,
-                    body: docSnap.data().body,
-                    urlImages: docSnap.data().urlImages,
-                    replyId: docSnap.data().replyID,
-                    date: docSnap.data().date,
-                    likes: docSnap.data().likes,
-                    shares: docSnap.data().shares,
-                    userId: docSnap.data().userId,
-                    // A desaparecer
-                    comments_container: [],
-                }
+                if (docSnap.data().status < 5) {
+                    const publication = {
+                        id: props.route.params?.id,
+                        body: docSnap.data().body,
+                        urlImages: docSnap.data().urlImages,
+                        replyId: docSnap.data().replyID,
+                        status: docSnap.data().status,
+                        date: docSnap.data().date,
+                        likes: docSnap.data().likes,
+                        shares: docSnap.data().shares,
+                        author: docSnap.data().author
+                    }
 
-                if (docSnap.data().urlImages != null) {
-                    loadPhoto(docSnap.data().urlImages);
-                }
-                if (props.route.params?.avatar != null) {
-                    setAvatarURL(props.route.params?.avatar);
-                }
+                    if (docSnap.data().urlImages != null) {
+                        loadPhoto(docSnap.data().urlImages);
+                    }
+                    if (props.route.params?.avatar != null) {
+                        setAvatarURL(props.route.params?.avatar);
+                    }
 
-                setMyAvatar(localUserLogin.avatar);
-                setReplyId(docSnap.data().replyId);
-                setAllLikes(docSnap.data().likes.length);
-                // setAllComments(docSnap.data().comments_container.length);
-                setIsLike(isWasInteracted(docSnap.data().likes));
-                setIsShared(isWasInteractedByID(docSnap.data().shares));
-                setPublicationArray(publication);
-                promiseSaved();
+                    setMyAvatar(localUserLogin.avatar);
+                    setReplyId(docSnap.data().replyId);
+                    setAllLikes(docSnap.data().likes.length);
+                    // setAllComments(docSnap.data().comments_container.length);
+                    setIsLike(isWasInteracted(docSnap.data().likes));
+                    setIsShared(isWasInteractedByID(docSnap.data().shares));
+                    setPublicationArray(publication);
+                    promiseSaved();
+                } else {
+                    setIsAvailable(false);
+                }
             } else {
                 props.navigation.goBack();
-                Alert.alert(t('noPublishFound'));
+                setIsAvailable(false);
             }
 
         } catch (error) {
@@ -251,7 +259,7 @@ export default function Details(props) {
                 // }
                 const url = "publications/" + publicationArray.id + "/comments";
                 const res = await addDoc(collection(database, url), commentArray);
-                
+
                 setMyCommnent("");
                 setLoadingButton(false);
             } catch (error) {
@@ -309,183 +317,241 @@ export default function Details(props) {
 
     return (
         <View style={{ backgroundColor: colors.background }}>
-            <ScrollView showsVerticalScrollIndicator={true}>
-                <View style={styles.container}>
+            {isAvailable ?
+                <ScrollView showsVerticalScrollIndicator={true}>
+                    <View style={styles.container}>
+                        <TouchableOpacity onPress={goBackAgain}>
+                            <View style={styles.back_block}>
+                                <MaterialCommunityIcons style={{ fontSize: 49, color: colors.secondary }} name='chevron-left' />
+                                <Text style={{ fontSize: 21, fontWeight: "bold", color: colors.secondary }}>{t('return')}</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <View style={{ backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
+                            {/* Encabezado de la publicación */}
+                            <View style={styles.perfil_header}>
+                                <View style={styles.perfil_user}>
+                                    <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
+                                    <View style={styles.perfil_usernames_container}>
+                                        <Text style={{ fontSize: 17, fontWeight: "bold", color: colors.secondary }}>{props.route.params?.nickname}{t('publishedLabel')}</Text>
+                                        <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publicationArray.date)}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Cuerpo de la publicación */}
+                            <Text style={{ fontSize: 17, marginBottom: 15, color: colors.text }}>{publicationArray.body}</Text>
+                            {replyId != null || replyId != undefined ?
+                                <ReplyPublish props={props} replyID={replyId} />
+                                :
+                                imageURL != null ?
+                                    imageURL.length === 1 ?
+                                        <Image style={{ height: 200, width: "100%", marginBottom: 15, borderRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                        :
+                                        imageURL.length === 2 ?
+                                            <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
+                                                <Image style={{ marginRight: 3, height: 200, width: "49%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                                <Image style={{ marginLeft: 3, height: 200, width: "49%", borderTopRightRadius: 15, borderBottomRightRadius: 15 }} source={{ uri: imageURL[1] }} />
+                                            </TouchableOpacity>
+                                            :
+                                            imageURL.length === 3 ?
+                                                <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
+                                                    <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                                    <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
+                                                        <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
+                                                        <Image style={{ marginTop: 3, height: "48.5%", borderBottomRightRadius: 15 }} source={{ uri: imageURL[2] }} />
+                                                    </View>
+                                                </TouchableOpacity>
+                                                :
+                                                imageURL.length > 3 ?
+                                                    <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
+                                                        <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                                        <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
+                                                            <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
+                                                            <ImageBackground source={{ uri: imageURL[2] }} imageStyle={{ opacity: 0.5, resizeMode: "cover", height: "100%", borderBottomRightRadius: 15 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 3, height: "48.5%", borderBottomRightRadius: 15, backgroundColor: "#1f1f1f" }}>
+                                                                <Text style={{ color: "white", fontSize: 36, }}>+{imageURL.length - 3}</Text>
+                                                            </ImageBackground>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                    :
+                                                    <View></View>
+                                    :
+                                    <View></View>
+                            }
+
+                            {/* Zona de estadísticas */}
+                            <View style={styles.statistics}>
+                                <View style={styles.statistics_block}>
+                                    <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>{allComments}</Text>
+                                    <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('comments')}</Text>
+                                </View>
+                                <Text style={{ fontSize: 17, fontWeight: "bold", marginHorizontal: 10, color: colors.primary }}>|</Text>
+                                <View style={styles.statistics_block}>
+                                    <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>{allLikes}</Text>
+                                    <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('likes')}</Text>
+                                </View>
+                                <Text style={{ fontSize: 17, fontWeight: "bold", marginHorizontal: 10, color: colors.primary }}>|</Text>
+                                {publicationArray.status == undefined || publicationArray.status == null ?
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
+                                        <ActivityIndicator size={'small'} color={colors.primary} />
+                                        <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('loading')}</Text>
+                                    </View>
+                                    :
+                                    publicationArray.status == 0 ?
+                                        <View style={{ flexDirection: "row", alignItems: "center", padding: 6, borderRadius: 7, backgroundColor: colors.error_dark }}>
+                                            <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.text_error }} name='warning' />
+                                            <Text style={{ fontSize: 14, marginLeft: 5, color: colors.text_error }}>{t('banned')}</Text>
+                                        </View>
+                                        :
+                                        publicationArray.status == 1 ?
+                                            <View style={{ flexDirection: "row", alignItems: "center", padding: 6, borderRadius: 7, backgroundColor: colors.error_dark }}>
+                                                <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.text_error }} name='eye-off' />
+                                                <Text style={{ fontSize: 14, marginLeft: 5, color: colors.text_error }}>{t('private')}</Text>
+                                            </View>
+                                            :
+                                            publicationArray.status == 2 ?
+                                                <View style={{ flexDirection: "row", alignItems: "center", padding: 6, borderRadius: 7, backgroundColor: colors.quartet_dark_alternative }}>
+                                                    <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.quartet }} name='people' />
+                                                    <Text style={{ fontSize: 14, marginLeft: 5, color: colors.quartet }}>{t('privateFollowers')}</Text>
+                                                </View>
+                                                :
+                                                publicationArray.status == 3 ?
+                                                    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
+                                                        <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }} name='earth' />
+                                                        <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('public')}</Text>
+                                                    </View>
+                                                    :
+                                                    publicationArray.status == 4 ?
+                                                        <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
+                                                            <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }} name='pencil' />
+                                                            <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('editStatus')}</Text>
+                                                        </View>
+                                                        :
+                                                        <View style={{ flexDirection: "row", alignItems: "center", padding: 6, borderRadius: 7, backgroundColor: colors.error_dark }}>
+                                                            <Ionicons style={{ fontSize: 18, fontWeight: "bold", color: colors.text_error }} name='alert-sharp' />
+                                                            <Text style={{ fontSize: 14, marginLeft: 5, color: colors.text_error }}>{t('serverErrorTitle')}</Text>
+                                                        </View>
+                                }
+                            </View>
+                            {/* Zona de interacción */}
+                            <View style={styles.interact_container}>
+                                <TouchableOpacity onPress={setLike}>
+                                    {isLike ?
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.like }} name='heart' />
+                                        :
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='heart-outline' />
+                                    }
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={setShared}>
+                                    {isShared ?
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.share }} name='repeat-variant' />
+                                        :
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='repeat-variant' />
+                                    }
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={saveThisPublish}>
+                                    {isSaved ?
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.save }} name='book' />
+                                        :
+                                        <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='book-outline' />
+                                    }
+                                </TouchableOpacity>
+
+
+                                <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='share-variant' />
+                                <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='chevron-down' />
+                            </View>
+                        </View>
+
+                        {/* Zona de comentarios */}
+                        <Text style={{ fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary }}>{t('comments')}</Text>
+
+                        <View style={{ backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
+                            <View style={styles.new_comment_header}>
+                                <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
+                                <View style={{ backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5 }}>
+                                    <TextInput
+                                        style={{ fontSize: 15, color: colors.text }}
+                                        placeholder={t('createComment')}
+                                        placeholderTextColor={colors.holderText}
+                                        multiline={true}
+                                        onChangeText={(text) => setMyCommnent(text)}
+                                        maxLength={500} />
+                                </View>
+                            </View>
+
+                            {loadingButton ?
+                                <View style={{ flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark }}>
+                                    <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                                    <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sending')}</Text>
+                                </View>
+                                :
+                                <TouchableOpacity onPress={sendMyComment}>
+                                    <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.quartet }}>
+                                        <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sendComment')}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            }
+                        </View>
+
+                        {CommentsArray.length > 0 ?
+                            CommentsArray.map((comment, key) => (<Comment key={key} props={props} publicationId={publicationArray.id} {...comment} />))
+                            :
+                            <View></View>}
+                    </View>
+
+                    <Modal style={{ display: "flex", flexDirection: "column", height: "100%", alignItems: 'flex-end', padding: 15, backgroundColor: colors.modalColor }} position={"center"} isOpen={imagesModal} coverScreen={true} swipeToClose={false}>
+                        {/* El ScrollView no funciona en el componente Modal */}
+                        {/* <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ display: "flex", flexDirection: "row", alignContent: "center" }}>
+                        {imageURL.map((key, x) => (<Image key={key} style={{ width: 400, maxHeight: 230, marginRight: 60 }} source={{ uri: imageURL[x] }} ></Image>))}
+                    </ScrollView> */}
+                        <TouchableOpacity onPress={openModalOptions}>
+                            <MaterialCommunityIcons style={{ fontSize: 45, color: colors.primary_dark_alternative }} name='close' />
+                        </TouchableOpacity>
+                        <View style={{ display: 'flex', alignItems: 'flex-start', marginTop: 35, marginBottom: 20, width: "100%" }}>
+                            <View style={styles.perfil_header}>
+                                <View style={styles.perfil_user}>
+                                    <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
+                                    <View style={styles.perfil_usernames_container}>
+                                        <Text style={{ fontSize: 17, fontWeight: "bold", color: colors.secondary }}>{props.route.params?.nickname}{t('publishedLabel')}</Text>
+                                        <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publicationArray.date)}</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+
+                        <Image style={{ width: "100%", height: 250, marginBottom: 35 }} source={{ uri: imageURL[imagesSelect] }}></Image>
+
+                        <View style={{ display: 'flex', alignItems: 'center', width: "100%" }}>
+                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <TouchableOpacity onPress={changeImagePrevios}>
+                                    <MaterialCommunityIcons style={{ fontSize: 50, color: colors.primary_dark_alternative }} name='menu-left' />
+                                </TouchableOpacity>
+                                <Text style={{ fontSize: 22, color: colors.text }}>{imagesSelect + 1} / {imageURL.length}</Text>
+                                <TouchableOpacity onPress={changeImageNext}>
+                                    <MaterialCommunityIcons style={{ fontSize: 50, color: colors.primary_dark_alternative }} name='menu-right' />
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={{ fontSize: 18, color: colors.text }}>{publicationArray.body}</Text>
+                        </View>
+                    </Modal>
+                </ScrollView>
+                :
+                <View>
                     <TouchableOpacity onPress={goBackAgain}>
                         <View style={styles.back_block}>
                             <MaterialCommunityIcons style={{ fontSize: 49, color: colors.secondary }} name='chevron-left' />
                             <Text style={{ fontSize: 21, fontWeight: "bold", color: colors.secondary }}>{t('return')}</Text>
                         </View>
                     </TouchableOpacity>
-                    <View style={{ backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
-                        {/* Encabezado de la publicación */}
-                        <View style={styles.perfil_header}>
-                            <View style={styles.perfil_user}>
-                                <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-                                <View style={styles.perfil_usernames_container}>
-                                    <Text style={{ fontSize: 17, fontWeight: "bold", color: colors.secondary }}>{props.route.params?.nickname}{t('publishedLabel')}</Text>
-                                    <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publicationArray.date)}</Text>
-                                </View>
-                            </View>
-                        </View>
 
-                        {/* Cuerpo de la publicación */}
-                        <Text style={{ fontSize: 17, marginBottom: 15, color: colors.text }}>{publicationArray.body}</Text>
-                        {replyId != null || replyId != undefined ?
-                            <ReplyPublish props={props} replyID={replyId} />
-                            :
-                            imageURL != null ?
-                                imageURL.length === 1 ?
-                                    <Image style={{ height: 200, width: "100%", marginBottom: 15, borderRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                    :
-                                    imageURL.length === 2 ?
-                                        <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
-                                            <Image style={{ marginRight: 3, height: 200, width: "49%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                            <Image style={{ marginLeft: 3, height: 200, width: "49%", borderTopRightRadius: 15, borderBottomRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                        </TouchableOpacity>
-                                        :
-                                        imageURL.length === 3 ?
-                                            <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
-                                                <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                                <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
-                                                    <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                                    <Image style={{ marginTop: 3, height: "48.5%", borderBottomRightRadius: 15 }} source={{ uri: imageURL[2] }} />
-                                                </View>
-                                            </TouchableOpacity>
-                                            :
-                                            imageURL.length > 3 ?
-                                                <TouchableOpacity onPress={openModalOptions} style={styles.images_container}>
-                                                    <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                                    <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
-                                                        <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                                        <ImageBackground source={{ uri: imageURL[2] }} imageStyle={{ opacity: 0.5, resizeMode: "cover", height: "100%", borderBottomRightRadius: 15 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 3, height: "48.5%", borderBottomRightRadius: 15, backgroundColor: "#1f1f1f" }}>
-                                                            <Text style={{ color: "white", fontSize: 36, }}>+{imageURL.length - 3}</Text>
-                                                        </ImageBackground>
-                                                    </View>
-                                                </TouchableOpacity>
-                                                :
-                                                <View></View>
-                                :
-                                <View></View>
-                        }
-
-                        {/* Zona de estadísticas */}
-                        <View style={styles.statistics}>
-                            <View style={styles.statistics_block}>
-                                <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>{allComments}</Text>
-                                <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('comments')}</Text>
-                            </View>
-                            <Text style={{ fontSize: 17, fontWeight: "bold", marginHorizontal: 15, color: colors.primary }}>|</Text>
-                            <View style={styles.statistics_block}>
-                                <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>{allLikes}</Text>
-                                <Text style={{ fontSize: 15, marginLeft: 5, color: colors.primary }}>{t('likes')}</Text>
-                            </View>
-                        </View>
-                        {/* Zona de interacción */}
-                        <View style={styles.interact_container}>
-                            <TouchableOpacity onPress={setLike}>
-                                {isLike ?
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.like }} name='heart' />
-                                    :
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='heart-outline' />
-                                }
-                            </TouchableOpacity>
-
-                            <TouchableOpacity onPress={setShared}>
-                                {isShared ?
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.share }} name='repeat-variant' />
-                                    :
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='repeat-variant' />
-                                }
-                            </TouchableOpacity>
-
-                            <TouchableOpacity onPress={saveThisPublish}>
-                                {isSaved ?
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.save }} name='book' />
-                                    :
-                                    <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='book-outline' />
-                                }
-                            </TouchableOpacity>
-
-
-                            <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='share-variant' />
-                            <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='chevron-down' />
-                        </View>
+                    <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 80, marginBottom: 10 }} name='exclamation' />
+                        <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>{t('noPublishFound')}</Text>
                     </View>
-
-                    {/* Zona de comentarios */}
-                    <Text style={{ fontSize: 19, fontWeight: "bold", marginVertical: 20, color: colors.primary }}>{t('comments')}</Text>
-
-                    <View style={{ backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
-                        <View style={styles.new_comment_header}>
-                            <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
-                            <View style={{ backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5 }}>
-                                <TextInput
-                                    style={{ fontSize: 15, color: colors.text }}
-                                    placeholder={t('createComment')}
-                                    placeholderTextColor={colors.holderText}
-                                    multiline={true}
-                                    onChangeText={(text) => setMyCommnent(text)}
-                                    maxLength={500} />
-                            </View>
-                        </View>
-
-                        {loadingButton ?
-                            <View style={{ flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark }}>
-                                <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                                <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sending')}</Text>
-                            </View>
-                            :
-                            <TouchableOpacity onPress={sendMyComment}>
-                                <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.quartet }}>
-                                    <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sendComment')}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        }
-                    </View>
-
-                    {CommentsArray.length > 0 ?
-                        CommentsArray.map((comment, key) => (<Comment key={key} props={props} publicationId={publicationArray.id} {...comment} />))
-                        :
-                        <View></View>}
                 </View>
-
-                <Modal style={{ display: "flex", flexDirection: "column", height: "100%", alignItems: 'flex-end', padding: 15, backgroundColor: colors.modalColor }} position={"center"} isOpen={imagesModal} coverScreen={true} swipeToClose={false}>
-                    {/* El ScrollView no funciona en el componente Modal */}
-                    {/* <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ display: "flex", flexDirection: "row", alignContent: "center" }}>
-                        {imageURL.map((key, x) => (<Image key={key} style={{ width: 400, maxHeight: 230, marginRight: 60 }} source={{ uri: imageURL[x] }} ></Image>))}
-                    </ScrollView> */}
-                    <TouchableOpacity onPress={openModalOptions}>
-                        <MaterialCommunityIcons style={{ fontSize: 45, color: colors.primary_dark_alternative }} name='close' />
-                    </TouchableOpacity>
-                    <View style={{ display: 'flex', alignItems: 'flex-start', marginTop: 35, marginBottom: 20, width: "100%" }}>
-                        <View style={styles.perfil_header}>
-                            <View style={styles.perfil_user}>
-                                <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-                                <View style={styles.perfil_usernames_container}>
-                                    <Text style={{ fontSize: 17, fontWeight: "bold", color: colors.secondary }}>{props.route.params?.nickname}{t('publishedLabel')}</Text>
-                                    <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(publicationArray.date)}</Text>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-
-                    <Image style={{ width: "100%", height: 250, marginBottom: 35 }} source={{ uri: imageURL[imagesSelect] }}></Image>
-
-                    <View style={{ display: 'flex', alignItems: 'center', width: "100%" }}>
-                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={changeImagePrevios}>
-                                <MaterialCommunityIcons style={{ fontSize: 50, color: colors.primary_dark_alternative }} name='menu-left' />
-                            </TouchableOpacity>
-                            <Text style={{ fontSize: 22, color: colors.text }}>{imagesSelect + 1} / {imageURL.length}</Text>
-                            <TouchableOpacity onPress={changeImageNext}>
-                                <MaterialCommunityIcons style={{ fontSize: 50, color: colors.primary_dark_alternative }} name='menu-right' />
-                            </TouchableOpacity>
-                        </View>
-                        <Text style={{ fontSize: 18, color: colors.text }}>{publicationArray.body}</Text>
-                    </View>
-                </Modal>
-            </ScrollView>
+            }
         </View>
     )
 }
@@ -530,9 +596,11 @@ const styles = StyleSheet.create({
     statistics: {
         flexDirection: "row",
         justifyContent: "flex-start",
+        alignItems: 'center'
     },
     statistics_block: {
-        flexDirection: "row"
+        flexDirection: "row",
+        alignItems: "center"
     },
     interact_container: {
         flexDirection: "row",

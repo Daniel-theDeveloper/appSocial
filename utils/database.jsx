@@ -32,9 +32,3 @@ export default appFirebase;
 export const database = getFirestore();
 
 export const auth = getAuth(appFirebase);
-
-// Test si se están cargando las keys:
-export function testKeys() {
-  console.log(Constants);
-  console.log(API_KEY);
-}

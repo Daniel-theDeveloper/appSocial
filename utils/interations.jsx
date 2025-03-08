@@ -1,13 +1,13 @@
 import { localUserLogin } from './localstorage';
 
-import { doc, getDoc, updateDoc, arrayUnion, collection, onSnapshot, query, orderBy, getDocs, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, collection, getDocs, addDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from './database';
 
 export function isWasInteracted(array) {
     if (array != undefined) {
         let key = false;
-    
+
         array.find(function (res) {
             if (res == localUserLogin.username || res === localUserLogin.id) {
                 key = true;
@@ -22,7 +22,7 @@ export function isWasInteracted(array) {
 export function isWasInteractedByID(array) {
     if (array != undefined) {
         let key = false;
-    
+
         array.find(function (res) {
             if (res == localUserLogin.id) {
                 key = true;
@@ -38,7 +38,7 @@ export function isWasCommented(comments_array) {
     if (comments_array != undefined) {
         if (comments_array.length != 0) {
             let key = false;
-    
+
             // comments_array.find(function (res) {
             //     if (res.user === localUserLogin.username || res.user === localUserLogin.id) {
             //         key = true;
@@ -53,7 +53,7 @@ export function isWasCommented(comments_array) {
                     key = false;
                 }
             });
-    
+
             return key;
         } else {
             return false
@@ -63,13 +63,32 @@ export function isWasCommented(comments_array) {
     }
 }
 
+export const youAreFollower = async (author) => {
+    try {
+        let key = false;
+
+        const docSnap = await getDoc(author);
+
+        if (docSnap.exists()) {
+            if (docSnap.data().following.includes(localUserLogin.id)) {
+                key = true;
+            }
+        }
+
+        return key;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 export const isWasSaved = async (publishId) => {
     if (publishId != undefined) {
         let key = false;
-    
+
         const docRef = doc(database, "users", localUserLogin.id);
         const docSnap = await getDoc(docRef);
-    
+
         if (docSnap.exists()) {
             docSnap.data().saves.find(function (res) {
                 if (res === publishId) {
@@ -77,7 +96,7 @@ export const isWasSaved = async (publishId) => {
                 }
             })
         }
-    
+
         return key;
     } else {
         return false;
@@ -91,6 +110,35 @@ export const likePublish = async (publishId) => {
             likes: arrayUnion(localUserLogin.username)
         });
         return true
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+export const deletePublishAction = async (id) => {
+    try {
+        let key = true;
+
+        await runTransaction(database, async (transaction) => {
+            const docRef = doc(database, "publications", id);
+            const docSnapshot = await transaction.get(docRef);
+
+            if (!docSnapshot.exists()) {
+                console.error("Publicación inexistente");
+                key = false;
+            } else {
+                const publish = docSnapshot.data();
+                const deleteRef = doc(database, "archived_publish", id);
+    
+                transaction.set(deleteRef, {
+                    ...publish, delete_at: serverTimestamp()
+                });
+    
+                transaction.delete(docRef);
+            }
+        });
+        return key;
     } catch (error) {
         console.error(error);
         return false;
@@ -286,7 +334,7 @@ export const fetchImage = async (url) => {
             const storage = getStorage();
             const imageRef = ref(storage, url);
             const getUrl = await getDownloadURL(imageRef);
-    
+
             return getUrl;
         } else {
             return null;

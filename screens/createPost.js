@@ -32,7 +32,11 @@ export default function CreatePost(props) {
         setLoading(true);
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, where("userId", "==", localUserLogin.id), orderBy('date', orderStatus));
+            const q = query(collectionRef,
+                where("userId", "==", localUserLogin.id),
+                where("status", "in", [1, 2, 3, 4]),
+                orderBy('date', orderStatus)
+            );
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
@@ -41,19 +45,20 @@ export default function CreatePost(props) {
                         body: doc.data().body,
                         urlImages: doc.data().urlImages,
                         replyID: doc.data().replyID,
+                        status: doc.data().status,
                         userId: doc.data().userId,
                         comments: doc.data().comments,
-                        comments_container: doc.data().comments_container,
+                        // comments_container: doc.data().comments_container,
                         date: doc.data().date,
                         likes: doc.data().likes,
-                        shares: doc.data().shares
+                        shares: doc.data().shares,
+                        author: doc.data().author
                     }))
                 )
                 setLoading(false);
             })
             return unsuscribe;
         } catch (error) {
-            setIsEmpty(true);
             setLoading(false);
             console.error(error);
             Alert.alert(t('serverErrorTitle'), t('serverError'));

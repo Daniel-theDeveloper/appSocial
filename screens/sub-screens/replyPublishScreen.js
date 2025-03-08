@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
 
 import { database } from '../../utils/database';
-import { collection, addDoc, doc, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import RadioGroup from 'react-native-radio-buttons-group';
 
 import { localUserLogin } from '../../utils/localstorage';
 import ReplyPublish from '../components/replyPublish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import Modal from 'react-native-modalbox';
+
 // import Modal from 'react-native-modalbox';
 // import EmojiSelector from 'react-native-emoji-selector';
 import { sendNotification } from '../../utils/interations';
-import { useTheme } from '@react-navigation/native';
 
 import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@react-navigation/native';
 
 export default function ReplyPublishScreen(props) {
     const [newPublication, setNewPublication] = React.useState({
@@ -24,13 +29,48 @@ export default function ReplyPublishScreen(props) {
         date: new Date(),
         likes: [],
         shares: [],
-        userId: localUserLogin.id
+        status: 3,
+        userId: localUserLogin.id,
+        author: null
     });
     const [loading_Button, setLoading_Button] = useState(false);
+    const [statusModal, setStatusModal] = useState(false);
     // const [emojiModal, setEmojiModal] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
+
+    const radioButtons = useMemo(() => ([
+        {
+            id: 1,
+            label: t('private'),
+            value: 1,
+            color: colors.primary
+        },
+        {
+            id: 2,
+            label: t('privateFollowers'),
+            value: 2,
+            color: colors.primary
+        },
+        {
+            id: 3,
+            label: t('public'),
+            value: 3,
+            color: colors.primary
+        }
+    ]), []);
+
+    useEffect(() => {
+            try {
+                const userRef = doc(database, 'users', localUserLogin.id);
+                setNewPublication({...newPublication, author: userRef});
+            } catch (error) {
+                console.error(error);
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
+                props.navigation.goBack();
+            }
+        }, []);
 
     const showAlert = () =>
         Alert.alert(
@@ -89,10 +129,22 @@ export default function ReplyPublishScreen(props) {
         props.navigation.goBack();
     }
 
+    function setSelectStatus(e) {
+        setNewPublication({ ...newPublication, status: e });
+    }
+
+    function openStatusModal() {
+        if (statusModal) {
+            setStatusModal(false);
+        } else {
+            setStatusModal(true);
+        }
+    }
+
     return (
         <View style={{ flex: 1, flexGrow: 1, paddingBottom: 50, paddingHorizontal: 20, backgroundColor: colors.background }}>
             <TouchableOpacity style={styles.back_button_block} onPress={showAlert}>
-                <MaterialCommunityIcons style={{fontSize: 45, color: colors.text}} name='chevron-left' />
+                <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='chevron-left' />
                 <Text style={{ fontSize: 25, fontWeight: "bold", color: colors.text }}>{t('exitButton')}</Text>
             </TouchableOpacity>
 
@@ -103,6 +155,11 @@ export default function ReplyPublishScreen(props) {
                     {/* <TouchableOpacity onPress={openEmojiModal}>
                         <MaterialCommunityIcons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name='emoticon-happy' />
                     </TouchableOpacity> */}
+
+                    <TouchableOpacity onPress={openStatusModal}>
+                        <Ionicons style={{ marginRight: 15, color: colors.secondary, fontSize: 26, fontWeight: "bold" }} name={newPublication.status == 1 ? 'eye-off' : newPublication.status == 2 ? 'people' : newPublication.status == 3 || newPublication.status == 4 ? 'earth' : 'alert-sharp'} />
+                    </TouchableOpacity>
+
                     {loading_Button ?
                         <View style={{ flexDirection: "row", backgroundColor: colors.secondary_dark, paddingHorizontal: 15, paddingVertical: 5, borderRadius: 10 }}>
                             <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
@@ -150,6 +207,37 @@ export default function ReplyPublishScreen(props) {
                 <View style={{height: 3, width: 50, borderRadius: 5, marginBottom: 30, backgroundColor: colors.primary}}></View>
                 <EmojiSelector columns={8} onEmojiSelected={emoji => setNewPublication({ ...newPublication, body: newPublication.body + emoji })} />
             </Modal> */}
+            <Modal style={{
+                paddingTop: 20,
+                paddingHorizontal: 10,
+                maxHeight: 175,
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+                backgroundColor: colors.background,
+                alignItems: 'flex-start'
+            }} position={"bottom"} isOpen={statusModal} onClosed={openStatusModal} coverScreen={true}>
+                <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>{t('visibility')}</Text>
+                </View>
+                {props.route.params?.isEdit ?
+                    // <RadioGroup
+                    //     containerStyle={{ alignItems: 'flex-start' }}
+                    //     radioButtons={radioButtonsEditPublish}
+                    //     onPress={setSelectStatus}
+                    //     selectedId={newPublication.status}
+                    //     labelStyle={{ color: colors.text, fontSize: 16 }}
+                    // />
+                    <View></View>
+                    :
+                    <RadioGroup
+                        containerStyle={{ alignItems: 'flex-start' }}
+                        radioButtons={radioButtons}
+                        onPress={setSelectStatus}
+                        selectedId={newPublication.status}
+                        labelStyle={{ color: colors.text, fontSize: 16 }}
+                    />
+                }
+            </Modal>
         </View>
     );
 }

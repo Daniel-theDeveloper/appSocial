@@ -101,6 +101,7 @@ i18n
                     sortByOld: 'More old',
                     newUserMessage: 'All your future publications will appear here',
                     newUserSubtitle: 'Begin creating your first publication',
+                    write: 'Write what you think',
                     
                     // Notifications
                     notiTitle: 'Notifications',
@@ -144,12 +145,26 @@ i18n
                     reply: 'Reply',
                     replied: 'replied',
                     reeplyto: 'Reply to ',
+                    respondingTo: 'Responding to:',
                     responses: 'Responses',
                     createRespond: 'Write your response',
                     noPublishFound: 'This publication is not available or has been removed',
+                    onlyFollowersPart1: 'Only ',
+                    onlyFollowersPart2: '\'s followers can see this publication. ',
+                    edit: 'Edit publish',
+                    delete: 'Delete publish',
+                    deleteTitle: 'Removing publish',
+                    deleteAsk: 'Do you want to delete this publication? This action is irreversible.',
+                    banned: 'Banned',
+                    private: 'Private',
+                    privateFollowers: 'Followers only',
+                    public: 'Public',
+                    editStatus: 'Public - edit',
+                    hiddenPublish: 'hidden',
 
                     // New publish
                     newPublish: 'New publication',
+                    editPublish: 'Edit publish',
                     publishing: 'Publishing',
                     publish: 'Publish',
                     imageLoaded: 'Image loaded',
@@ -161,6 +176,7 @@ i18n
                     deleteImage: 'Do you want to delete your image?',
                     emptyPublishTitle: 'Empty publication',
                     emptyPublish: 'Please write something',
+                    visibility: 'Publication visibility',
 
                     // Saves
                     saved: 'Saved list',
@@ -188,7 +204,22 @@ i18n
                     city: 'City (optional):',
                     countAbout: 'Description of your profile:',
                     aboutPlaceHolder: 'Write a description of your profile',
-                    saveConfigButton: 'Save changes'
+                    saveConfigButton: 'Save changes',
+                    blockUser: 'Block user',
+
+                    // Report
+                    report: 'Report publication',
+                    reportAsk1: 'Select the reason for the report:',
+                    reportType1: 'Content not suitable for all audiences',
+                    reportType2: 'Problematic user',
+                    reportType3: 'Disinformation',
+                    reportType4: 'Lack of respect in the community',
+                    reportType5: 'others',
+                    reportAsk2: 'Enter additional information:',
+                    reportPlaceHolder: 'Write additional information',
+                    reportButton: 'Report',
+                    wasReportTitle: 'Report sent',
+                    wasReport: 'Thank you for your report, it will be reviewed shortly, the results will be sent to your notification panel.',
                 },
             },
             es: {
@@ -286,6 +317,7 @@ i18n
                     sortByOld: 'More old',
                     newUserMessage: 'Todas tus futuras publicaciones aparecerán aquí',
                     newUserSubtitle: 'Comience creando su primer publicación',
+                    write: 'Escribe lo que piensas',
 
                     // Notifications
                     notiTitle: 'Notificaciones',
@@ -329,12 +361,26 @@ i18n
                     reply: 'Responder',
                     replied:  'respondió',
                     reeplyto: 'Responder a ',
+                    respondingTo: 'Respondiendo a:',
                     responses: 'Respuestas',
                     createRespond: 'Escribe tu respuesta',
                     noPublishFound: 'Esta publicación no esta disponible o fue eliminada',
+                    onlyFollowersPart1: 'Solo los seguidores de ',
+                    onlyFollowersPart2: ' pueden ver esta publicación. ',
+                    edit: 'Editar publicación',
+                    delete: 'Eliminar publicación',
+                    deleteTitle: 'Eliminando publicación',
+                    deleteAsk: '¿Quieres eliminar esta publicación? Esta acción es irreversible.',
+                    banned: 'Baneado',
+                    private: 'Privado',
+                    privateFollowers: 'Solo seguidores',
+                    public: 'Publico',
+                    editStatus: 'Publico - editado',
+                    hiddenPublish: 'oculto',
 
                     // New publish
                     newPublish: 'Nueva publicación',
+                    editPublish: 'Editando publicación',
                     publishing: 'Publicando',
                     publish: 'Publicar',
                     imageLoaded: 'Imagen cargada',
@@ -346,6 +392,7 @@ i18n
                     deleteImage: '¿Desea eliminar su imagen?',
                     emptyPublishTitle: 'publicación vacía',
                     emptyPublish: 'Por favor escribe algo',
+                    visibility: 'Visibilidad de la publicación',
 
                     // Saves
                     saved: 'Lista de guardados',
@@ -373,7 +420,22 @@ i18n
                     city: 'Ciudad (opcional):',
                     countAbout: 'Descripción de tu perfil:',
                     aboutPlaceHolder: 'Redacta una descripción sobre tu perfil',
-                    saveConfigButton: 'Guardar cambios'
+                    saveConfigButton: 'Guardar cambios',
+                    blockUser: 'Bloquear usuario',
+
+                    // Report
+                    report: 'Reportar publicación',
+                    reportAsk1: 'Selecciona el motivo del reporte:',
+                    reportType1: 'Contenido no apto para todo publico',
+                    reportType2: 'Usuario problemático',
+                    reportType3: 'Desinformación',
+                    reportType4: 'Falta de respeto en la comunidad',
+                    reportType5: 'otros',
+                    reportAsk2: 'Detalla lo sucedido:',
+                    reportPlaceHolder: 'Escribe información adicional',
+                    reportButton: 'Reportar',
+                    wasReportTitle: 'Reporte enviado',
+                    wasReport: 'Gracias por tu reporte, se revisara en breve, los resultados se enviaran a tu panel de notificaciones.',
                 },
             },
         },

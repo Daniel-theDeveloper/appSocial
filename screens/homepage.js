@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 
 import { auth, database } from '../utils/database';
-import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, getDoc, where } from 'firebase/firestore';
 import RadioGroup from 'react-native-radio-buttons-group';
 
 import * as ImagePicker from 'expo-image-picker';
@@ -14,7 +14,7 @@ import { localUserLogin, erase_all, getSaveTheme, setSaveTheme, getSaveLanguaje,
 import Modal from 'react-native-modalbox';
 import { signOut } from 'firebase/auth';
 import { useTheme } from '@react-navigation/native';
-import { isWasInteracted, isWasCommented, isWasInteractedByID, isWasSaved } from '../utils/interations';
+import { isWasInteracted, isWasInteractedByID, isWasSaved } from '../utils/interations';
 
 import '../i18n/i18n';
 import i18n from 'i18next';
@@ -198,7 +198,7 @@ export default function Homepage(props) {
     function loadAllPublish() {
         try {
             const collectionRef = collection(database, 'publications');
-            const q = query(collectionRef, orderBy('date', 'desc'));
+            const q = query(collectionRef, where("status", "in", [2, 3, 4]), orderBy('date', 'desc'));
 
             const unsuscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
@@ -207,11 +207,13 @@ export default function Homepage(props) {
                         body: doc.data().body,
                         urlImages: doc.data().urlImages,
                         replyID: doc.data().replyID,
-                        userId: doc.data().userId,
+                        status: doc.data().status,
+                        author: doc.data().author,
                         // comments_container: await searchMyComment(doc.id),
                         date: doc.data().date,
                         likes: doc.data().likes,
-                        shares: doc.data().shares
+                        shares: doc.data().shares,
+                        userId: doc.data().userId
                     }))
                 )
             });

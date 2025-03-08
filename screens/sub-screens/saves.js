@@ -36,16 +36,17 @@ export default function Saves(props) {
 
                 if (docSnap.exists()) {
                     saves.push({
-                        id: docSnap.id,
-                        body: docSnap.data().body,
-                        urlImages: docSnap.data().urlImages,
-                        replyID: docSnap.data().replyID,
-                        userId: docSnap.data().userId,
-                        comments: docSnap.data().comments,
-                        comments_container: docSnap.data().comments_container,
-                        date: docSnap.data().date,
-                        likes: docSnap.data().likes,
-                        shares: docSnap.data().shares
+                        id: doc.id,
+                        body: doc.data().body,
+                        urlImages: doc.data().urlImages,
+                        replyID: doc.data().replyID,
+                        status: doc.data().status,
+                        author: doc.data().author,
+                        // comments_container: await searchMyComment(doc.id),
+                        date: doc.data().date,
+                        likes: doc.data().likes,
+                        shares: doc.data().shares,
+                        userId: doc.data().userId
                     })
                 }
             }
