@@ -10,7 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Publication from './components/Publish';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
-import { localUserLogin, erase_all, getSaveTheme, setSaveTheme, getSaveLanguaje, setSaveLanguaje } from '../utils/localstorage';
+import { localUserLogin, erase_all, getSaveLanguage, setSaveLanguage } from '../utils/localstorage';
 import Modal from 'react-native-modalbox';
 import { signOut } from 'firebase/auth';
 import { useTheme } from '@react-navigation/native';
@@ -26,39 +26,16 @@ export default function Homepage(props) {
     // const [myAvatar, setMyAvatar] = useState(null);
 
     const [modalOptions, setModalOptions] = useState(false);
-    const [configLanguaje, setConfigLanguaje] = useState(false);
-    const [configTheme, setConfigTheme] = useState(false);
+    const [configLanguage, setConfigLanguage] = useState(false);
 
-    const [selectedTheme, setSelectedTheme] = useState('system');
-    const [selectedLanguaje, setSelectedLanguaje] = useState('system');
+    const [selectedLanguage, setSelectedLanguage] = useState('system');
 
     const { colors } = useTheme();
     const { t } = useTranslation();
 
     const platform = Platform.OS;
 
-    const radioButtons = useMemo(() => ([
-        {
-            id: 1,
-            label: t('optionLight'),
-            value: 'light',
-            color: colors.primary
-        },
-        {
-            id: 2,
-            label: t('optionDark'),
-            value: 'dark',
-            color: colors.primary
-        },
-        {
-            id: 3,
-            label: t('optionSystem'),
-            value: 'system',
-            color: colors.primary
-        }
-    ]), []);
-
-    const radioButtonsLanguaje = useMemo(() => ([
+    const radioButtonsLanguage = useMemo(() => ([
         {
             id: 1,
             label: t('optionSystem'),
@@ -81,8 +58,7 @@ export default function Homepage(props) {
 
     useEffect(() => {
         // setMyAvatar(localUserLogin.avatar);
-        getSelectedTheme();
-        getSelectedLanguaje();
+        getSelectedLanguage();
         loadAllPublish();
     }, []);
 
@@ -110,67 +86,35 @@ export default function Homepage(props) {
         }
     }
 
-    function openModalConfig() {
-        if (configTheme) {
-            setConfigTheme(false);
+    function openModalLanguage() {
+        if (configLanguage) {
+            setConfigLanguage(false);
         } else {
-            setConfigTheme(true);
+            setConfigLanguage(true);
         }
     }
 
-    function openModalLanguaje() {
-        if (configLanguaje) {
-            setConfigLanguaje(false);
-        } else {
-            setConfigLanguaje(true);
+    const getSelectedLanguage = async () => {
+        const language = await getSaveLanguage();
+
+        if (language == 'system') {
+            setSelectedLanguage(1);
+        } else if (language == 'english') {
+            setSelectedLanguage(2);
+        } else if (language == 'spanish') {
+            setSelectedLanguage(3);
         }
     }
 
-    const getSelectedTheme = async () => {
-        const theme = await getSaveTheme();
-
-        if (theme == 'light') {
-            setSelectedTheme(1);
-        } else if (theme == 'dark') {
-            setSelectedTheme(2);
-        } else if (theme == 'system') {
-            setSelectedTheme(3);
-        }
-    }
-
-    const getSelectedLanguaje = async () => {
-        const languaje = await getSaveLanguaje();
-
-        if (languaje == 'system') {
-            setSelectedLanguaje(1);
-        } else if (languaje == 'english') {
-            setSelectedLanguaje(2);
-        } else if (languaje == 'spanish') {
-            setSelectedLanguaje(3);
-        }
-    }
-
-    const setNewTheme = async (e) => {
-        setSelectedTheme(e);
+    const setNewLanguage = async (e) => {
+        setSelectedLanguage(e);
         if (e === 1) {
-            await setSaveTheme('light');
+            await setSaveLanguage('system');
         } else if (e === 2) {
-            await setSaveTheme('dark');
-        } else if (e === 3) {
-            await setSaveTheme('system');
-        }
-        Alert.alert(t('restart'));
-    }
-
-    const setNewLanguaje = async (e) => {
-        setSelectedLanguaje(e);
-        if (e === 1) {
-            await setSaveLanguaje('system');
-        } else if (e === 2) {
-            await setSaveLanguaje('english');
+            await setSaveLanguage('english');
             i18n.changeLanguage('en');
         } else if (e === 3) {
-            await setSaveLanguaje('spanish');
+            await setSaveLanguage('spanish');
             i18n.changeLanguage('es');
         }
         Alert.alert(t('restart'));
@@ -200,7 +144,7 @@ export default function Homepage(props) {
             const collectionRef = collection(database, 'publications');
             const q = query(collectionRef, where("status", "in", [2, 3, 4]), orderBy('date', 'desc'));
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -218,7 +162,7 @@ export default function Homepage(props) {
                 )
             });
             setLoading(false);
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
             console.error(error);
             Alert.alert(t('serverErrorTitle'), t('serverError'));
@@ -243,18 +187,14 @@ export default function Homepage(props) {
         props.navigation.navigate({ name: 'Perfil', params: { userId: localUserLogin.id }, merge: true });
     }
 
-    const goSaves = async () => {
-        try {
-            const docRef = doc(database, "users", localUserLogin.id);
-            const docSnap = await getDoc(docRef);
+    function goToConfig() {
+        setModalOptions(false);
+        props.navigation.navigate("ConfigGeneral");
+    }
 
-            if (docSnap.exists()) {
-                props.navigation.navigate({ name: 'Saves', params: { saves: docSnap.data().saves }, merge: true });
-            } else {
-                Alert.alert(t('serverErrorTitle'), t('serverError'));
-            }
-        } catch (error) {
-            Alert.alert(t('serverErrorTitle'), t('serverError'));
+    function goSaves () {
+        if (localUserLogin.id != undefined) {
+            props.navigation.navigate('Saves');
         }
     }
 
@@ -437,18 +377,18 @@ export default function Homepage(props) {
                     borderRadius: 20,
                     backgroundColor: colors.primary_dark,
                     alignItems: 'flex-start'
-                }} position={"center"} isOpen={modalOptions} onClosed={openModalOptions} coverScreen={true}>
-                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalConfig}>
-                        <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='theme-light-dark' />
-                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('buttonChangeTheme')}</Text>
-                    </TouchableOpacity>
+                }} position={"center"} isOpen={modalOptions} coverScreen={true}>
                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goSaves}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='book-search-outline' />
                         <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('saves')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalLanguaje}>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={openModalLanguage}>
                         <MaterialIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='language' />
                         <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('buttonChangeLanguage')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={goToConfig}>
+                        <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='cog-outline' />
+                        <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('configLabel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }} onPress={platform === 'web' ? log_out : alertLogOut}>
                         <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='logout' />
@@ -459,41 +399,20 @@ export default function Homepage(props) {
                 <Modal style={{
                     paddingTop: 20,
                     paddingHorizontal: 10,
-                    maxHeight: 190,
-                    borderTopRightRadius: 20,
-                    borderTopLeftRadius: 20,
-                    backgroundColor: colors.background,
-                    alignItems: 'flex-start'
-                }} position={"bottom"} isOpen={configTheme} onClosed={openModalConfig} coverScreen={true}>
-                    <View style={{ alignItems: 'center', width: '100%' }}>
-                        <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 10 }}></View>
-                    </View>
-                    <RadioGroup
-                        containerStyle={{ alignItems: 'flex-start' }}
-                        radioButtons={radioButtons}
-                        onPress={setNewTheme}
-                        selectedId={selectedTheme}
-                        labelStyle={{ color: colors.text }}
-                    />
-                </Modal>
-
-                <Modal style={{
-                    paddingTop: 20,
-                    paddingHorizontal: 10,
                     maxHeight: 175,
                     borderTopRightRadius: 20,
                     borderTopLeftRadius: 20,
                     backgroundColor: colors.background,
                     alignItems: 'flex-start'
-                }} position={"bottom"} isOpen={configLanguaje} onClosed={openModalLanguaje} coverScreen={true}>
+                }} position={"bottom"} isOpen={configLanguage} onClosed={openModalLanguage} coverScreen={true}>
                     <View style={{ alignItems: 'center', width: '100%' }}>
                         <View style={{ height: 5, width: 100, borderRadius: 5, backgroundColor: colors.primary, marginBottom: 15 }}></View>
                     </View>
                     <RadioGroup
                         containerStyle={{ alignItems: 'flex-start' }}
-                        radioButtons={radioButtonsLanguaje}
-                        onPress={setNewLanguaje}
-                        selectedId={selectedLanguaje}
+                        radioButtons={radioButtonsLanguage}
+                        onPress={setNewLanguage}
+                        selectedId={selectedLanguage}
                         labelStyle={{ color: colors.text }}
                     />
                 </Modal>

@@ -7,7 +7,7 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native"
 import MyRoutes from './navigation/navigation';
 import { Appearance, I18nManager, Platform } from 'react-native';
-import { getSaveTheme, getSaveLanguaje } from './utils/localstorage';
+import { getSaveTheme, getSaveLanguage } from './utils/localstorage';
 
 import DarkTheme from './themes/DarkTheme';
 import LightTheme from './themes/LightTheme';
@@ -51,7 +51,7 @@ export default function App() {
   }
 
   const loadLanguaje = async () => {
-    const Languaje = await getSaveLanguaje();
+    const Languaje = await getSaveLanguage();
 
     if (Languaje == 'english') {
       i18n.changeLanguage('en');

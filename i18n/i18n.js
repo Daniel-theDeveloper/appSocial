@@ -22,6 +22,7 @@ i18n
                     continue: 'Continue',
                     no: 'No',
                     yes: 'Yes',
+                    deleteCommon: 'Delete',
                     internetErrorTitle: 'No internet connection',
                     internetError: 'Verify your connection, then restart the application.',
                     close: 'Close',
@@ -31,6 +32,9 @@ i18n
                     return: 'Return to',
                     errorTitle: 'Something went wrong',
                     error: 'Please try again',
+                    noUser: 'DELETED USER',
+                    noUserHelp: 'This user no longer exists',
+                    takeNote: 'Please note that:',
                     
                     // Login
                     welcome: 'Welcome user',
@@ -121,13 +125,15 @@ i18n
                     noChats: 'Start following people for chat',
                     suggestions: 'Suggestions',
                     newMessage: 'Write your message',
+                    noMoreChat: 'This user no longer exists',
                     
                     // Perfil
                     config: 'Configure',
                     following: 'Following',
                     follow: 'Follow',
-                    followingYou: 'It\'s following you',
+                    followingYou: 'it\'s following you',
                     followers: 'Followers',
+                    followersOf: 'Followers of',
                     createdDate: 'User since ',
                     noPublish: 'No publication has been made yet',
                     stopFollow: 'Stop following',
@@ -182,6 +188,16 @@ i18n
                     saved: 'Saved list',
                     noSavesTitle: 'Empty list',
                     noSaves: 'Don\'t forget to save your favorite publications',
+
+                    // Config options
+                    configLabel: 'Configuration',
+                    optionCount: 'Account settings',
+                    optionPassword: 'Change password',
+                    optionLanguage: 'Default language',
+                    optionTheme: 'Application theme',
+                    optionBlocks: 'Blocked users',
+                    optionLogOut: 'Log out',
+                    optionDelete: 'Delete account',
                     
                     // Config
                     optionSystem: 'System configuration',
@@ -206,6 +222,24 @@ i18n
                     aboutPlaceHolder: 'Write a description of your profile',
                     saveConfigButton: 'Save changes',
                     blockUser: 'Block user',
+                    blockUserTitle: 'Block user list',
+                    blockUserEmptyTitle: 'Empty block list',
+                    blockUserEmpty: 'You have no blocked users',
+                    blockUserAsk: 'Do you want to block this user?',
+                    blockUserUseful: 'This user will no longer be able to follow you or see your publications',
+                    blockUserHelp: 'You can manage your blocks in your profile settings',
+                    oldPassword: 'Actual password:',
+                    newPassword: 'Enter your new password:',
+                    confirmPassword: 'For security reasons, please retype your password:',
+                    passwordError: 'Incorrect password.',
+                    changePasswordSuccess: 'Your password has been changed successfully',
+                    deleteAccountTitle: 'Account deletion process',
+                    deleteAccountHelp: 'Are you sure you want to proceed with the elimination process?',
+                    deleteAccountTip1: 'All your posts, images and interactions will be deleted.',
+                    deleteAccountTip2: 'This process is IRREVERSIBLE.',
+                    deleteAccountTip3: 'If you want to return, you will have to create another account and start from scratch.',
+                    deleteAccountWarningTitle: 'You are one action away from deleting your account, do you wish to continue?',
+                    deleteAccountWarning: 'if you would like to return, you must re-create another account. Are you sure?',
 
                     // Report
                     report: 'Report publication',
@@ -237,6 +271,7 @@ i18n
                     continue: 'Continuar',
                     no: 'No',
                     yes: 'Si',
+                    deleteCommon: 'Eliminar',
                     internetErrorTitle: 'Sin conexión a internet',
                     internetError: 'Verifique su conexión, y luego reinicie la aplicación',
                     close: 'Cerrar',
@@ -246,6 +281,9 @@ i18n
                     return: 'Regresar',
                     errorTitle: 'Algo salio mal',
                     error: 'Por favor, vuelve a intentarlo',
+                    noUser: 'USUARIO ELIMINADO',
+                    noUserHelp: 'Este usuario ya no existe',
+                    takeNote: 'Ten en cuenta que:',
 
                     // Login
                     welcome: 'Bienvenido usuario',
@@ -337,13 +375,15 @@ i18n
                     noChats: 'Empieza a seguir a gente para chatear',
                     suggestions: 'Sugerencias',
                     newMessage: 'Escribe tu mensaje',
+                    noMoreChat: 'Este usuario ya no existe',
 
                     // Perfil
                     config: 'Configurar',
                     following: 'Siguiendo',
                     follow: 'Seguir',
-                    followingYou: 'Te esta siguiendo',
+                    followingYou: 'te esta siguiendo',
                     followers: 'Seguidores',
+                    followersOf: 'Seguidores de',
                     createdDate: 'Usuario desde ',
                     noPublish: 'Aun no ha hecho ninguna publicación',
                     stopFollow: 'Dejar de seguir',
@@ -399,6 +439,16 @@ i18n
                     noSavesTitle: 'Lista vacía',
                     noSaves: 'No olvides de guardar tus publicaciones favoritas',
 
+                    // Config options
+                    configLabel: 'Configuración',
+                    optionCount: 'Configuración de la cuenta',
+                    optionPassword: 'Cambiar contraseña',
+                    optionLanguage: 'Idioma predeterminado',
+                    optionTheme: 'Tema de la aplicación',
+                    optionBlocks: 'Usuarios bloqueados',
+                    optionLogOut: 'Cerrar sesión',
+                    optionDelete: 'Eliminar cuenta',
+
                     // Config
                     optionSystem: 'Configuración del sistema',
                     optionLight: 'Claro',
@@ -422,6 +472,24 @@ i18n
                     aboutPlaceHolder: 'Redacta una descripción sobre tu perfil',
                     saveConfigButton: 'Guardar cambios',
                     blockUser: 'Bloquear usuario',
+                    blockUserTitle: 'Lista de usuarios bloqueados',
+                    blockUserEmptyTitle: 'Lista de bloqueos vacía',
+                    blockUserEmpty: 'No tienes usuarios bloqueados',
+                    blockUserAsk: '¿Desea bloquear a este usuario?',
+                    blockUserUseful: 'Este usuario ya no podrá seguirte ni ver tus publicaciones',
+                    blockUserHelp: 'Puedes administrar tus bloqueos en la configuración de tu perfil',
+                    oldPassword: 'Contraseña actual:',
+                    newPassword: 'Ingrese su nueva contraseña:',
+                    confirmPassword: 'Por motivos de seguridad, vuelva a escribir su contraseña:',
+                    passwordError: 'La contraseña es incorrecta.',
+                    changePasswordSuccess: 'Su contraseña ha sido cambiada exitosamente',
+                    deleteAccountTitle: 'Proceso de eliminación de la cuenta',
+                    deleteAccountHelp: '¿Estas seguro que quieres proseguir con el proceso de eliminación?',
+                    deleteAccountTip1: 'Todas tus publicaciones, imágenes e interacciones, se borraran.',
+                    deleteAccountTip2: 'Este proceso es IRREVERSIBLE.',
+                    deleteAccountTip3: 'En caso de querer regresar, se deberá crear otra cuenta y iniciar desde cero.',
+                    deleteAccountWarningTitle: 'Estas a una sola acción de borrar tu cuenta, ¿desea continuar?',
+                    deleteAccountWarning: 'Esta acción no es reversible, si quisieras volver, debes volver a crear otra cuenta. ¿Estas seguro?',
 
                     // Report
                     report: 'Reportar publicación',

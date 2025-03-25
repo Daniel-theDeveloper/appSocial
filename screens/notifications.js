@@ -31,7 +31,7 @@ export default function Notifications(props) {
             const collectionRef = collection(database, url);
             const q = query(collectionRef, orderBy('date', 'desc'));
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 setNotifications(
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -46,7 +46,7 @@ export default function Notifications(props) {
                 )
             });
             setLoading(false);
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
             Alert.alert(t('serverErrorTitle'), t('serverError'));
             console.error(error);

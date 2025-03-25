@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, ImageBackground, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, ImageBackground, ScrollView, ToastAndroid } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import Feather from 'react-native-vector-icons/Feather';
@@ -7,7 +7,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Octicons from "react-native-vector-icons/Octicons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
-import { fetchImage, savePublish, deleteSavePublish, likePublish, deleteLike, isWasCommented, deletePublishAction, youAreFollower } from '../../utils/interations';
+import { fetchImage, savePublish, deleteSavePublish, likePublish, deleteLike, isWasCommented, deletePublishAction, youAreFollower, addBlockUser } from '../../utils/interations';
 import ReplyPublish from './replyPublish';
 import Report_publish from './Report_publish';
 
@@ -64,7 +64,9 @@ export default function Publication({
     const { t } = useTranslation();
 
     useEffect(() => {
-        if (author != undefined && author != null) {    // Publicación con el autor cargado correctamente.
+        const isBlock = localUserLogin.blackList.includes(userId) || localUserLogin.blockUsers.includes(userId);
+
+        if (!isBlock) {    // Verifica si no es un usuario bloqueado.
             if (userId === localUserLogin.id) {     // Autor original
                 loadComments();
                 loadUserData();
@@ -80,7 +82,7 @@ export default function Publication({
                         loadFoto();
                         promiseSaved();
                     } else {
-                        console.log("Solo seguidores");
+                        // console.log("Solo seguidores");
                         setUnavailable(true);
                     }
                 });
@@ -93,7 +95,6 @@ export default function Publication({
                 setUnavailable(true);
             }
         } else {
-            console.log("Autor desconocido")
             setUnavailable(true);
         }
     }, []);
@@ -113,6 +114,30 @@ export default function Publication({
                 },
             ],
         );
+
+    const showBlockUser = () =>
+        Alert.alert(
+            t('blockUser'),
+            t('blockUserAsk'),
+            [
+                {
+                    text: t('no'),
+                },
+                {
+                    text: t('yes'),
+                    onPress: () => blockUser(),
+                    style: 'cancel',
+                }
+            ]
+        );
+
+    const savePublishToast = () => {
+        ToastAndroid.show(t('savePublish'), ToastAndroid.SHORT);
+    }
+    
+    const deleteSavePublishToast = () => {
+        ToastAndroid.show(t('deletePublish'), ToastAndroid.SHORT);
+    }
 
     const promiseSaved = async () => {
         setIsSaved(await wasSaved);
@@ -149,7 +174,7 @@ export default function Publication({
             const url = 'publications/' + id + '/comments';
             const collectionRef = collection(database, url);
 
-            const unsuscribe = onSnapshot(collectionRef, QuerySnapshot => {
+            const unsubscribe = onSnapshot(collectionRef, QuerySnapshot => {
                 setCommentsArray(
                     QuerySnapshot.docs.map(doc => ({
                         user: doc.data().user
@@ -157,7 +182,7 @@ export default function Publication({
                 );
                 setIsComment(isWasCommented(QuerySnapshot.docs));
             });
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
             console.error(error);
         }
@@ -212,7 +237,7 @@ export default function Publication({
             setIsSaved(false);
             const res = await deleteSavePublish(id);
             if (res) {
-                Alert.alert(t('deletePublish'));
+                deleteSavePublishToast();
             } else {
                 setIsSaved(true);
                 Alert.alert(t('serverErrorTitle'), t('serverError'));
@@ -221,7 +246,7 @@ export default function Publication({
             setIsSaved(true);
             const res = await savePublish(id);
             if (res) {
-                Alert.alert(t('savePublish'));
+                savePublishToast();
             } else {
                 setIsSaved(false);
                 Alert.alert(t('serverErrorTitle'), t('serverError'));
@@ -262,7 +287,7 @@ export default function Publication({
                 setModalOptions[false];
                 props.navigation.navigate({ name: 'NewPublication', params: { isEdit: true, publishToEdit: myPublish }, merge: true });
             } else {
-                console.log("No eres el usuario creador de la publicación");
+                // console.log("No eres el usuario creador de la publicación");
             }
         } else {
             Alert.alert(t('internetErrorTitle'), t('internetError'));
@@ -276,6 +301,17 @@ export default function Publication({
             Alert.alert("Eliminado correctamente");
         } else {
             Alert.alert(t('serverErrorTitle'), t('serverError'));
+        }
+    }
+
+    const blockUser = async () => {
+        const res = await addBlockUser(userId);
+
+        if (res) {
+            Alert.alert(t('blockUserHelp'));
+            setUnavailable(true);
+        } else {
+            Alert.alert(t('errorTitle'), t('error'));
         }
     }
 
@@ -456,7 +492,7 @@ export default function Publication({
                             </View>
                             :
                             <View>
-                                <TouchableOpacity style={styles.modalOption}>
+                                <TouchableOpacity style={styles.modalOption} onPress={showBlockUser}>
                                     <FontAwesome5 style={{ fontSize: 22, color: colors.text, marginRight: 10 }} name='user-slash' />
                                     <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('blockUser')}</Text>
                                 </TouchableOpacity>

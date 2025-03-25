@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator, Alert, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator, Alert, ImageBackground, ToastAndroid } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasSaved, isWasInteractedByID, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage } from '../../utils/interations';
+import { isWasInteracted, isWasSaved, isWasInteractedByID, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage, deletePublishAction } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
-import Comment, { comment_Array } from '../components/Comment';
+import Report_publish from '../components/Report_publish';
+import Comment from '../components/Comment';
 import ReplyPublish from '../components/replyPublish';
 import { useTheme } from '@react-navigation/native';
 // import { compareDesc } from "date-fns";
 
 import { doc, getDoc, collection, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { database } from '../../utils/database';
+import * as ImagePicker from 'expo-image-picker';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
+import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Octicons from "react-native-vector-icons/Octicons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import Modal from 'react-native-modalbox';
 
 import '../../i18n/i18n';
@@ -29,7 +37,8 @@ export default function Details(props) {
         date: "",
         likes: [],
         shares: 0,
-        author: null
+        author: null,
+        userId: null
     });
 
     const [isAvailable, setIsAvailable] = useState(true);
@@ -47,14 +56,44 @@ export default function Details(props) {
     const [imageURL, setImageURL] = useState([]);
     const [avatarURL, setAvatarURL] = useState(null);
     const [myAvatar, setMyAvatar] = useState(null);
+    const [urlMedia, setUrlMedia] = useState(null);
+    const [mediaName, setMediaName] = useState(null);
+    const [showMediaComment, setShowMediaComment] = useState(false);
+    const [loadingMedia, setLoadingMedia] = useState(false);
+    const [modalOptions, setModalOptions] = useState(false);
+    const [reportModal, setReportModal] = useState(false);
 
-    const [myComment, setMyCommnent] = useState("");
+    const [myComment, setMyComment] = useState("");
 
     const [imagesModal, setImagesModal] = useState(false);
     const [imagesSelect, setImagesSelect] = useState(0);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
+
+    const showRemoveAlert = () =>
+        Alert.alert(
+            t('deleteTitle'),
+            t('deleteAsk'),
+            [
+                {
+                    text: t('no'),
+                },
+                {
+                    text: t('yes'),
+                    onPress: () => deletePublish(),
+                    style: 'cancel',
+                },
+            ],
+        );
+
+    const savePublishToast = () => {
+        ToastAndroid.show(t('savePublish'), ToastAndroid.SHORT);
+    }
+
+    const deleteSavePublishToast = () => {
+        ToastAndroid.show(t('deletePublish'), ToastAndroid.SHORT);
+    }
 
     // Función con fallos cuando el usuario crea un nuevo comentario:
     // const orderComments = publicationArray.comments_container.sort(function(a, b) {
@@ -67,7 +106,7 @@ export default function Details(props) {
         // const collectionRef = collection(database, 'publications');
         // const q = query(collectionRef);
 
-        // const unsuscribe = onSnapshot(q, QuerySnapshot => {
+        // const unsubscribe = onSnapshot(q, QuerySnapshot => {
         //     QuerySnapshot.docs.map(doc => {
         //         data.push({ id: doc.id, data: doc.data() });
         //     })
@@ -111,7 +150,7 @@ export default function Details(props) {
         //     }
 
         // })
-        // return unsuscribe;
+        // return unsubscribe;
         loadPublish();
         loadComments();
     }, []);
@@ -123,33 +162,39 @@ export default function Details(props) {
 
             if (docSnap.exists()) {
                 if (docSnap.data().status < 5) {
-                    const publication = {
-                        id: props.route.params?.id,
-                        body: docSnap.data().body,
-                        urlImages: docSnap.data().urlImages,
-                        replyId: docSnap.data().replyID,
-                        status: docSnap.data().status,
-                        date: docSnap.data().date,
-                        likes: docSnap.data().likes,
-                        shares: docSnap.data().shares,
-                        author: docSnap.data().author
-                    }
+                    const isBlock = localUserLogin.blackList.includes(docSnap.data().userId) || localUserLogin.blockUsers.includes(docSnap.data().userId);
+                    if (!isBlock) {
+                        const publication = {
+                            id: props.route.params?.id,
+                            body: docSnap.data().body,
+                            urlImages: docSnap.data().urlImages,
+                            replyId: docSnap.data().replyID,
+                            status: docSnap.data().status,
+                            date: docSnap.data().date,
+                            likes: docSnap.data().likes,
+                            shares: docSnap.data().shares,
+                            author: docSnap.data().author,
+                            userId: docSnap.data().userId
+                        }
 
-                    if (docSnap.data().urlImages != null) {
-                        loadPhoto(docSnap.data().urlImages);
-                    }
-                    if (props.route.params?.avatar != null) {
-                        setAvatarURL(props.route.params?.avatar);
-                    }
+                        if (docSnap.data().urlImages != null) {
+                            loadPhoto(docSnap.data().urlImages);
+                        }
+                        if (props.route.params?.avatar != null) {
+                            setAvatarURL(props.route.params?.avatar);
+                        }
 
-                    setMyAvatar(localUserLogin.avatar);
-                    setReplyId(docSnap.data().replyId);
-                    setAllLikes(docSnap.data().likes.length);
-                    // setAllComments(docSnap.data().comments_container.length);
-                    setIsLike(isWasInteracted(docSnap.data().likes));
-                    setIsShared(isWasInteractedByID(docSnap.data().shares));
-                    setPublicationArray(publication);
-                    promiseSaved();
+                        setMyAvatar(localUserLogin.avatar);
+                        setReplyId(docSnap.data().replyID);
+                        setAllLikes(docSnap.data().likes.length);
+                        // setAllComments(docSnap.data().comments_container.length);
+                        setIsLike(isWasInteracted(docSnap.data().likes));
+                        setIsShared(isWasInteractedByID(docSnap.data().shares));
+                        setPublicationArray(publication);
+                        promiseSaved();
+                    } else {
+                        setIsAvailable(false);
+                    }
                 } else {
                     setIsAvailable(false);
                 }
@@ -171,7 +216,7 @@ export default function Details(props) {
             const collectionRef = collection(database, url);
             const q = query(collectionRef, orderBy('date', 'desc'));
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 setAllComments(QuerySnapshot.docs.length);
                 setCommentsArray(
                     QuerySnapshot.docs.map(doc => ({
@@ -185,7 +230,7 @@ export default function Details(props) {
                     }))
                 )
             });
-            return unsuscribe;
+            return unsubscribe;
 
         } catch (error) {
             console.error(error);
@@ -200,6 +245,62 @@ export default function Details(props) {
             }
             setImageURL(loadURLImages);
         }
+    }
+
+    const submitImageComment = async () => {
+        const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (granted) {
+            setLoadingMedia(true);
+            const image = await ImagePicker.launchImageLibraryAsync({
+                allowsMultipleSelection: false,
+                allowsEditing: true,
+                quality: 0.1,
+                aspect: [4, 3],
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            });
+
+            if (image.canceled) {
+                setLoadingMedia(false);
+            } else {
+                setUrlMedia(image.assets[0].uri);
+                setMediaName(image.assets[0].fileName);
+                setLoadingMedia(false);
+            }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
+        }
+    }
+
+    const pickPhotoComment = async () => {
+        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (granted) {
+            setLoadingMedia(true);
+            const image = await ImagePicker.launchCameraAsync({
+                allowsMultipleSelection: false,
+                allowsEditing: true,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                aspect: [4, 3],
+                quality: 0.1,
+            });
+
+            if (image.canceled) {
+                setLoadingMedia(false);
+            } else {
+                setUrlMedia(image.assets[0].uri);
+                setMediaName(image.assets[0].fileName);
+                setLoadingMedia(false);
+            }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
+        }
+    }
+
+    function deleteImageComment() {
+        setUrlMedia(null);
+        setLoadingMedia(false);
+        setShowMediaComment(true);
     }
 
     function goBackAgain() {
@@ -240,15 +341,7 @@ export default function Details(props) {
     const sendMyComment = async () => {
         if (myComment !== "") {
             setLoadingButton(true);
-            const commentArray = {
-                // comment_answers: [],
-                date: new Date(),
-                dislikes: [],
-                likes: [],
-                mediaURL: null,
-                message: myComment,
-                user: localUserLogin.id
-            }
+            let pathImage = null;
             try {
                 // const docRef = doc(database, 'publications', publicationArray.id);
                 // await updateDoc(docRef, {
@@ -257,11 +350,38 @@ export default function Details(props) {
                 // if (publicationArray.userId !== localUserLogin.id) {
                 //     await sendNotification('comment', publicationArray.userId, publicationArray.id, myComment);
                 // }
-                const url = "publications/" + publicationArray.id + "/comments";
-                const res = await addDoc(collection(database, url), commentArray);
 
-                setMyCommnent("");
+                if (urlMedia != null) {
+                    const url = localUserLogin.username + "/publicationImages/" + props.route.params?.id + "/imagesComment/" + mediaName;
+
+                    const response = await fetch(urlMedia);
+                    const blob = await response.blob();
+                    const storage = getStorage();
+                    const storageRef = ref(storage, url);
+
+                    const snapshot = await uploadBytes(storageRef, blob);
+
+                    pathImage = snapshot.ref.fullPath;
+                }
+
+                const commentArray = {
+                    // comment_answers: [],
+                    date: new Date(),
+                    dislikes: [],
+                    likes: [],
+                    mediaURL: pathImage,
+                    message: myComment,
+                    user: localUserLogin.id
+                }
+
+                const url = "publications/" + publicationArray.id + "/comments";
+                await addDoc(collection(database, url), commentArray);
+
+                await sendNotification('comment', publicationArray.userId, publicationArray.id, myComment);
+
+                setMyComment("");
                 setLoadingButton(false);
+                deleteImageComment();
             } catch (error) {
                 Alert.alert(t('serverErrorTitle'), t('serverError'));
                 console.error(error);
@@ -277,7 +397,7 @@ export default function Details(props) {
             setIsSaved(false);
             const res = await deleteSavePublish(props.route.params?.id);
             if (res) {
-                Alert.alert(t('deletePublish'));
+                deleteSavePublishToast()
             } else {
                 setIsSaved(true);
                 Alert.alert(t('errorTitle'), t('error'));
@@ -286,11 +406,44 @@ export default function Details(props) {
             setIsSaved(true);
             const res = await savePublish(props.route.params?.id);
             if (res) {
-                Alert.alert(t('savePublish'));
+                savePublishToast();
             } else {
                 setIsSaved(false);
                 Alert.alert(t('errorTitle'), t('error'));
             }
+        }
+    }
+
+    function editPublish() {
+        if (localUserLogin.id != undefined && localUserLogin.id != null) {
+            if (publicationArray.userId === localUserLogin.id) {
+                const myPublish = {
+                    id: publicationArray.id,
+                    body: publicationArray.body,
+                    urlImages: publicationArray.urlImages,
+                    date: publicationArray.date,
+                    replyID: publicationArray.replyId,
+                    status: publicationArray.status,
+                    author: publicationArray.author
+                }
+
+                setModalOptions[false];
+                props.navigation.navigate({ name: 'NewPublication', params: { isEdit: true, publishToEdit: myPublish }, merge: true });
+            } else {
+                // console.log("No eres el usuario creador de la publicación");
+            }
+        } else {
+            Alert.alert(t('internetErrorTitle'), t('internetError'));
+        }
+    }
+
+    const deletePublish = async () => {
+        const res = await deletePublishAction(props.route.params?.id);
+
+        if (res) {
+            Alert.alert("Eliminado correctamente");
+        } else {
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -299,6 +452,14 @@ export default function Details(props) {
             setImagesModal(false);
         } else {
             setImagesModal(true);
+        }
+    }
+
+    function selectShowMediaComment() {
+        if (showMediaComment) {
+            setShowMediaComment(false);
+        } else {
+            setShowMediaComment(true);
         }
     }
 
@@ -312,6 +473,23 @@ export default function Details(props) {
     function changeImagePrevios() {
         if (imagesSelect > 0) {
             setImagesSelect(imagesSelect - 1);
+        }
+    }
+
+    function openModalConfig() {
+        if (modalOptions) {
+            setModalOptions(false);
+        } else {
+            setModalOptions(true);
+        }
+    }
+
+    function openModalReport() {
+        if (reportModal) {
+            setReportModal(false);
+        } else {
+            setModalOptions(false);
+            setReportModal(true);
         }
     }
 
@@ -460,7 +638,10 @@ export default function Details(props) {
 
 
                                 <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='share-variant' />
-                                <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='chevron-down' />
+
+                                <TouchableOpacity onPress={openModalConfig}>
+                                    <SimpleLineIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='options-vertical' />
+                                </TouchableOpacity>
                             </View>
                         </View>
 
@@ -470,14 +651,49 @@ export default function Details(props) {
                         <View style={{ backgroundColor: colors.primary_dark, padding: 15, borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
                             <View style={styles.new_comment_header}>
                                 <Image style={styles.comment_avatar} source={myAvatar != null ? { uri: myAvatar } : require('../../assets/avatar-default.png')} />
-                                <View style={{ backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5 }}>
+                                <View style={{ alignContent: 'center', backgroundColor: colors.background, minHeight: 50, maxHeight: 300, width: "85%", borderRadius: 10, padding: 5 }}>
                                     <TextInput
                                         style={{ fontSize: 15, color: colors.text }}
                                         placeholder={t('createComment')}
                                         placeholderTextColor={colors.holderText}
                                         multiline={true}
-                                        onChangeText={(text) => setMyCommnent(text)}
+                                        onChangeText={(text) => setMyComment(text)}
+                                        onFocus={selectShowMediaComment}
                                         maxLength={500} />
+
+                                    {urlMedia != null ?
+                                        !loadingMedia ?
+                                            <View style={{ width: 200, height: 150, borderRadius: 10 }}>
+                                                <Image style={{ width: 200, height: 150 }} source={{ uri: urlMedia }} />
+                                                <TouchableOpacity style={{ position: 'absolute', top: 8, right: 8, padding: 3, borderRadius: 20, backgroundColor: "black" }} onPress={deleteImageComment}>
+                                                    <MaterialCommunityIcons style={{ color: "white", fontSize: 24 }} name='close' />
+                                                </TouchableOpacity>
+                                            </View>
+                                            :
+                                            <View style={{ alignItems: 'center', justifyContent: 'center', width: 200, height: 150, backgroundColor: colors.primary_dark_alternative, borderRadius: 10 }}>
+                                                <TouchableOpacity style={{ position: 'absolute', top: 8, right: 8, padding: 3, borderRadius: 20, backgroundColor: "black" }} onPress={deleteImageComment}>
+                                                    <MaterialCommunityIcons style={{ color: "white", fontSize: 24 }} name='close' />
+                                                </TouchableOpacity>
+                                                <ActivityIndicator size={'large'} color={colors.secondary} />
+                                            </View>
+                                        :
+                                        <View></View>}
+
+                                    {showMediaComment ?
+                                        urlMedia == null ?
+                                            <View style={{ flexDirection: 'row' }}>
+                                                <TouchableOpacity>
+                                                    <MaterialCommunityIcons style={{ fontSize: 24, color: colors.primary, marginVertical: 10, marginLeft: 10 }} onPress={pickPhotoComment} name='camera-plus-outline' />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity>
+                                                    <MaterialCommunityIcons style={{ fontSize: 24, color: colors.primary, marginVertical: 10, marginLeft: 10 }} onPress={submitImageComment} name='file-image-plus-outline' />
+                                                </TouchableOpacity>
+                                            </View>
+                                            :
+                                            <View></View>
+                                        :
+                                        <View></View>
+                                    }
                                 </View>
                             </View>
 
@@ -487,11 +703,16 @@ export default function Details(props) {
                                     <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sending')}</Text>
                                 </View>
                                 :
-                                <TouchableOpacity onPress={sendMyComment}>
-                                    <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.quartet }}>
+                                loadingMedia || myComment.length == 0 ?
+                                    <View style={{ flexDirection: "row", justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: colors.quartet_dark }}>
                                         <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sendComment')}</Text>
                                     </View>
-                                </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity onPress={sendMyComment}>
+                                        <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.quartet }}>
+                                            <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('sendComment')}</Text>
+                                        </View>
+                                    </TouchableOpacity>
                             }
                         </View>
 
@@ -552,6 +773,61 @@ export default function Details(props) {
                     </View>
                 </View>
             }
+
+            {/* Opciones del post */}
+            <Modal style={{
+                padding: 20,
+                maxHeight: 105,
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+                backgroundColor: colors.primary_dark,
+                alignItems: 'flex-start'
+            }} position='bottom' isOpen={modalOptions} coverScreen={true}>
+                {publicationArray.userId === localUserLogin.id ?
+                    <View>
+                        {publicationArray.status != 0 ?
+                            <TouchableOpacity style={styles.modalOption} onPress={editPublish}>
+                                <Feather style={{ fontSize: 28, color: colors.text, marginRight: 10 }} name='edit-3' />
+                                <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('edit')}</Text>
+                            </TouchableOpacity>
+                            :
+                            <View></View>
+                        }
+                        <TouchableOpacity style={styles.modalOption} onPress={showRemoveAlert}>
+                            <MaterialCommunityIcons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='delete-outline' />
+                            <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>{t('delete')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    :
+                    <View>
+                        <TouchableOpacity style={styles.modalOption}>
+                            <FontAwesome5 style={{ fontSize: 22, color: colors.text, marginRight: 10 }} name='user-slash' />
+                            <Text style={{ fontSize: 18, color: colors.text, fontWeight: 'bold' }}>{t('blockUser')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalOption} onPress={openModalReport}>
+                            <Octicons style={{ fontSize: 28, color: colors.text_error, marginRight: 10 }} name='report' />
+                            <Text style={{ fontSize: 18, color: colors.text_error, fontWeight: 'bold' }}>{t('report')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
+            </Modal>
+
+            {/* Reportar publicación */}
+            <Modal style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                alignItems: 'flex-start',
+                padding: 15,
+                backgroundColor: colors.background
+            }} position={"center"} isOpen={reportModal} coverScreen={true} swipeToClose={false}>
+                <ScrollView style={{ width: "100%" }}>
+                    <TouchableOpacity onPress={openModalReport}>
+                        <MaterialCommunityIcons style={{ fontSize: 38, color: colors.text }} name="close" />
+                    </TouchableOpacity>
+                    <Report_publish publishId={props.route.params?.id} userId={publicationArray.userId} />
+                </ScrollView>
+            </Modal>
         </View>
     )
 }
@@ -626,5 +902,11 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         maxHeight: 210,
         marginBottom: 15
+    },
+    modalOption: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10
     }
 })

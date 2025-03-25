@@ -38,7 +38,7 @@ export default function CreatePost(props) {
                 orderBy('date', orderStatus)
             );
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 setPublications(
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -57,7 +57,7 @@ export default function CreatePost(props) {
                 )
                 setLoading(false);
             })
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
             setLoading(false);
             console.error(error);

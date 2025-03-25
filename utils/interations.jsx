@@ -128,13 +128,15 @@ export const deletePublishAction = async (id) => {
                 console.error("Publicación inexistente");
                 key = false;
             } else {
+                const url = "archived/" + localUserLogin.id + "/publications";
+
                 const publish = docSnapshot.data();
-                const deleteRef = doc(database, "archived_publish", id);
-    
+                const deleteRef = doc(database, url, id);
+
                 transaction.set(deleteRef, {
                     ...publish, delete_at: serverTimestamp()
                 });
-    
+
                 transaction.delete(docRef);
             }
         });
@@ -221,8 +223,7 @@ export async function startFollowProcess(UserID, myUserID) {
             followers: arrayUnion(myUserID)
         });
         await updateDoc(docRefMyUser, {
-            following: arrayUnion(UserID),
-            noChats: arrayUnion(UserID)
+            following: arrayUnion(UserID)
         });
         await sendNotification('follow', UserID, null, null);
         return true;
@@ -242,18 +243,11 @@ export async function stopFollowProcess(UserID, myUserID) {
 
         if (docSnapMyUser.exists()) {
             let myFollowersSnapshot = docSnapMyUser.data().following;
-            let myNoChatsSnapshot = docSnapMyUser.data().noChats;
 
             // Eliminando el usuario seleccionado de mi lista de siguiendo y de no chats
             for (let i = 0; i < myFollowersSnapshot.length; i++) {
                 if (myFollowersSnapshot[i] === UserID) {
                     myFollowersSnapshot.splice(i, 1);
-                    break;
-                }
-            }
-            for (let i = 0; i < myNoChatsSnapshot.length; i++) {
-                if (myNoChatsSnapshot[i] === UserID) {
-                    myNoChatsSnapshot.splice(i, 1);
                     break;
                 }
             }
@@ -328,6 +322,89 @@ export async function deleteFollowerProcess(UserID, myUserID) {
     }
 }
 
+export async function addBlockUser(UserID) {
+    try {
+        const docRefUser = doc(database, 'users', UserID);
+        const docRefMyUser = doc(database, 'users', localUserLogin.id);
+
+        const updateList = async (docRef, field, value, remove = false) => {
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data()[field]?.includes(value)) {
+            const updatedList = docSnap.data()[field].filter(item => item !== value);
+            if (!remove) updatedList.push(value);
+            await updateDoc(docRef, { [field]: updatedList });
+            }
+        };
+
+        // Update my user data
+        await updateList(docRefMyUser, 'followers', UserID, true);
+        await updateList(docRefMyUser, 'following', UserID, true);
+        await updateDoc(docRefMyUser, { blackList: arrayUnion(UserID) });
+
+        // Update target user data
+        await updateList(docRefUser, 'followers', localUserLogin.id, true);
+        await updateList(docRefUser, 'following', localUserLogin.id, true);
+        await updateDoc(docRefUser, { blockUsers: arrayUnion(localUserLogin.id) });
+
+        localUserLogin.blackList.push(UserID);
+
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+export async function removeBlockUser(UserID) {
+    try {
+        const docRefUser = doc(database, 'users', UserID);
+        const docRefMyUser = doc(database, 'users', localUserLogin.id);
+
+        const docSnapUser = await getDoc(docRefUser);
+        const docSnapMyUser = await getDoc(docRefMyUser);
+
+        if (docSnapMyUser.exists()) {
+            let myBlockedSnapshot = docSnapMyUser.data().blackList;
+
+            // Eliminando usuario bloqueado de mi lista de bloqueados
+            for (let i = 0; i < myBlockedSnapshot.length; i++) {
+                if (myBlockedSnapshot[i] === UserID) {
+                    myBlockedSnapshot.splice(i, 1);
+                    break;
+                }
+            }
+            await updateDoc(docRefMyUser, { blackList: myBlockedSnapshot });
+
+            if (docSnapUser.exists()) {
+                let userBlockedSnapshot = docSnapUser.data().blockUsers;
+
+                // Eliminando mi usuario de la lista de bloqueados del usuario
+                for (let i = 0; i < userBlockedSnapshot.length; i++) {
+                    if (userBlockedSnapshot[i] === localUserLogin.id) {
+                        userBlockedSnapshot.splice(i, 1);
+                        break;
+                    }
+                }
+                await updateDoc(docRefUser, { blockUsers: userBlockedSnapshot });
+
+                for (let i = 0; i < localUserLogin.blackList.length; i++) {
+                    if (localUserLogin.blackList[i] === UserID) {
+                        localUserLogin.blackList.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            return true;
+        } else {
+            console.error("Datos inexistentes");
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 export const fetchImage = async (url) => {
     try {
         if (url != null) {
@@ -361,13 +438,13 @@ export const getNotifications = async (idUser) => {
                     }
                 }
             } else {
-                console.log("No tienes nuevos mensajes");
+                // console.log("No tienes nuevos mensajes");
             }
         } else {
-            console.log("No tienes nuevos mensajes");
+            // console.log("No tienes nuevos mensajes");
         }
     } catch (error) {
-        console.error("Error en la obtención de las notificaciones");
+        // console.error("Error en la obtención de las notificaciones");
         console.error(error);
     }
 }

@@ -11,8 +11,11 @@ import { Sign_up_part1, Sign_up_part2, Sign_up_part3, WelcomeScreen } from '../s
 import FastComment from '../screens/sub-screens/fast_comment'
 import New_publication from '../screens/sub-screens/new_publication';
 import ReplyScreen from '../screens/sub-screens/replyScreen';
+import ConfigGeneral from '../screens/configs/configGeneral';
 import Perfil from '../screens/perfil';
-import ConfigPerfil from '../screens/sub-screens/configPerfil';
+import ConfigPerfil from '../screens/configs/configPerfil';
+import ConfigPassword from '../screens/configs/configPassword';
+import DeleteAccount from '../screens/configs/deleteAccount';
 import ReplyPublishScreen from '../screens/sub-screens/replyPublishScreen';
 import MyChat from '../screens/sub-screens/myChat';
 import Saves from '../screens/sub-screens/saves';
@@ -41,13 +44,16 @@ export default function MyRoutes() {
                 <Stack.Screen name="Sign_up_part1" component={Sign_up_part1} />
                 <Stack.Screen name="Sign_up_part2" component={Sign_up_part2} />
                 <Stack.Screen name="Home" component={HomeTaps} />
-                <Stack.Screen name="Saves" component={Saves} initialParams={{ saves: [] }}/>
+                <Stack.Screen name="Saves" component={Saves} />
                 <Stack.Screen name="FastComment" component={FastComment} />
                 <Stack.Screen name="ReplyPublishScreen" component={ReplyPublishScreen} initialParams={{ id: "", userIdSend: "" }} />
                 <Stack.Screen name="Details" component={Details} initialParams={{ id: "", nickname: "", avatar: null }}/>
-                <Stack.Screen name="MyChat" component={MyChat} />
+                <Stack.Screen name="MyChat" component={MyChat} initialParams={{ channelId: "", userId: "", userNickname: "Chat", avatar: null, isDelete: false }} />
                 <Stack.Screen name="Perfil" component={Perfil} initialParams={{ userId: "", userIdSend: "" }}/>
+                <Stack.Screen name="ConfigGeneral" component={ConfigGeneral} />
                 <Stack.Screen name="ConfigPerfil" component={ConfigPerfil} />
+                <Stack.Screen name="ConfigPassword" component={ConfigPassword} />
+                <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
                 <Stack.Screen name="ReplyScreen" component={ReplyScreen} initialParams={{ id: "", userIdSend: "", nameUserSend: "", principalID: "", isPrincipalComment: false, comment_Array: [] }} />
                 <Stack.Screen name="NewPublication" component={New_publication} initialParams={{ isEdit: false, publishToEdit: [] }}/>
             </Stack.Navigator>

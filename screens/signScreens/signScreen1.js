@@ -66,7 +66,7 @@ export default function Sign_up_part1(props) {
                         setLoading(false);
                     }
                 } catch (error) {
-                    console.log(error)
+                    console.error(error)
                     Alert.alert(t('serverErrorTitle'), t('serverError'));
                     setLoading(false)
                 }
@@ -93,7 +93,7 @@ export default function Sign_up_part1(props) {
 
             return key;
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return false
         }
     }
@@ -136,7 +136,6 @@ export default function Sign_up_part1(props) {
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,
@@ -164,7 +163,6 @@ export default function Sign_up_part1(props) {
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,
@@ -184,7 +182,6 @@ export default function Sign_up_part1(props) {
                     backgroundColor: colors.background,
                     borderRadius: 20,
                     width: '100%',
-                    height: 45,
                     shadowColor: colors.shadow,
                     shadowOffset: {
                         width: 1,

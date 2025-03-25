@@ -49,7 +49,7 @@ export default function Sign_up_part2(props) {
 
             return key;
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return false
         }
     }
@@ -90,15 +90,15 @@ export default function Sign_up_part2(props) {
                     }
                 } else {
                     setLoading(false);
-                    console.log("No coinciden")
+                    // console.log("No coinciden");
                 }
             } else {
                 setLoading(false);
-                console.log("Vacio")
+                // console.log("Vació");
             }
         } catch (error) {
-            console.log(error)
-            setLoading(false)
+            console.error(error);
+            setLoading(false);
         }
     }
 
@@ -150,7 +150,7 @@ export default function Sign_up_part2(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder={t('userPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setUsername(text)} autoCorrect={false} />
+                    <TextInput placeholder={t('userPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary, width: '100%' }} onChangeText={(text) => setUsername(text)} autoCorrect={false} />
                 </View>
                 {error ?
                     <Text style={{ color: colors.text_error, fontSize: 14, fontWeight: 'bold', marginLeft: 12, marginTop: 5 }}>{t('usernameError')}</Text>
@@ -177,7 +177,7 @@ export default function Sign_up_part2(props) {
                     shadowRadius: 4,
                     elevation: 5
                 }}>
-                    <TextInput placeholder={t('nicknamePlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
+                    <TextInput placeholder={t('nicknamePlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary, width: '100%' }} onChangeText={(text) => setSurname(text)} autoCorrect={false} />
                 </View>
 
                 <Text style={{ marginTop: 20, marginBottom: 10, marginLeft: 14, fontSize: 16, fontWeight: 'bold', color: colors.text }}>{t('passwordLabel')}</Text>
@@ -200,7 +200,7 @@ export default function Sign_up_part2(props) {
                         shadowRadius: 4,
                         elevation: 5
                     }}>
-                        <TextInput placeholder='Contraseña' placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setPassword(text)} secureTextEntry={hidePassword} autoCorrect={false} />
+                        <TextInput placeholder={t('placeholderPassword')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary, width: '100%' }} onChangeText={(text) => setPassword(text)} secureTextEntry={hidePassword} autoCorrect={false} />
                     </View>
                     {hidePassword ?
                         <TouchableOpacity onPress={setPasswordStatus}>
@@ -245,7 +245,7 @@ export default function Sign_up_part2(props) {
                         shadowRadius: 4,
                         elevation: 5
                     }}>
-                        <TextInput placeholder={t('repeatPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary }} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
+                        <TextInput placeholder={t('repeatPlaceHolder')} placeholderTextColor={colors.holderText} style={{ fontSize: 14, fontWeight: 'bold', color: colors.secondary, width: '100%' }} onChangeText={(text) => setPasswordConfirm(text)} secureTextEntry={hidePassword} autoCorrect={false} />
                     </View>
                     {hidePassword ?
                         <TouchableOpacity onPress={setPasswordStatus}>

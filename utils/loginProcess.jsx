@@ -13,6 +13,8 @@ export default async function LoginProcess(email, password) {
                     localUserLogin.id = doc.id;
                     localUserLogin.username = doc.data().username;
                     localUserLogin.nickname = doc.data().name;
+                    localUserLogin.blackList = doc.data().blackList != undefined ? doc.data().blackList : [];
+                    localUserLogin.blockUsers = doc.data().blockUsers != undefined ? doc.data().blockUsers : [];
 
                     if (doc.data().avatar != null) {
                         await saveMyAvatarURI(await doc.data().avatar);

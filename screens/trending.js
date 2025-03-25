@@ -7,7 +7,7 @@ import { localUserLogin } from '../utils/localstorage';
 import { isWasInteracted, isWasInteractedByID, isWasCommented, isWasSaved } from '../utils/interations';
 
 import { database } from '../utils/database';
-import { collection, where, query, onSnapshot } from 'firebase/firestore';
+import { collection, where, query, onSnapshot, orderBy } from 'firebase/firestore';
 
 import '../i18n/i18n';
 import { useTranslation } from 'react-i18next';
@@ -29,27 +29,29 @@ export default function Trending(props) {
 
     function loadAllPublish() {
         const collectionRef = collection(database, 'publications');
-        const q = query(collectionRef, where('userId', '!=', localUserLogin.id));
+        // const q = query(collectionRef, where('userId', '!=', localUserLogin.id));
+        const q = query(collectionRef, where("status", "in", [2, 3, 4]), orderBy('date', 'desc'));
 
-        const unsuscribe = onSnapshot(q, QuerySnapshot => {
+        const unsubscribe = onSnapshot(q, QuerySnapshot => {
             setAllPublish(
                 QuerySnapshot.docs.map(doc => ({
                     id: doc.id,
                     body: doc.data().body,
                     urlImages: doc.data().urlImages,
                     replyID: doc.data().replyID,
-                    userId: doc.data().userId,
-                    // comments: doc.data().comments,
-                    // comments_container: doc.data().comments_container,
+                    status: doc.data().status,
+                    author: doc.data().author,
+                    // comments_container: await searchMyComment(doc.id),
                     date: doc.data().date,
                     likes: doc.data().likes,
-                    shares: doc.data().shares
+                    shares: doc.data().shares,
+                    userId: doc.data().userId
                 }))
             )
         });
         setPublications(allPublish);
         setLoading(false);
-        return unsuscribe;
+        return unsubscribe;
     }
 
     const startSearch = async () => {
@@ -58,7 +60,7 @@ export default function Trending(props) {
             const filteredPublish = allPublish.filter((item) => {
                 const itemData = `${item.body.toLowerCase()}`;
                 const toSearch = searchText.toLowerCase();
-    
+
                 return itemData.includes(toSearch);
             });
             setPublications(filteredPublish);

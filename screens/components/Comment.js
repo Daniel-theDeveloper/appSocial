@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Comment_answer from './Comment_answer';
@@ -25,12 +25,16 @@ export default function Comment({
     user,
     props
 }) {
+    const [isAvailable, setIsAvailable] = useState(true);
+
     const [isLike, setIsLike] = useState((isWasInteracted(likes)));
     const [isDislike, setIsDislike] = useState((isWasInteracted(dislikes)));
     const [showAnswers, setShowAnswers] = useState(false);
     const [avatarURL, setAvatarURL] = useState(null);
     const [userId, setUserId] = useState(null);
     const [nickname, setNickname] = useState(null);
+    const [loadingMedia, setLoadingMedia] = useState(true);
+    const [urlImage, setUrlImage] = useState(null);
 
     const [comment_answers, set_comment_answers] = useState([]);
 
@@ -43,8 +47,15 @@ export default function Comment({
     const { t } = useTranslation();
 
     useEffect(() => {
-        loadUserData();
-        loadCommentsAnswers();
+        const isBlock = localUserLogin.blackList.includes(user) || localUserLogin.blockUsers.includes(user);
+
+        if (!isBlock) {
+            loadUserData();
+            loadImage();
+            loadCommentsAnswers();
+        } else {
+            setIsAvailable(false);
+        }
     }, [])
 
     function replyComment() {
@@ -79,10 +90,17 @@ export default function Comment({
                 setAvatarURL(await fetchImage(docSnap.data().avatar));
                 setNickname(docSnap.data().name);
             } else {
-                setNickname("BANNED");
+                setIsAvailable(false);
             }
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    const loadImage = async () => {
+        if (mediaURL != null) {
+            setUrlImage(await fetchImage(mediaURL));
+            setLoadingMedia(false);
         }
     }
 
@@ -90,9 +108,9 @@ export default function Comment({
         try {
             const url = 'publications/' + publicationId + '/comments/' + id + "/comment_answers";
             const collectionRef = collection(database, url);
-            const q = query(collectionRef, orderBy('date', 'desc'));
+            const q = query(collectionRef, orderBy('date', 'asc'));
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 set_comment_answers(
                     QuerySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -105,9 +123,9 @@ export default function Comment({
                     }))
                 )
             });
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -300,89 +318,105 @@ export default function Comment({
     }
 
     return (
-        <View style={{ backgroundColor: colors.primary_dark, padding: 12, flexDirection: "column", borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
-            {/* Comentario principal */}
-            <View style={styles.comment_view}>
+        <View>
+            {isAvailable ?
+                <View style={{ backgroundColor: colors.primary_dark, padding: 12, flexDirection: "column", borderRadius: 20, marginBottom: 15, shadowColor: colors.shadow, shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.55, shadowRadius: 4, elevation: 5 }}>
+                    {/* Comentario principal */}
+                    <View style={styles.comment_view}>
 
-                <TouchableOpacity style={styles.comment_left} onPress={goPerfil}>
-                    <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
-                </TouchableOpacity>
+                        <TouchableOpacity style={styles.comment_left} onPress={goPerfil}>
+                            <Image style={styles.comment_avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
+                        </TouchableOpacity>
 
-                <View style={styles.comment_right}>
+                        <View style={styles.comment_right}>
 
-                    <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
-                        {user == localUserLogin.id ?
-                            <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.tertiary }}>{nickname}</Text>
-                            :
-                            <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.secondary }}>{nickname}</Text>
-                        }
-                        <Text style={{ fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary }}>-</Text>
-                        <Text style={{ fontSize: 16, color: colors.secondary }}>{convertDate(date)}</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity style={styles.comment_header} onPress={goPerfil}>
+                                {user == localUserLogin.id ?
+                                    <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.tertiary }}>{nickname}</Text>
+                                    :
+                                    <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.secondary }}>{nickname}</Text>
+                                }
+                                <Text style={{ fontWeight: "bold", marginHorizontal: 5, fontSize: 16, color: colors.secondary }}>-</Text>
+                                <Text style={{ fontSize: 16, color: colors.secondary }}>{convertDate(date)}</Text>
+                            </TouchableOpacity>
 
-                    <View>
-                        <Text style={{ fontSize: 15, marginVertical: 8, color: colors.text }}>{message}</Text>
-                    </View>
+                            <View>
+                                <Text style={{ fontSize: 15, marginVertical: 8, color: colors.text }}>{message}</Text>
+                                {mediaURL != null ?
+                                    loadingMedia ?
+                                        <View style={{ alignItems: 'center', justifyContent: 'center', width: 200, height: 150, backgroundColor: colors.primary_dark_alternative, borderRadius: 10 }}>
+                                            <ActivityIndicator size={'large'} color={colors.secondary} />
+                                        </View>
+                                        :
+                                        <Image style={{ width: 200, height: 150, borderRadius: 10 }} source={{ uri: urlImage }} />
+                                    :
+                                    <View></View>
+                                }
+                            </View>
 
-                    <View style={styles.comment_footer}>
-                        <View style={styles.comment_likes_block}>
-                            {/* like comment */}
-                            {isLike ?
-                                <MaterialCommunityIcons style={{ fontSize: 19, color: colors.like_comment }} name='thumb-up' />
-                                :
-                                <TouchableOpacity onPress={setLikeComment}>
-                                    <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-up' />
+                            <View style={styles.comment_footer}>
+                                <View style={styles.comment_likes_block}>
+                                    {/* like comment */}
+                                    {isLike ?
+                                        <MaterialCommunityIcons style={{ fontSize: 19, color: colors.like_comment }} name='thumb-up' />
+                                        :
+                                        <TouchableOpacity onPress={setLikeComment}>
+                                            <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-up' />
+                                        </TouchableOpacity>
+                                    }
+
+                                    {/* counter */}
+                                    <Text style={{ fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary }}>{likesTotal}</Text>
+
+                                    {/* dislike comment */}
+                                    {isDislike ?
+                                        <MaterialCommunityIcons style={{ fontSize: 19, color: colors.dislike_comment }} name='thumb-down' />
+                                        :
+                                        <TouchableOpacity onPress={setDislikeComment}>
+                                            <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-down' />
+                                        </TouchableOpacity>
+                                    }
+
+
+
+
+                                </View>
+                                <View style={styles.comment_responses_block}>
+                                    <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='message-processing' />
+                                    <Text style={{ fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary }}>{comment_answers.length}</Text>
+                                </View>
+                                <TouchableOpacity onPress={replyComment}>
+                                    <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10 }}>Responder</Text>
                                 </TouchableOpacity>
-                            }
+                            </View>
 
-                            {/* counter */}
-                            <Text style={{ fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary }}>{likesTotal}</Text>
-
-                            {/* dislike comment */}
-                            {isDislike ?
-                                <MaterialCommunityIcons style={{ fontSize: 19, color: colors.dislike_comment }} name='thumb-down' />
-                                :
-                                <TouchableOpacity onPress={setDislikeComment}>
-                                    <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='thumb-down' />
+                            {comment_answers.length > 0 ?
+                                <TouchableOpacity onPress={show}>
+                                    {showAnswers ?
+                                        <View style={styles.comment_show_responses}>
+                                            <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='chevron-up' />
+                                            <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>Ocultar comentarios</Text>
+                                        </View>
+                                        :
+                                        <View style={styles.comment_show_responses}>
+                                            <MaterialCommunityIcons style={{ fontSize: 25, color: colors.primary_dark_alternative }} name='chevron-down' />
+                                            <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.primary }}>Cargar comentarios</Text>
+                                        </View>
+                                    }
                                 </TouchableOpacity>
+                                :
+                                <View></View>
                             }
-
-
-
 
                         </View>
-                        <View style={styles.comment_responces_block}>
-                            <MaterialCommunityIcons style={{ fontSize: 19, color: colors.primary_dark_alternative }} name='message-processing' />
-                            <Text style={{fontSize: 14, fontWeight: "bold", marginHorizontal: 8, color: colors.primary}}>{comment_answers.length}</Text>
-                        </View>
-                        <TouchableOpacity onPress={replyComment}>
-                            <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", marginLeft: 10 }}>Responder</Text>
-                        </TouchableOpacity>
                     </View>
-
-                    {comment_answers.length > 0 ?
-                        <TouchableOpacity onPress={show}>
-                            {showAnswers ?
-                                <View style={styles.comment_show_responces}>
-                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-up' />
-                                    <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>Ocultar comentarios</Text>
-                                </View>
-                                :
-                                <View style={styles.comment_show_responces}>
-                                    <MaterialCommunityIcons style={{fontSize: 25, color: colors.primary_dark_alternative}} name='chevron-down' />
-                                    <Text style={{fontSize: 15, fontWeight: "bold", color: colors.primary}}>Cargar comentarios</Text>
-                                </View>
-                            }
-                        </TouchableOpacity>
+                    {/* Area de respuestas */}
+                    {showAnswers ?
+                        comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} principalID={id} publicationId={publicationId} {...comment} />))
                         :
                         <View></View>
                     }
-
                 </View>
-            </View>
-            {/* Area de respuestas */}
-            {showAnswers ?
-                comment_answers.map((comment, key) => (<Comment_answer key={key} props={props} comment_answers={comment_answers} principalMessage={message} principalID={id} publicationId={publicationId} {...comment} />))
                 :
                 <View></View>
             }
@@ -420,11 +454,11 @@ const styles = StyleSheet.create({
     comment_likes_block: {
         flexDirection: "row"
     },
-    comment_show_responces: {
+    comment_show_responses: {
         flexDirection: "row",
         marginTop: 10
     },
-    comment_responces_block: {
+    comment_responses_block: {
         flexDirection: "row",
         marginLeft: 30,
     }

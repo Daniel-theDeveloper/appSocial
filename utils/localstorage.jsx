@@ -5,7 +5,9 @@ export let localUserLogin = {
     id: "",
     avatar: null,
     username: "",
-    nickname: ""
+    nickname: "",
+    blackList: [],
+    blockUsers: []
 }
 
 export const setLocalUser = async (email, password) => {
@@ -66,34 +68,34 @@ export const getSaveTheme = async () => {
             return 'system';
         }
     } catch (error) {
-        console.error("Error en la obtencion del tema: " + error);
+        console.error("Error en la obtención del tema: " + error);
         return 'system';
     }
 }
 // Guardar el idioma seleccionado
-export const setSaveLanguaje = async (name) => {
+export const setSaveLanguage = async (name) => {
     try {
-        await AsyncStorage.setItem('languaje', JSON.stringify(name));
+        await AsyncStorage.setItem('language', JSON.stringify(name));
     } catch (error) {
         console.error('Error en el guardado del idioma: ' + error);
     }
 }
 
 // Obtener el idioma seleccionado
-export const getSaveLanguaje = async () => {
+export const getSaveLanguage = async () => {
     try {
-        const languajeName = await AsyncStorage.getItem('languaje');
+        const languageName = await AsyncStorage.getItem('language');
 
-        if (languajeName !== null) {
-            const languajeCrude = languajeName.split('"');
-            const languaje = languajeCrude[1];
+        if (languageName !== null) {
+            const languageCrude = languageName.split('"');
+            const language = languageCrude[1];
 
-            return languaje;
+            return language;
         } else {
             return 'es';
         }
     } catch (error) {
-        console.error("Error en la obtencion del idioma: " + error);
+        console.error("Error en la obtención del idioma: " + error);
         return 'system';
     }
 }

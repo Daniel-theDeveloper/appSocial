@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
+import { fetchImage } from '../../utils/interations';
 // import { publicationData } from './Publish';
 
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -23,7 +24,7 @@ export default function ReplyPublish({ props, replyID }) {
         urlImages: null
     });
     const [isReplyDelete, setReplyDelete] = useState(false);
-    const [replyImage, setReplyImage] = useState(null);
+    const [replyImage, setReplyImage] = useState([]);
     const [replyAvatar, setReplyAvatar] = useState(null);
     const [replyNickname, setReplyNickname] = useState(null);
     const [replyUsername, setReplyUsername] = useState(null);
@@ -42,55 +43,72 @@ export default function ReplyPublish({ props, replyID }) {
             const docRef = doc(database, 'publications', replyID);
             const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                if (docSnap.data().status >= 3 && docSnap.data().status < 5) { // Carga si es publico o editado
+            if (!docSnap.exists()) {
+                setReplyDelete(true);
+                return;
+            }
+
+            const data = docSnap.data();
+            const isBlock = localUserLogin.blackList.includes(data.userId) || localUserLogin.blockUsers.includes(data.userId);
+
+            if (!isBlock) {
+                const isOwner = data.userId === localUserLogin.id;
+                const isPublicOrEdited = data.status >= 3 && data.status < 5;
+                const isFollowersOnly = data.status === 2;
+
+                if (isPublicOrEdited || (isFollowersOnly && isOwner)) {
                     setReplyData({
                         id: docSnap.id,
-                        date: docSnap.data().date,
-                        body: docSnap.data().body
+                        date: data.date,
+                        body: data.body
                     });
-                    await fetchImageReply(docSnap.data().urlImages);
-                    await loadUserReplyData(docSnap.data().author);
-                } else if (docSnap.data().status == 2) { // Verifica si es solo para seguidores
-                    setOnlyFollowers(docSnap.data().userId === localUserLogin.id ? false : true); // Verifica si eres seguidor del autor
-                    setReplyData({
-                        id: docSnap.id,
-                        date: docSnap.data().date,
-                        body: docSnap.data().body
-                    });
-                    await fetchImageReply(docSnap.data().urlImages);
-                    await loadUserReplyData(docSnap.data().author, docSnap.data().status);
-                } else {
-                    if (docSnap.data().userId === localUserLogin.id) { // Verifica si eres el dueño original
-                        setReplyData({
-                            id: docSnap.id,
-                            date: docSnap.data().date,
-                            body: docSnap.data().body
-                        });
-                        await fetchImageReply(docSnap.data().urlImages);
-                        await loadUserReplyData(docSnap.data().author);
-                    } else {
-                        setReplyDelete(true);
+
+                    if (data.urlImages != null) {
+                        await fetchImageReply(data.urlImages);
                     }
+
+                    await loadUserReplyData(data.author, data.status);
+                    setOnlyFollowers(isFollowersOnly && !data.following.includes(localUserLogin.id));
+                } else if (isOwner) {
+                    setReplyData({
+                        id: docSnap.id,
+                        date: data.date,
+                        body: data.body
+                    });
+
+                    if (data.urlImages != null) {
+                        await fetchImageReply(data.urlImages);
+                    }
+
+                    await loadUserReplyData(data.author);
+                } else {
+                    setReplyDelete(true);
                 }
             } else {
                 setReplyDelete(true);
             }
+
         } catch (error) {
             setReplyDelete(true);
-            console.log(error);
+            console.error(error);
         }
     }
 
     const fetchImageReply = async (url) => {
         if (url != null && url != undefined) {
-            if (url.length != 0) {
-                const storage = getStorage();
-                const imageRef = ref(storage, url);
-                const getUrl = await getDownloadURL(imageRef);
-    
-                setReplyImage(getUrl);
+            // if (url.length != 0) {
+            //     const storage = getStorage();
+            //     const imageRef = ref(storage, url);
+            //     const getUrl = await getDownloadURL(imageRef);
+
+            //     setReplyImage(getUrl);
+            // }
+            let loadURLImages = [];
+
+            for (let x = 0; x < url.length; x++) {
+                loadURLImages.push(await fetchImage(url[x]));
             }
+            setReplyImage(loadURLImages);
         }
     }
 
@@ -139,7 +157,9 @@ export default function ReplyPublish({ props, replyID }) {
                 <View style={{ padding: 10, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 4, }}>
                     <View style={styles.replyTitleBlock}>
                         <MaterialCommunityIcons style={{ marginRight: 10, color: colors.primary, fontSize: 24 }} name='alert-box-outline' />
-                        <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic" }}>{t('noPublishFound')}</Text>
+                        <View style={{ width: "80%" }}>
+                            <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic" }}>{t('noPublishFound')}</Text>
+                        </View>
                     </View>
                 </View>
                 :
@@ -156,7 +176,9 @@ export default function ReplyPublish({ props, replyID }) {
                             {/* Reply header */}
                             <View style={styles.replyTitleBlock}>
                                 <MaterialCommunityIcons style={{ marginRight: 10, color: colors.primary, fontSize: 24 }} name='reply-outline' />
-                                <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic" }}>{t('respondingTo')}</Text>
+                                <View style={{ width: "80%" }}>
+                                    <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "bold", fontStyle: "italic" }}>{t('respondingTo')}</Text>
+                                </View>
                             </View>
 
                             {/* Reply body header */}
@@ -182,8 +204,42 @@ export default function ReplyPublish({ props, replyID }) {
 
                             {/* Reply body */}
                             <Text style={{ fontSize: 15, marginBottom: 15, color: colors.text }}>{replyData.body}</Text>
-                            {replyImage != null ?
+                            {/* {replyImage != null ?
                                 <Image style={styles.publication_image} source={{ uri: replyImage }} />
+                                :
+                                <View></View>
+                            } */}
+                            {replyImage != null ?
+                                replyImage.length === 1 ?
+                                    <Image style={{ height: 200, width: "100%", marginBottom: 15, borderRadius: 15 }} source={{ uri: replyImage[0] }} />
+                                    :
+                                    replyImage.length === 2 ?
+                                        <View style={styles.images_container}>
+                                            <Image style={{ marginRight: 3, height: 200, width: "49%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: replyImage[0] }} />
+                                            <Image style={{ marginLeft: 3, height: 200, width: "49%", borderTopRightRadius: 15, borderBottomRightRadius: 15 }} source={{ uri: replyImage[1] }} />
+                                        </View>
+                                        :
+                                        replyImage.length === 3 ?
+                                            <View style={styles.images_container}>
+                                                <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: replyImage[0] }} />
+                                                <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
+                                                    <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: replyImage[1] }} />
+                                                    <Image style={{ marginTop: 3, height: "48.5%", borderBottomRightRadius: 15 }} source={{ uri: replyImage[2] }} />
+                                                </View>
+                                            </View>
+                                            :
+                                            replyImage.length > 3 ?
+                                                <View style={styles.images_container}>
+                                                    <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: replyImage[0] }} />
+                                                    <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
+                                                        <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: replyImage[1] }} />
+                                                        <ImageBackground source={{ uri: replyImage[2] }} imageStyle={{ opacity: 0.5, resizeMode: "cover", height: "100%", borderBottomRightRadius: 15 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 3, height: "48.5%", borderBottomRightRadius: 15, backgroundColor: "#1f1f1f" }}>
+                                                            <Text style={{ color: "white", fontSize: 36, }}>+{replyImage.length - 3}</Text>
+                                                        </ImageBackground>
+                                                    </View>
+                                                </View>
+                                                :
+                                                <View></View>
                                 :
                                 <View></View>
                             }
@@ -207,11 +263,10 @@ const styles = StyleSheet.create({
     perfil_usernames_block: {
         flexDirection: "row",
     },
-    publication_image: {
-        height: 200,
-        width: "100%",
-        marginBottom: 15,
-        borderRadius: 15
+    images_container: {
+        display: "flex",
+        flexDirection: "row",
+        maxHeight: 210,
+        marginBottom: 15
     }
-
 });

@@ -7,6 +7,7 @@ export var params = {
     avatar: null,
     avatarName: null,
     avatarExt: null,
+    blacklist: [],
     banner: null,
     bannerName: null,
     bannerExt: null,
@@ -22,15 +23,15 @@ export var params = {
 export default async function SignUp() {
     // console.log(params);
     try {
-        let location;
+        // let location;
         let avatarSaveURL = null;
         let bannerSaveURL = null;
 
-        if (params.city.length != undefined) {
-            location = params.country + ", " + params.city;
-        } else {
-            location = params.country;
-        }
+        // if (params.city.length != undefined) {
+        //     location = params.country + ", " + params.city;
+        // } else {
+        //     location = params.country;
+        // }
 
         const userData = {
             avatar: avatarSaveURL,
@@ -39,9 +40,10 @@ export default async function SignUp() {
             email: params.email,
             followers: [],
             following: [],
-            noChats: [],
             saves: [],
-            location: location,
+            // location: location,
+            city: params.city,
+            country: params.country,
             name: params.username,
             username: params.nickname,
             wasCreated: new Date()

@@ -23,6 +23,7 @@ const LightTheme = {
         chat: '#566BFF',
         text: 'black',
         text_dark: '#B2B2B2',
+        text_button: '#FFFFFF',
         text_error: '#F10071',
         error_dark: '#FCC9E1',
         inputText: '#393F6D',

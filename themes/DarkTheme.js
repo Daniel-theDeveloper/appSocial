@@ -23,6 +23,7 @@ const DarkTheme = {
         chat: '#566BFF',
         text: 'white',
         text_dark: '#B2B2B2',
+        text_button: '#FFFFFF',
         text_error: '#FF487F',
         error_dark: '#461021',
         inputText: '#A5D7E8',

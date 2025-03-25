@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-na
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import { doc, getDoc } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { database } from '../../utils/database';
 
 import { localUserLogin } from '../../utils/localstorage';
 import { isWasInteractedByID, startFollowProcess, stopFollowProcess, deleteFollowerProcess, fetchImage } from '../../utils/interations';
+
+import '../../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@react-navigation/native';
 // Tipo de seguidor:
@@ -15,6 +17,8 @@ import { useTheme } from '@react-navigation/native';
 // 1 - Usuario que sigo
 // Si es sugerencia para chatear: 2
 export default function UserList({ idUser, list_owner, followType, props }) {
+    const [deleteUser, setDeleteUser] = useState(false);
+
     const [userData, setUserData] = useState({
         id: "",
         username: "",
@@ -27,9 +31,16 @@ export default function UserList({ idUser, list_owner, followType, props }) {
     const [isMe, setIsMe] = useState(false);
 
     const { colors } = useTheme();
+    const { t } = useTranslation();
 
     useEffect(() => {
-        loadData();
+        const isBlock = localUserLogin.blackList.includes(idUser) || localUserLogin.blockUsers.includes(idUser);
+
+        if (!isBlock) {
+            loadData();
+        } else {
+            setDeleteUser(true);
+        }
     }, []);
 
     const loadData = async () => {
@@ -55,9 +66,10 @@ export default function UserList({ idUser, list_owner, followType, props }) {
             } else {
                 setUserData({
                     username: null,
-                    nickname: "Usuario eliminado",
+                    nickname: t('noUser'),
                     avatar: null
-                })
+                });
+                setDeleteUser(true);
             }
         } catch (error) {
             console.error(error);
@@ -65,12 +77,14 @@ export default function UserList({ idUser, list_owner, followType, props }) {
     }
 
     function goDetails() {
-        if (followType === 2) {
-            props.navigation.navigate({ name: 'Perfil', params: { userId: userData.id }, merge: true });
-        } else if (userData.username !== null) {
-            props.navigation.replace('Perfil', { userId: userData.id });
-        } else {
-            Alert.alert("Usuario eliminado", "Este usuario ya no existe");
+        if (!deleteUser) {
+            if (followType === 2) {
+                props.navigation.navigate({ name: 'Perfil', params: { userId: userData.id }, merge: true });
+            } else if (userData.username !== null) {
+                props.navigation.replace('Perfil', { userId: userData.id });
+            } else {
+                // Alert.alert("Usuario eliminado", "Este usuario ya no existe");
+            }
         }
     }
 
@@ -80,7 +94,7 @@ export default function UserList({ idUser, list_owner, followType, props }) {
 
         if (res == false) {
             setIsFollowed(false);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -91,7 +105,7 @@ export default function UserList({ idUser, list_owner, followType, props }) {
 
         if (res == false) {
             setIsFollowed(true);
-            Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+            Alert.alert(t('serverErrorTitle'), t('serverError'));
         }
     }
 
@@ -100,13 +114,13 @@ export default function UserList({ idUser, list_owner, followType, props }) {
             const res = await deleteFollowerProcess(userData.id, localUserLogin.id);
 
             if (res == false) {
-                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
             }
         } else if (followType == 1) {
             const res = await stopFollow(userData.id, localUserLogin.id);
 
             if (res == false) {
-                Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");
+                Alert.alert(t('serverErrorTitle'), t('serverError'));
             }
         } else {
             console.error("Tipo de seguidor invalido");
@@ -120,32 +134,44 @@ export default function UserList({ idUser, list_owner, followType, props }) {
                     <Image style={styles.avatar} source={userAvatar != null ? { uri: userAvatar } : require('../../assets/avatar-default.png')} />
 
                     {isMe ?
-                        <Text style={{fontSize: 16, fontWeight: "bold", color: colors.tertiary}}>{userData.nickname}</Text>
+                        <View>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.tertiary }}>{userData.nickname}</Text>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.tertiary_dark }}>@{userData.username}</Text>
+                        </View>
                         :
-                        <Text style={{fontSize: 16, fontWeight: "bold", color: colors.primary}}>{userData.nickname}</Text>
+                        !deleteUser ?
+                        <View>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.secondary }}>{userData.nickname}</Text>
+                            <Text style={{ fontSize: 16, color: colors.primary }}>@{userData.username}</Text>
+                        </View>
+                        :
+                        <View>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.secondary_dark, fontStyle: 'italic' }}>{t('noUser')}</Text>
+                            <Text style={{ fontSize: 16, color: colors.secondary_dark, fontStyle: 'italic' }}>{t('noUserHelp')}</Text>
+                        </View>
                     }
                 </View>
-                {userData.nickname === "Usuario eliminado" ?
+                {deleteUser ?
                     <View></View>
                     :
                     list_owner === localUserLogin.username ?
-                        <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={deleteFollower}>
-                            <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-minus-outline' />
-                            <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Eliminar</Text>
+                        <TouchableOpacity style={{ flexDirection: "row", paddingVertical: 8, minWidth: 110, justifyContent: "center", alignItems: 'center', backgroundColor: colors.text_error, borderRadius: 14 }} onPress={deleteFollower}>
+                            <MaterialCommunityIcons style={{ color: colors.text_button, fontSize: 22, marginRight: 6 }} name='account-minus-outline' />
+                            <Text style={{ color: colors.text_button, fontSize: 14, fontWeight: "bold" }}>{t('deleteCommon')}</Text>
                         </TouchableOpacity>
                         :
                         userData.username === localUserLogin.username ?
                             <View></View>
                             :
                             isFollowed ?
-                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={stopFollow}>
-                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-minus-outline' />
-                                    <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Siguiendo</Text>
+                                <TouchableOpacity style={{ flexDirection: "row", paddingVertical: 8, minWidth: 110, justifyContent: "center", backgroundColor: colors.quartet, borderRadius: 14}} onPress={stopFollow}>
+                                    <MaterialCommunityIcons style={{ color: colors.text_button, fontSize: 20, marginRight: 6 }} name='account-minus-outline' />
+                                    <Text style={{ color: colors.text_button, fontSize: 14, fontWeight: "bold" }}>{t('following')}</Text>
                                 </TouchableOpacity>
                                 :
-                                <TouchableOpacity style={{flexDirection: "row", paddingVertical: 8, minWidth: 130, justifyContent: "center", paddingHorizontal: 16, borderColor: colors.primary, borderWidth: 2, borderRadius: 10, outlineStyle: "solid", outlineWidth: 2}} onPress={startFollow}>
-                                    <MaterialCommunityIcons style={{color: colors.primary, fontSize: 20, marginRight: 6}} name='account-multiple-plus-outline' />
-                                    <Text style={{color: colors.primary, fontSize: 14, fontWeight: "bold"}}>Seguir</Text>
+                                <TouchableOpacity style={{ flexDirection: "row", paddingVertical: 8, minWidth: 110, justifyContent: "center", backgroundColor: colors.quartet, borderRadius: 14}} onPress={startFollow}>
+                                    <MaterialCommunityIcons style={{ color: colors.text_button, fontSize: 20, marginRight: 6 }} name='account-multiple-plus-outline' />
+                                    <Text style={{ color: colors.text_button, fontSize: 14, fontWeight: "bold" }}>{t('follow')}</Text>
                                 </TouchableOpacity>
                 }
             </View>

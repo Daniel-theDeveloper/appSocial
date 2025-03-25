@@ -101,7 +101,7 @@ export default function ReplyPublishScreen(props) {
                 goBackAgain();
             } else {
                 setLoading_Button(false);
-                console.log("publicación vacía");
+                console.error("publicación vacía");
             }
         } catch (error) {
             setLoading_Button(false);

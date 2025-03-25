@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
+
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
 import { replyComment_Array } from '../components/Comment_answer';
 import { localUserLogin } from '../../utils/localstorage';
 
-import { doc, updateDoc, getDoc, collection, getDocs, where, query, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { database } from '../../utils/database';
 import { sendNotification } from '../../utils/interations';
 import { useTheme } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 import '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
@@ -17,9 +21,14 @@ export default function ReplyScreen(props) {
     const [myComment, setMyComment] = useState("");
     const [loadingButton, setLoadingButton] = useState((false));
 
-    const [imageURL] = useState(props.route.params?.comment_Array.userAvatar);
-    const [replyImageURL] = useState(replyComment_Array.userAvatar);
+    const [avatarURL] = useState(props.route.params?.comment_Array.userAvatar);
+    const [replyAvatarURL] = useState(replyComment_Array.userAvatar);
     const [myAvatarURL] = useState(localUserLogin.avatar);
+    const [urlMedia, setUrlMedia] = useState(null);
+    const [mediaName, setMediaName] = useState(null);
+
+    const [showMediaComment, setShowMediaComment] = useState(true);
+    const [loadingMedia, setLoadingMedia] = useState(false);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
@@ -30,32 +39,69 @@ export default function ReplyScreen(props) {
         props.navigation.goBack();
     }
 
+    const submitImageComment = async () => {
+        const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (granted) {
+            setLoadingMedia(true);
+            const image = await ImagePicker.launchImageLibraryAsync({
+                allowsMultipleSelection: false,
+                allowsEditing: true,
+                quality: 0.1,
+                aspect: [4, 3],
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            });
+
+            if (image.canceled) {
+                setLoadingMedia(false);
+            } else {
+                setUrlMedia(image.assets[0].uri);
+                setMediaName(image.assets[0].fileName);
+                setLoadingMedia(false);
+            }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
+        }
+    }
+
+    const pickPhotoComment = async () => {
+        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (granted) {
+            setLoadingMedia(true);
+            const image = await ImagePicker.launchCameraAsync({
+                allowsMultipleSelection: false,
+                allowsEditing: true,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                aspect: [4, 3],
+                quality: 0.1,
+            });
+
+            if (image.canceled) {
+                setLoadingMedia(false);
+            } else {
+                setUrlMedia(image.assets[0].uri);
+                setMediaName(image.assets[0].fileName);
+                setLoadingMedia(false);
+            }
+        } else {
+            Alert.alert(t('deniedPermissionsTitle'), t('galleryDenied'));
+        }
+    }
+
+    function deleteImageComment() {
+        setUrlMedia(null);
+        setLoadingMedia(false);
+        setShowMediaComment(true);
+    }
+
     const sendMyComment = async () => {
         if (myComment !== "") {
             setLoadingButton(true);
             let commentAnswerArray = [];
             let myReplyComment = "";
+            let pathImage = null;
 
-            if (props.route.params?.isPrincipalComment) {
-                commentAnswerArray = {
-                    body: myComment,
-                    date: new Date(),
-                    dislikes: [],
-                    likes: [],
-                    mediaURL: null,
-                    user: localUserLogin.id
-                }
-            } else {
-                myReplyComment = "@" + props.route.params?.nameUserSend + ": " + myComment
-                commentAnswerArray = {
-                    body: myReplyComment,
-                    date: new Date(),
-                    dislikes: [],
-                    likes: [],
-                    mediaURL: null,
-                    user: localUserLogin.id
-                }
-            }
             try {
                 // const docRef = doc(database, "publications", props.route.params?.id);
                 // const docSnap = await getDoc(docRef);
@@ -89,8 +135,42 @@ export default function ReplyScreen(props) {
                 // console.error("Datos inexistente")
                 // }
 
+                if (urlMedia != null) {
+                    const url = localUserLogin.username + "/publicationImages/" + props.route.params?.id + "/imagesComment/" + mediaName;
+
+                    const response = await fetch(urlMedia);
+                    const blob = await response.blob();
+                    const storage = getStorage();
+                    const storageRef = ref(storage, url);
+
+                    const snapshot = await uploadBytes(storageRef, blob);
+
+                    pathImage = snapshot.ref.fullPath;
+                }
+
+                if (props.route.params?.isPrincipalComment) {
+                    commentAnswerArray = {
+                        body: myComment,
+                        date: new Date(),
+                        dislikes: [],
+                        likes: [],
+                        mediaURL: pathImage,
+                        user: localUserLogin.id
+                    }
+                } else {
+                    myReplyComment = "@" + props.route.params?.nameUserSend + ": " + myComment
+                    commentAnswerArray = {
+                        body: myReplyComment,
+                        date: new Date(),
+                        dislikes: [],
+                        likes: [],
+                        mediaURL: pathImage,
+                        user: localUserLogin.id
+                    }
+                }
+
                 const url = 'publications/' + props.route.params?.id + '/comments/' + props.route.params?.principalID + "/comment_answers";
-                const res = await addDoc(collection(database, url), commentAnswerArray);
+                await addDoc(collection(database, url), commentAnswerArray);
 
                 if (props.route.params?.userIdSend !== localUserLogin.id) {
                     await sendNotification('reply_c', props.route.params?.userIdSend, props.route.params?.id, myComment);
@@ -118,7 +198,7 @@ export default function ReplyScreen(props) {
                 <View style={{ backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20 }}>
                     {/* header */}
                     <View style={styles.perfil_header}>
-                        <Image style={styles.avatar} source={imageURL != null ? { uri: imageURL } : require('../../assets/avatar-default.png')} />
+                        <Image style={styles.avatar} source={avatarURL != null ? { uri: avatarURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
                             <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.secondary }}>@{props.route.params?.nameUserSend}{t('commentedLabel')}</Text>
                             <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(comment_Array.date)}</Text>
@@ -145,7 +225,7 @@ export default function ReplyScreen(props) {
                 <View style={{ backgroundColor: colors.primary_dark, padding: 18, borderRadius: 20 }}>
                     {/* header */}
                     <View style={styles.perfil_header}>
-                        <Image style={styles.avatar} source={replyImageURL != null ? { uri: replyImageURL } : require('../../assets/avatar-default.png')} />
+                        <Image style={styles.avatar} source={replyAvatarURL != null ? { uri: replyAvatarURL } : require('../../assets/avatar-default.png')} />
                         <View style={styles.perfil_usernames_container}>
                             <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.secondary }}>{props.route.params?.nameUserSend}{t('replied')}</Text>
                             <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.secondary_dark }}>{convertDate(replyComment_Array.date)}</Text>
@@ -193,21 +273,61 @@ export default function ReplyScreen(props) {
                         autoFocus={true}
                         onChangeText={(text) => setMyComment(text)}
                         maxLength={200} />
+
+                    {urlMedia != null ?
+                        !loadingMedia ?
+                            <View style={{ width: 200, height: 150 }}>
+                                <Image style={{ width: 200, height: 150, borderRadius: 10 }} source={{ uri: urlMedia }} />
+                                <TouchableOpacity style={{ position: 'absolute', top: 8, right: 8, padding: 3, borderRadius: 20, backgroundColor: "black" }} onPress={deleteImageComment}>
+                                    <MaterialCommunityIcons style={{ color: "white", fontSize: 24 }} name='close' />
+                                </TouchableOpacity>
+                            </View>
+                            :
+                            <View style={{ alignItems: 'center', justifyContent: 'center', width: 200, height: 150, backgroundColor: colors.primary_dark_alternative, borderRadius: 10 }}>
+                                <TouchableOpacity style={{ position: 'absolute', top: 8, right: 8, padding: 3, borderRadius: 20, backgroundColor: "black" }} onPress={deleteImageComment}>
+                                    <MaterialCommunityIcons style={{ color: "white", fontSize: 24 }} name='close' />
+                                </TouchableOpacity>
+                                <ActivityIndicator size={'large'} color={colors.secondary} />
+                            </View>
+                        :
+                        <View></View>}
                 </View>
 
                 <View style={styles.reply_row2}>
-                    <Text style={{ fontSize: 16, marginLeft: 5, color: colors.primary }}>{myComment.length} / 200</Text>
-                    {loadingButton ?
+                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 16, marginLeft: 5, color: colors.primary }}>{myComment.length} / 200</Text>
+                        {showMediaComment ?
+                            urlMedia == null ?
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TouchableOpacity onPress={pickPhotoComment}>
+                                        <MaterialCommunityIcons style={{ fontSize: 24, color: colors.primary, marginVertical: 10, marginLeft: 10 }} name='camera-plus-outline' />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={submitImageComment}>
+                                        <MaterialCommunityIcons style={{ fontSize: 24, color: colors.primary, marginVertical: 10, marginLeft: 10 }} name='file-image-plus-outline' />
+                                    </TouchableOpacity>
+                                </View>
+                                :
+                                <View></View>
+                            :
+                            <View></View>
+                        }
+                    </View>
+                    {myComment.length == 0 || loadingMedia ?
                         <View style={{ flexDirection: "row", padding: 10, borderRadius: 10, backgroundColor: colors.secondary_dark }}>
-                            <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
-                            <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('publishing')}</Text>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('publish')}</Text>
                         </View>
                         :
-                        <TouchableOpacity onPress={sendMyComment}>
-                            <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.secondary }}>
-                                <Text style={{ fontSize: 16, marginHorizontal: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('publish')}</Text>
+                        loadingButton ?
+                            <View style={{ flexDirection: "row", padding: 10, borderRadius: 10, backgroundColor: colors.secondary_dark }}>
+                                <ActivityIndicator color={colors.loading} style={styles.loadingSpinner} />
+                                <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('publishing')}</Text>
                             </View>
-                        </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={sendMyComment}>
+                                <View style={{ padding: 10, borderRadius: 10, backgroundColor: colors.secondary }}>
+                                    <Text style={{ fontSize: 16, marginHorizontal: 15, fontWeight: "bold", textAlign: "center", color: colors.text }}>{t('publish')}</Text>
+                                </View>
+                            </TouchableOpacity>
                     }
                 </View>
             </View>

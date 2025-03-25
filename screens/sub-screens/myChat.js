@@ -17,15 +17,9 @@ import { useTranslation } from 'react-i18next';
 
 // import Chat from '../components/chatComponent';
 
-export let params = {
-    channelId: "",
-    userId: "",
-    userNickname: "Chat",
-    avatar: null
-}
-
 export default function MyChat(props) {
     const [messages, setMessages] = useState([]);
+    const [deleteUser] = useState(props.route.params?.isDelete);
 
     const { colors } = useTheme();
     const { t } = useTranslation();
@@ -45,9 +39,17 @@ export default function MyChat(props) {
     };
 
     var renderComposer = function (props) {
-        return (
-            React.createElement(Composer, Object.assign({}, props, { textInputAutoFocus: true, placeholder: t('newMessage'), placeholderTextColor: colors.primary, textInputStyle: { color: colors.text, backgroundColor: colors.background, borderRadius: 20, padding: 12 } }))
-        );
+        if (deleteUser) {
+            // Usuario eliminado o bloqueado
+            return (
+                React.createElement(Composer, Object.assign({}, props, { disableComposer: true, textInputAutoFocus: true, placeholder: t('noMoreChat'), placeholderTextColor: colors.primary, textInputStyle: { color: colors.text, backgroundColor: colors.background, borderRadius: 20, padding: 12 } }))
+            );
+        } else {
+            // Usuario normal
+            return (
+                React.createElement(Composer, Object.assign({}, props, { textInputAutoFocus: true, placeholder: t('newMessage'), placeholderTextColor: colors.primary, textInputStyle: { color: colors.text, backgroundColor: colors.background, borderRadius: 20, padding: 12 } }))
+            );
+        }
     };
 
     var renderBubble = function (props) {
@@ -64,10 +66,10 @@ export default function MyChat(props) {
 
     useLayoutEffect(() => {
         try {
-            const collectionRef = collection(database, 'channels/' + params.channelId + '/chats');
+            const collectionRef = collection(database, 'channels/' + props.route.params?.channelId + '/chats');
             const q = query(collectionRef, orderBy('createAt', 'desc'));
 
-            const unsuscribe = onSnapshot(q, QuerySnapshot => {
+            const unsubscribe = onSnapshot(q, QuerySnapshot => {
                 setMessages(
                     QuerySnapshot.docs.map(doc => ({
                         _id: doc.data()._id,
@@ -76,13 +78,13 @@ export default function MyChat(props) {
                         user: {
                             _id: localUserLogin.id === doc.data().userID ? undefined : doc.data().userID,
                             name: doc.data().name,
-                            avatar: localUserLogin.id === doc.data().userID ? localUserLogin.avatar : params.avatar
+                            avatar: localUserLogin.id === doc.data().userID ? localUserLogin.avatar : props.route.params?.avatar
                         }
                     }))
                 );
             });
 
-            return unsuscribe;
+            return unsubscribe;
         } catch (error) {
             console.error(error);
             goBack();
@@ -103,22 +105,22 @@ export default function MyChat(props) {
             userID: localUserLogin.id,
             name: localUserLogin.username
         };
-        sendNotification('message', params.userId, params.channelId, messageToSend.text);
+        sendNotification('message', props.route.params?.userId, props.route.params?.channelId, messageToSend.text);
 
-        addDoc(collection(database, 'channels/' + params.channelId + '/chats'), messageToSend);
+        addDoc(collection(database, 'channels/' + props.route.params?.channelId + '/chats'), messageToSend);
         setLastMessage(messages[0].text);
     }, []);
 
     const setLastMessage = async (lastMessage) => {
         try {
-            const docRef = doc(database, "channels", params.channelId);
+            const docRef = doc(database, "channels", props.route.params?.channelId);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 await updateDoc(docRef, { lastMessage: lastMessage });
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -136,9 +138,13 @@ export default function MyChat(props) {
                     <MaterialCommunityIcons style={{ fontSize: 45, color: colors.text }} name='chevron-left' />
                 </TouchableOpacity>
 
-                <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>{params.nickname}</Text>
+                {props.route.params?.isDelete ?
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>{t('noUser')}</Text>
+                    :
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>{props.route.params?.userNickname}</Text>
+                }
 
-                <Image style={style.avatar} source={params.avatar != null ? { uri: params.avatar } : require('../../assets/avatar-default.png')} />
+                <Image style={style.avatar} source={props.route.params?.avatar != null ? { uri: props.route.params?.avatar } : require('../../assets/avatar-default.png')} />
             </View>
             <GiftedChat
                 messages={messages}
