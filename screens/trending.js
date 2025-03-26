@@ -74,7 +74,7 @@ export default function Trending(props) {
     return (
         <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, paddingLeft: 15, paddingRight: 15 }}>
             <ScrollView>
-                <View style={{ paddingLeft: 16, paddingRight: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', height: 50, shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+                <View style={{ paddingLeft: 16, paddingRight: 16, marginTop: 20, backgroundColor: colors.primary_dark, borderRadius: 20, width: '100%', shadowColor: '#000', shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
                     <TextInput style={{ color: colors.text }} placeholder={t('searchPlaceHolder')} placeholderTextColor={colors.holderText} onChangeText={(text) => setSearchText(text)} autoCorrect={false} editable={loading ? false : true} />
                 </View>
 

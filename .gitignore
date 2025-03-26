@@ -4,8 +4,10 @@
 node_modules/
 android/
 ios/
+path/
 .vscode/
 .env
+google-services.json
 
 # Expo
 .expo/

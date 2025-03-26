@@ -89,6 +89,8 @@ i18n
                     whatsThink: 'Post what\'s on your mind',
                     saves: 'Saves',
                     exit: 'Log off',
+                    noFriendsTitle: 'There is much more to see',
+                    noFriends: 'Start following people to bring your social network to life',
 
                     // Trending
                     searchPlaceHolder: 'Search on the web...',
@@ -339,6 +341,8 @@ i18n
                     whatsThink: 'Publica lo que estas pensando',
                     saves: 'Guardados',
                     exit: 'Cerrar sesión',
+                    noFriendsTitle: 'Hay mucho mas que ver',
+                    noFriends: 'Empiece a seguir gente para dar vida a su red social',
 
                     // Trending
                     searchPlaceHolder: 'Buscar en la red...',

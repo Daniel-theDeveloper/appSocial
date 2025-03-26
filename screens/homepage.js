@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, Platform, ActivityIndicator } from 'react-native';
 
 import { auth, database } from '../utils/database';
 import { collection, onSnapshot, orderBy, query, doc, getDoc, where } from 'firebase/firestore';
@@ -192,7 +192,7 @@ export default function Homepage(props) {
         props.navigation.navigate("ConfigGeneral");
     }
 
-    function goSaves () {
+    function goSaves() {
         if (localUserLogin.id != undefined) {
             props.navigation.navigate('Saves');
         }
@@ -240,132 +240,20 @@ export default function Homepage(props) {
             <ScrollView showsVerticalScrollIndicator={true}>
                 <View style={styles.container}>
                     {loading ?
-                        <View style={loadingStyle.container}>
-                            <View style={loadingStyle.perfil_header}>
-                                <View style={{
-                                    height: 50,
-                                    width: 50,
-                                    borderRadius: 100,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                                <View style={loadingStyle.perfil_usernames_container}>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        backgroundColor: colors.primary_dark,
-                                        marginBottom: 10,
-                                        borderRadius: 5
-                                    }}></View>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        borderRadius: 5,
-                                        backgroundColor: colors.primary_dark
-                                    }}></View>
-                                </View>
-                            </View>
-                            <View style={{
-                                padding: 10,
-                                height: 120,
-                                backgroundColor: colors.primary_dark,
-                                borderRadius: 15,
-                                marginBottom: 20
-                            }}></View>
-                            <View style={loadingStyle.perfil_header}>
-                                <View style={{
-                                    height: 50,
-                                    width: 50,
-                                    borderRadius: 100,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                                <View style={loadingStyle.perfil_usernames_container}>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        backgroundColor: colors.primary_dark,
-                                        marginBottom: 10,
-                                        borderRadius: 5
-                                    }}></View>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        borderRadius: 5,
-                                        backgroundColor: colors.primary_dark
-                                    }}></View>
-                                </View>
-                            </View>
-                            <View style={{
-                                padding: 10,
-                                height: 120,
-                                backgroundColor: colors.primary_dark,
-                                borderRadius: 15,
-                                marginBottom: 20
-                            }}></View>
-                            <View style={loadingStyle.perfil_header}>
-                                <View style={{
-                                    height: 50,
-                                    width: 50,
-                                    borderRadius: 100,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                                <View style={loadingStyle.perfil_usernames_container}>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        backgroundColor: colors.primary_dark,
-                                        marginBottom: 10,
-                                        borderRadius: 5
-                                    }}></View>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        borderRadius: 5,
-                                        backgroundColor: colors.primary_dark
-                                    }}></View>
-                                </View>
-                            </View>
-                            <View style={{
-                                padding: 10,
-                                height: 120,
-                                backgroundColor: colors.primary_dark,
-                                borderRadius: 15,
-                                marginBottom: 20
-                            }}></View>
-                            <View style={loadingStyle.perfil_header}>
-                                <View style={{
-                                    height: 50,
-                                    width: 50,
-                                    borderRadius: 100,
-                                    backgroundColor: colors.primary_dark
-                                }}></View>
-                                <View style={loadingStyle.perfil_usernames_container}>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        backgroundColor: colors.primary_dark,
-                                        marginBottom: 10,
-                                        borderRadius: 5
-                                    }}></View>
-                                    <View style={{
-                                        height: 18,
-                                        width: 150,
-                                        borderRadius: 5,
-                                        backgroundColor: colors.primary_dark
-                                    }}></View>
-                                </View>
-                            </View>
-                            <View style={{
-                                padding: 10,
-                                height: 120,
-                                backgroundColor: colors.primary_dark,
-                                borderRadius: 15,
-                                marginBottom: 20
-                            }}></View>
+                        <View style={{ margin: 15 }}>
+                            <ActivityIndicator size={50} color={colors.primary} />
                         </View>
                         :
-                        <View style={loadingStyle.publications_colections}>
+                        <View style={{ marginHorizontal: 15 }}>
                             {/* publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isComment={isWasCommented(publication.comments_container)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />) */}
-                            {publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
+                            {publications.length == 0 ?
+                                <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", height: 500 }}>
+                                    <MaterialCommunityIcons style={{ color: colors.primary, fontSize: 100, marginBottom: 10 }} name='account-group-outline' />
+                                    <Text style={{ color: colors.primary, fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>{t('noFriendsTitle')}</Text>
+                                    <Text style={{ color: colors.primary, fontSize: 18, textAlign: "center" }}>{t('noFriends')}</Text>
+                                </View>
+                                :
+                                publications.map(publication => <Publication key={publication.id} props={props} isLike={isWasInteracted(publication.likes)} isShared={isWasInteractedByID(publication.shares)} wasSaved={isWasSaved(publication.id)} {...publication} />)}
                             <View style={{ height: 160 }}></View>
                         </View>
                     }
@@ -441,22 +329,5 @@ const styles = StyleSheet.create({
         borderColor: "white",
         borderWidth: 2.5,
         borderRadius: 100
-    }
-})
-
-const loadingStyle = StyleSheet.create({
-    container: {
-        margin: 15
-    },
-    perfil_header: {
-        flexDirection: "row",
-        marginBottom: 10
-    },
-    perfil_usernames_container: {
-        flexDirection: "column",
-        marginLeft: 10
-    },
-    publications_colections: {
-        marginHorizontal: 15
     }
 })

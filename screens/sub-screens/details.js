@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, TextInput, ActivityIndicator, Alert, ImageBackground, ToastAndroid } from 'react-native';
 import { convertDate } from '../../utils/convertDate';
-import { isWasInteracted, isWasSaved, isWasInteractedByID, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage, deletePublishAction } from '../../utils/interations';
+import { isWasInteracted, isWasSaved, isWasInteractedByID, likePublish, deleteLike, savePublish, deleteSavePublish, fetchImage, deletePublishAction, sendNotification } from '../../utils/interations';
 import { localUserLogin } from '../../utils/localstorage';
 import Report_publish from '../components/Report_publish';
 import Comment from '../components/Comment';

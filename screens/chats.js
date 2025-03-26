@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Alert } from 'react-native';
+import { StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
 import { doc, getDoc, collection, onSnapshot, query, where, getDocs } from 'firebase/firestore';
 import { database } from '../utils/database';
 import UserChatList from './components/userChatList';
@@ -106,7 +106,7 @@ export default function Chats(props) {
     }
 
     return (
-        <View style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15 }}>
+        <ScrollView style={{ flex: 1, flexGrow: 1, backgroundColor: colors.background, padding: 15 }}>
             <Text style={{ fontSize: 30, fontWeight: "bold", color: colors.primary, }}>Chats</Text>
 
             <Text style={{ marginVertical: 15, fontSize: 21, fontWeight: "bold", color: colors.text }}>{t('ChatsTitle')}</Text>
@@ -134,7 +134,7 @@ export default function Chats(props) {
                 :
                 <View></View>
             }
-        </View>
+        </ScrollView>
     );
 }
 

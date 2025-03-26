@@ -283,7 +283,6 @@ export default function New_publication(props) {
                         await updateDoc(docRef, {
                             urlImages: urlList
                         });
-                        // newPublication.urlImages = snapshot.ref.fullPath;
                     }
                 } else {
                     // Proceso de edición

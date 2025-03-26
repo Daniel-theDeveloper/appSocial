@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, ImageBackground, ScrollView, ToastAndroid } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, ImageBackground, ScrollView, ToastAndroid, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Octicons from "react-native-vector-icons/Octicons";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { localUserLogin } from '../../utils/localstorage';
 import { convertDate } from '../../utils/convertDate';
 import { fetchImage, savePublish, deleteSavePublish, likePublish, deleteLike, isWasCommented, deletePublishAction, youAreFollower, addBlockUser } from '../../utils/interations';
@@ -49,6 +50,7 @@ export default function Publication({
 
     const [isSaved, setIsSaved] = useState(false);
     const [imageURL, setImageURL] = useState([]);
+    const [imageLoading, setImagenLoading] = useState(true);
 
     const [isComment, setIsComment] = useState(false);
 
@@ -64,36 +66,30 @@ export default function Publication({
     const { t } = useTranslation();
 
     useEffect(() => {
-        const isBlock = localUserLogin.blackList.includes(userId) || localUserLogin.blockUsers.includes(userId);
+        const isBlocked = localUserLogin.blackList.includes(userId) || localUserLogin.blockUsers.includes(userId);
 
-        if (!isBlock) {    // Verifica si no es un usuario bloqueado.
-            if (userId === localUserLogin.id) {     // Autor original
-                loadComments();
-                loadUserData();
-                loadFoto();
-                promiseSaved();
-            } else if (status < 2) {   // Reportado o privado
-                setUnavailable(true);
-            } else if (status == 2) {   // Solo seguidores
-                youAreFollower(author).then((res) => {  // Verificando si eres seguidor
-                    if (res) {
-                        loadComments();
-                        loadUserData();
-                        loadFoto();
-                        promiseSaved();
-                    } else {
-                        // console.log("Solo seguidores");
-                        setUnavailable(true);
-                    }
-                });
-            } else if (status > 2 && status < 5) {  // Publico
-                loadComments();
-                loadUserData();
-                loadFoto();
-                promiseSaved();
-            } else {
-                setUnavailable(true);
-            }
+        if (isBlocked) {
+            setUnavailable(true);
+            return;
+        }
+
+        const initializeData = () => {
+            loadComments();
+            loadUserData();
+            loadFoto();
+            promiseSaved();
+        };
+
+        if (userId === localUserLogin.id) {
+            initializeData();
+        } else if (status < 2) {
+            setUnavailable(true);
+        } else if (status === 2) {
+            youAreFollower(author).then((isFollower) => {
+                isFollower ? initializeData() : setUnavailable(true);
+            });
+        } else if (status > 2 && status < 5) {
+            initializeData();
         } else {
             setUnavailable(true);
         }
@@ -134,7 +130,7 @@ export default function Publication({
     const savePublishToast = () => {
         ToastAndroid.show(t('savePublish'), ToastAndroid.SHORT);
     }
-    
+
     const deleteSavePublishToast = () => {
         ToastAndroid.show(t('deletePublish'), ToastAndroid.SHORT);
     }
@@ -151,6 +147,7 @@ export default function Publication({
             }
             setImageURL(loadURLImages);
         }
+        setImagenLoading(false);
     }
 
     const loadUserData = async () => {
@@ -349,18 +346,6 @@ export default function Publication({
                                     </View>
                                 }
                             </View>
-                            {status < 2 ?
-                                <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error_dark, padding: 5, borderRadius: 10 }}>
-                                    <MaterialCommunityIcons style={{ fontSize: 30, color: colors.text_error }} name='eye-off-outline' />
-                                </View>
-                                :
-                                status == 2 ?
-                                    <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: colors.quartet_dark_alternative, padding: 5, borderRadius: 10 }}>
-                                        <MaterialCommunityIcons style={{ fontSize: 30, color: colors.quartet }} name='account-multiple-check-outline' />
-                                    </View>
-                                    :
-                                    <View></View>
-                            }
                         </View>
                     </TouchableOpacity>
 
@@ -371,40 +356,72 @@ export default function Publication({
                                 <ReplyPublish props={props} replyID={replyID} />
                                 :
                                 urlImages != null ?
-                                    urlImages.length === 1 ?
-                                        <Image style={{ height: 200, width: "100%", marginBottom: 15, borderRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                    imageLoading ?
+                                        <View style={{ alignItems: 'center', justifyContent: 'center', height: 200, width: "100%", marginBottom: 15, borderRadius: 15, backgroundColor: colors.primary_dark_alternative }}>
+                                            <ActivityIndicator size={50} color={colors.secondary} />
+                                        </View>
                                         :
-                                        urlImages.length === 2 ?
-                                            <View style={styles.images_container}>
-                                                <Image style={{ marginRight: 3, height: 200, width: "49%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                                <Image style={{ marginLeft: 3, height: 200, width: "49%", borderTopRightRadius: 15, borderBottomRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                            </View>
+                                        urlImages.length === 1 ?
+                                            <Image style={{ height: 200, width: "100%", marginBottom: 15, borderRadius: 15 }} source={{ uri: imageURL[0] }} />
                                             :
-                                            urlImages.length === 3 ?
+                                            urlImages.length === 2 ?
                                                 <View style={styles.images_container}>
-                                                    <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
-                                                    <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
-                                                        <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                                        <Image style={{ marginTop: 3, height: "48.5%", borderBottomRightRadius: 15 }} source={{ uri: imageURL[2] }} />
-                                                    </View>
+                                                    <Image style={{ marginRight: 3, height: 200, width: "49%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                                    <Image style={{ marginLeft: 3, height: 200, width: "49%", borderTopRightRadius: 15, borderBottomRightRadius: 15 }} source={{ uri: imageURL[1] }} />
                                                 </View>
                                                 :
-                                                urlImages.length > 3 ?
+                                                urlImages.length === 3 ?
                                                     <View style={styles.images_container}>
                                                         <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
                                                         <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
                                                             <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
-                                                            <ImageBackground source={{ uri: imageURL[2] }} imageStyle={{ opacity: 0.5, resizeMode: "cover", height: "100%", borderBottomRightRadius: 15 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 3, height: "48.5%", borderBottomRightRadius: 15, backgroundColor: "#1f1f1f" }}>
-                                                                <Text style={{ color: "white", fontSize: 36, }}>+{urlImages.length - 3}</Text>
-                                                            </ImageBackground>
+                                                            <Image style={{ marginTop: 3, height: "48.5%", borderBottomRightRadius: 15 }} source={{ uri: imageURL[2] }} />
                                                         </View>
                                                     </View>
                                                     :
-                                                    <View></View>
+                                                    urlImages.length > 3 ?
+                                                        <View style={styles.images_container}>
+                                                            <Image style={{ marginRight: 3, width: "63%", borderTopLeftRadius: 15, borderBottomLeftRadius: 15 }} source={{ uri: imageURL[0] }} />
+                                                            <View style={{ marginLeft: 3, display: "flex", flexDirection: "column", width: "35%" }}>
+                                                                <Image style={{ marginBottom: 3, height: "48.5%", borderTopRightRadius: 15 }} source={{ uri: imageURL[1] }} />
+                                                                <ImageBackground source={{ uri: imageURL[2] }} imageStyle={{ opacity: 0.5, resizeMode: "cover", height: "100%", borderBottomRightRadius: 15 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 3, height: "48.5%", borderBottomRightRadius: 15, backgroundColor: "#1f1f1f" }}>
+                                                                    <Text style={{ color: "white", fontSize: 36, }}>+{urlImages.length - 3}</Text>
+                                                                </ImageBackground>
+                                                            </View>
+                                                        </View>
+                                                        :
+                                                        <View></View>
                                     :
                                     <View></View>
                             }
                         </TouchableOpacity>
+
+                        {status == undefined || status == null ?
+                            <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>
+                                <ActivityIndicator size={26} color={colors.primary} />
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 5, color: colors.primary }}>{t('loading')}</Text>
+                            </View>
+                            :
+                            status == 0 ?
+                                <View style={{ flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 7, backgroundColor: colors.error_dark }}>
+                                    <Ionicons style={{ fontSize: 26, fontWeight: "bold", color: colors.text_error }} name='warning-outline' />
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 5, color: colors.text_error }}>{t('banned')}</Text>
+                                </View>
+                                :
+                                status == 1 ?
+                                    <View style={{ flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 7, backgroundColor: colors.error_dark }}>
+                                        <Ionicons style={{ fontSize: 26, fontWeight: "bold", color: colors.text_error }} name='eye-off-outline' />
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 5, color: colors.text_error }}>{t('private')}</Text>
+                                    </View>
+                                    :
+                                    status == 2 ?
+                                        <View style={{ flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 7, backgroundColor: colors.quartet_dark_alternative }}>
+                                            <Ionicons style={{ fontSize: 26, fontWeight: "bold", color: colors.quartet }} name='people-outline' />
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 5, color: colors.quartet }}>{t('privateFollowers')}</Text>
+                                        </View>
+                                        :
+                                        <View></View>
+                        }
 
                         <View style={styles.interact_container}>
 

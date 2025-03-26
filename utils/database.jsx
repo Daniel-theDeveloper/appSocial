@@ -14,6 +14,7 @@ const PROJECT_ID = Constants.expoConfig.extra.PROJECT_ID;
 const STORAGE_BUCKET = Constants.expoConfig.extra.STORAGE_BUCKET;
 const MESSAGING_SENDER_ID = Constants.expoConfig.extra.MESSAGING_SENDER_ID;
 const APP_ID = Constants.expoConfig.extra.APP_ID;
+const measurementId = Constants.expoConfig.extra.measurementId;
 
 const firebaseConfig = {
   apiKey: API_KEY,
@@ -22,6 +23,7 @@ const firebaseConfig = {
   storageBucket: STORAGE_BUCKET,
   messagingSenderId: MESSAGING_SENDER_ID,
   appId: APP_ID,
+  measurementId: measurementId,
 };
 
 // Initialize Firebase
