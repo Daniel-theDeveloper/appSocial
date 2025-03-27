@@ -8,6 +8,7 @@ export default {
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "userInterfaceStyle": "light",
+        "owner": "daniel_developer2000",
         "splash": {
             "image": "./assets/splash.png",
             "resizeMode": "contain",
@@ -29,7 +30,7 @@ export default {
                 "android.permission.MANAGE_MEDIA"
             ],
             "package": "com.daniel_developer2000.appSocial",
-            "googleServicesFile": "./path/to/google-services.json"
+            "googleServicesFile": process.env.GOOGLE_SERVICES_JSON ?? "./path/to/google-services.json"
         },
         "web": {
             "favicon": "./assets/favicon.png"
