@@ -81,12 +81,12 @@ export default function UserChatList({ idUser, props, isAdded, channelId }) {
 
             if (docSnap.exists()) {
                 const channelInfo = await addDoc(collection(database, 'channels'), newChannel);
+                const userImage = await fetchImage(userData.avatar);
 
-                params.channelId = channelInfo.id;
                 setAvailable(false);
                 setLoadingButton(false);
                 props.navigation.replace('Home');
-                props.navigation.navigate('MyChat');
+                props.navigation.navigate({ name: 'MyChat', params: { channelId: channelInfo.id, userId: userData.id, userNickname: userData.nickname, avatar: userImage, isDelete: false } });
             }
         } catch (error) {
             Alert.alert("Error en el servidor", "Vuélvalo a intentar mas tarde");

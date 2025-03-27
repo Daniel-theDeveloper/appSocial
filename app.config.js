@@ -29,7 +29,7 @@ export default {
                 "android.permission.CAMERA",
                 "android.permission.MANAGE_MEDIA"
             ],
-            "package": "com.daniel_developer2000.appSocial",
+            "package": "com.daniel_developer2000.appSocialAndroid",
             "googleServicesFile": process.env.GOOGLE_SERVICES_JSON ?? "./path/to/google-services.json"
         },
         "web": {
